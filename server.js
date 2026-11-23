@@ -93,7 +93,7 @@ function handle(ws, m) {
   if (m.type === 'chat') {
     const t = String(m.text || '').replace(/\s+/g, ' ').trim().slice(0, 60);
     if (!t || idx < 0) return;
-    const now = Date.now(); if (me.lastChat && now - me.lastChat < 400) return; me.lastChat = now;
+    const now = Date.now(); if (me.lastChat && now - me.lastChat < 120) return; me.lastChat = now;
     r.chat = (r.chat || []).concat([{ id: me.pid, n: r.players[idx].name, t, at: now }]).slice(-50);
     return broadcast(r);
   }

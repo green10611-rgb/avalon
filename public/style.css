@@ -757,32 +757,32 @@ g.tap polygon{stroke:var(--hi);stroke-width:.1}
 .chatdock{position:fixed;z-index:30;display:flex;flex-direction:column;background:#fff;border:1.5px solid #D3D8E2;box-shadow:0 8px 28px rgba(10,15,40,.18);font-family:var(--body,system-ui);overflow:hidden}
 .chatdock[hidden]{display:none}
 .chatdock header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:#1C2033;color:#fff;flex:none}
-.chatdock header b{font-size:15px}
+.chatdock header b{font-size:17px}
 .chatdock header small{font-size:12px;opacity:.7}
 .cd-list{flex:1;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:6px;background:#F3F5F9;min-height:0}
 .cd-m{display:flex;flex-direction:column;align-items:flex-start;max-width:88%}
-.cd-m small{font-size:11px;color:#5D6579;margin:0 6px 2px}
-.cd-m small b{color:#161A2B;font-size:12px}
-.cd-m span{background:#fff;color:#161A2B;border-radius:4px 14px 14px 14px;padding:6px 11px;font-size:15px;line-height:1.4;word-break:break-word;border:1px solid #E1E5EC}
+.cd-m small{font-size:12px;color:#5D6579;margin:0 6px 2px}
+.cd-m small b{color:#161A2B;font-size:14px}
+.cd-m span{background:#fff;color:#161A2B;border-radius:4px 14px 14px 14px;padding:8px 13px;font-size:17px;line-height:1.4;word-break:break-word;border:1px solid #E1E5EC}
 .cd-m.me{align-self:flex-end;align-items:flex-end}
 .cd-m.me span{background:#2A56D6;color:#fff;border-color:#2A56D6;border-radius:14px 4px 14px 14px}
 .cd-empty{margin:auto;color:#8A92A6;font-size:13px;text-align:center}
 .cd-form{display:flex;gap:6px;padding:8px;border-top:1px solid #E1E5EC;background:#fff;flex:none}
-.cd-in{flex:1;min-width:0;min-height:42px;border-radius:12px;border:1.5px solid #D3D8E2;padding:6px 12px;font-size:16px;color:#161A2B;background:#fff}
+.cd-in{flex:1;min-width:0;min-height:50px;border-radius:12px;border:1.5px solid #D3D8E2;padding:8px 14px;font-size:17px;color:#161A2B;background:#fff}
 .cd-in:disabled{background:#F3F5F9}
 .cd-send:disabled{opacity:.4}
-.cd-send{min-height:42px;border:none;border-radius:12px;background:#2A56D6;color:#fff;font-weight:800;padding:0 14px;font-size:15px;cursor:pointer}
+.cd-send{min-height:50px;border:none;border-radius:12px;background:#2A56D6;color:#fff;font-weight:800;padding:0 18px;font-size:16px;cursor:pointer}
 /* 넓은 화면: 오른쪽 고정 */
-@media (min-width:900px){
-  .chatdock{top:12px;right:12px;bottom:12px;width:320px;border-radius:18px}
-  body.has-chat{padding-right:344px}
+@media (min-width:1000px){
+  .chatdock{top:12px;right:12px;bottom:12px;width:420px;border-radius:18px}
+  body.has-chat{padding-right:444px}
 }
 /* 폰: 아래쪽 고정 */
-@media (max-width:899px){
-  .chatdock{left:0;right:0;bottom:0;height:210px;border-radius:16px 16px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (max-width:999px){
+  .chatdock{left:0;right:0;bottom:0;height:300px;border-radius:16px 16px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}
   .chatdock header{padding:5px 14px}
-  body.has-chat{padding-bottom:220px}
-  body.has-chat .toast{bottom:calc(224px + env(safe-area-inset-bottom,0px))}
+  body.has-chat{padding-bottom:310px}
+  body.has-chat .toast{bottom:calc(314px + env(safe-area-inset-bottom,0px))}
 }
 
 .avb2 .avcols{margin-top:2px}
