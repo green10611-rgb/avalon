@@ -803,3 +803,11 @@ g.tap polygon{stroke:var(--hi);stroke-width:.1}
 .cd-open[hidden]{display:none}
 .cd-open .cd-badge{position:absolute;top:-6px;right:-4px;min-width:22px;height:22px;padding:0 6px;border-radius:99px;background:#E5484D;color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center;border:2px solid #fff}
 .cd-open .cd-badge[hidden]{display:none}
+
+.avqr-row{display:grid;grid-template-columns:74px 1fr;gap:6px;align-items:start;padding:5px 0;border-top:1px dashed #E3D8BA}
+.avqr-row em{font-style:normal;font-size:13px;font-weight:800;padding-top:4px;white-space:nowrap}
+.avqr-row.t em{color:#6A4D0C}.avqr-row.y em{color:#1F44B8}.avqr-row.n em{color:#A61E26}
+.avqr-row div{display:flex;flex-wrap:wrap;gap:5px}
+.avqr-row span{font-size:14px;font-weight:800;padding:3px 10px;border-radius:99px;background:#F5EFDF;border:1px solid #E3D8BA}
+.avqr-row.y span{background:#EEF3FF;border-color:#9DB5F5}.avqr-row.n span{background:#FDEEEE;border-color:#EFA2A6}
+.avqr-row span.x{background:none;border:none;color:#9A927E;font-weight:600}

@@ -434,7 +434,8 @@ function voteLine(S, P, q) {
   const h = S.hist.filter(x => x.q === q && x.ok).pop();
   if (!h || !h.bv) return '';
   const ks = Object.keys(h.bv).map(Number), yes = ks.filter(i => h.bv[i]), no = ks.filter(i => !h.bv[i]);
-  return `<small class="avqr-v">👍 ${yes.map(i => U.nm(P, i)).join(', ') || '없음'} · ✊ ${no.map(i => U.nm(P, i)).join(', ') || '없음'}</small>`;
+  const chips = arr => arr.map(i => `<span>${U.nm(P, i)}</span>`).join('') || '<span class="x">없음</span>';
+  return `<div class="avqr-row y"><em>👍 찬성</em><div>${chips(yes)}</div></div><div class="avqr-row n"><em>✊ 반대</em><div>${chips(no)}</div></div>`;
 }
 function questLog(S, P) {
   const n = P.length, ql = S.qlog || [];
@@ -442,9 +443,9 @@ function questLog(S, P) {
     const e = ql[q];
     if (!e) {
       const now = q === S.quest && !S.winner, tries = S.hist.filter(x => x.q === q && !x.ok).length;
-      return `<div class="avqr ${now ? 'now' : 'wait'}"><div class="avqr-n">${q + 1}차</div><div class="avqr-b"><b>${now ? '진행 중' : '아직 안 했어요'}</b><small>${sz}명 원정${needFail(n, q) > 1 ? ' · 실패 2장 필요' : ''}${now && tries ? ` · 부결 ${tries}번` : ''}</small>${now && S.team.length && ['vote', 'vresult', 'quest', 'reveal'].includes(S.phase) ? `<div class="avqr-t">${S.team.map(i => `<span>${U.nm(P, i)}</span>`).join('')}</div>` : ''}</div></div>`;
+      return `<div class="avqr ${now ? 'now' : 'wait'}"><div class="avqr-n">${q + 1}차</div><div class="avqr-b"><b>${now ? '진행 중' : '아직 안 했어요'}</b><small>${sz}명 원정${needFail(n, q) > 1 ? ' · 실패 2장 필요' : ''}${now && tries ? ` · 부결 ${tries}번` : ''}</small>${now && S.team.length && ['vote', 'vresult', 'quest', 'reveal'].includes(S.phase) ? `<div class="avqr-row t"><em>⚔ 원정대</em><div>${S.team.map(i => `<span>${U.nm(P, i)}</span>`).join('')}</div></div>` : ''}</div></div>`;
     }
-    return `<div class="avqr ${e.ok ? 'ok' : 'no'}"><div class="avqr-n">${q + 1}차</div><div class="avqr-b"><b>${e.ok ? '⚔ 성공' : '✕ 실패'} <em>실패 카드 ${e.f}장</em></b><small>대장 ${e.lead != null ? U.nm(P, e.lead) : '?'}${e.tries > 1 ? ` · ${e.tries}번째 제안에 가결` : ''}</small>${voteLine(S, P, q)}<div class="avqr-t">${e.team.map(i => `<span>${U.nm(P, i)}</span>`).join('')}</div></div></div>`;
+    return `<div class="avqr ${e.ok ? 'ok' : 'no'}"><div class="avqr-n">${q + 1}차</div><div class="avqr-b"><b>${e.ok ? '⚔ 성공' : '✕ 실패'} <em>실패 카드 ${e.f}장</em></b><small>대장 ${e.lead != null ? U.nm(P, e.lead) : '?'}${e.tries > 1 ? ` · ${e.tries}번째 제안에 가결` : ''}</small><div class="avqr-row t"><em>⚔ 원정대</em><div>${e.team.map(i => `<span>${U.nm(P, i)}</span>`).join('')}</div></div>${voteLine(S, P, q)}</div></div>`;
   }).join('');
   return `<div class="avqrs">${rows}</div>`;
 }

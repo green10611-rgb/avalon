@@ -18,15 +18,19 @@ R.ChatDock = function(opts){
   opener.innerHTML = '💬 채팅<span class="cd-badge" hidden></span>';
   document.body.appendChild(opener);
   const badge = opener.querySelector('.cd-badge');
+  let enabled = true, offMsg = '';
   let closed = false; try { closed = localStorage.getItem('chat_closed') === '1'; } catch(e){}
   let shown = true, seenCount = 0;
+  const narrow = () => { try { return matchMedia('(max-width:759px)').matches; } catch(e){ return false; } };
   function layout(){
-    root.hidden = !shown || closed; opener.hidden = !shown || !closed;
-    document.body.classList.toggle('has-chat', shown && !closed);
+    const shut = closed || (!enabled && narrow());   // 폰에서 방 밖이면 작게 접어 두기
+    root.hidden = !shown || shut; opener.hidden = !shown || !shut;
+    document.body.classList.toggle('has-chat', shown && !shut);
   }
+  try { matchMedia('(max-width:759px)').addEventListener('change', () => layout()); } catch(e){}
   function setClosed(v){ closed = v; try { localStorage.setItem('chat_closed', v ? '1' : '0'); } catch(e){} if (!v){ seenCount = msgs.length; badge.hidden = true; setTimeout(() => input.focus(), 30); } layout(); }
   root.querySelector('.cd-x').addEventListener('click', () => setClosed(true));
-  opener.addEventListener('click', () => setClosed(false));
+  opener.addEventListener('click', () => { if (!enabled && narrow() && !closed) { root.hidden = false; opener.hidden = true; document.body.classList.add('has-chat'); return; } setClosed(false); });
   const list = root.querySelector('.cd-list'), input = root.querySelector('.cd-in'), cnt = root.querySelector('.cd-cnt');
   let msgs = [], me = '', lastSig = '';
   const time = at => { try { const d = new Date(at); return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; } catch(e){ return ''; } };
@@ -42,7 +46,6 @@ R.ChatDock = function(opts){
     e.preventDefault(); const t = input.value.trim(); if (!t) return;
     input.value = ''; opts.onSend(t.slice(0, 60)); input.focus();
   });
-  let enabled = true, offMsg = '';
   layout();
   return {
     show(v){ shown = !!v; layout(); },
@@ -51,6 +54,7 @@ R.ChatDock = function(opts){
       enabled = !!v; offMsg = msg || '';
       input.disabled = !enabled; root.querySelector('.cd-send').disabled = !enabled;
       input.placeholder = enabled ? '메시지 입력…' : (offMsg || '방에 들어가면 채팅할 수 있어요');
+      layout();
       if (!enabled){ msgs = []; lastSig = '';  list.innerHTML = `<div class="cd-empty">${esc(offMsg || '방에 들어가면 여기서 같이 채팅할 수 있어요 💬')}</div>`; cnt.textContent = ''; }
     },
     update(m, myId){
