@@ -3,9 +3,11 @@
 const $app = document.getElementById('app');
 const esc = U.esc, g = G.avalon;
 const ls = { get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }, set(k, v){ try { localStorage.setItem(k, v); } catch(e){} }, del(k){ try { localStorage.removeItem(k); } catch(e){} } };
-let pid = ls.get('av_pid'); if (!pid) { pid = Math.random().toString(36).slice(2, 12); ls.set('av_pid', pid); }
+// 탭(창)마다 다른 사람으로 취급해요. 같은 브라우저에서 링크를 열어도 방장이 되지 않게.
+const ss = { get(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }, set(k, v){ try { sessionStorage.setItem(k, v); } catch(e){} }, del(k){ try { sessionStorage.removeItem(k); } catch(e){} } };
+let pid = ss.get('av_pid'); if (!pid) { pid = Math.random().toString(36).slice(2, 12); ss.set('av_pid', pid); }
 let myName = ls.get('av_name') || '';
-let code = ls.get('av_room') || '';
+let code = ss.get('av_room') || '';
 let invite = (new URLSearchParams(location.search).get('room') || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
 let room = null, ui = {}, busy = false, connected = false, lastGid = null, confirmQ = null, ws = null, retry = 0;
 
@@ -25,15 +27,15 @@ function connect(){
     if (m.type === 'closed') { toast('방장이 방을 닫았어요.'); return leaveLocal(); }
     if (m.type === 'kicked') { toast('방에서 나가게 되었어요.'); return leaveLocal(); }
     if (m.type === 'room') {
-      if (!m.room) { room = null; if (code) { code = ''; ls.del('av_room'); } if (invite && myName.trim() && !joinRoom.tried) { joinRoom.tried = true; joinRoom(invite); } return render(); }
-      room = m.room; code = room.code; ls.set('av_room', code); if (invite) clearInvite();
+      if (!m.room) { room = null; if (code) { code = ''; ss.del('av_room'); } if (invite && myName.trim() && !joinRoom.tried) { joinRoom.tried = true; joinRoom(invite); } return render(); }
+      room = m.room; code = room.code; ss.set('av_room', code); if (invite) clearInvite();
       if (room.gid !== lastGid) { lastGid = room.gid; ui = {}; }
       render();
     }
   };
 }
 function sendMsg(m){ if (!ws || ws.readyState !== 1) return toast('서버에 연결하는 중이에요. 잠시 후 다시 눌러 주세요.'); busy = true; ws.send(JSON.stringify(m)); }
-function leaveLocal(){ room = null; code = ''; ls.del('av_room'); ui = {}; render(); }
+function leaveLocal(){ room = null; code = ''; ss.del('av_room'); ui = {}; render(); }
 const createRoom = () => { if (!myName.trim()) return toast('이름을 먼저 적어 주세요.'); sendMsg({type: 'create', name: myName}); };
 const joinRoom = c => { c = (c || '').toUpperCase().replace(/[^A-Z]/g, ''); if (c.length !== 4) return toast('방 코드 4글자를 넣어 주세요.'); if (!myName.trim()) return toast('이름을 먼저 적어 주세요.'); sendMsg({type: 'join', code: c, name: myName}); };
 const startGame = () => sendMsg({type: 'start'});
