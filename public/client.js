@@ -86,7 +86,7 @@ function gameHTML(){
     h += `<div id="game">${g.view(S, -1, {}, P)}</div>`;
   } else {
     const t = g.turns(S, P), mine = t.includes(me);
-    h += S.phase === 'cfg' ? `<div class="turnbar me">역할 구성 고르기</div>` : S.phase === 'vote' ? `<div class="turnbar me">모두 함께 투표</div>` : S.phase === 'qdone' ? `<div class="turnbar me">원정 3번 성공!</div>` : S.phase === 'kill' ? `<div class="turnbar me">🗡 암살의 시간</div>` : S.phase === 'reveal' ? `<div class="turnbar me">모두 함께 결과 보기</div>` : mine ? `<div class="turnbar me">내 차례예요!</div>` : `<div class="turnbar">${t.length === 1 ? `${U.chip(P, t[0])} 차례` : `${t.length}명 기다리는 중`}</div>`;
+    h += S.phase === 'cfg' ? `<div class="turnbar me">역할 구성 고르기</div>` : S.phase === 'qres' ? `<div class="turnbar me">원정 결과</div>` : S.phase === 'vresult' ? `<div class="turnbar me">투표 결과</div>` : S.phase === 'vote' ? `<div class="turnbar me">모두 함께 투표</div>` : S.phase === 'qdone' ? `<div class="turnbar me">원정 3번 성공!</div>` : S.phase === 'kill' ? `<div class="turnbar me">🗡 암살의 시간</div>` : S.phase === 'reveal' ? `<div class="turnbar me">모두 함께 결과 보기</div>` : mine ? `<div class="turnbar me">내 차례예요!</div>` : `<div class="turnbar">${t.length === 1 ? `${U.chip(P, t[0])} 차례` : `${t.length}명 기다리는 중`}</div>`;
     h += `<div id="game"${busy ? ' class="busy"' : ''}>${g.view(S, me, ui, P)}</div>`;
   }
   if (S.log && S.log.length) h += `<div class="log">${S.log.slice().reverse().map(l => `<div>${esc(l)}</div>`).join('')}</div>`;

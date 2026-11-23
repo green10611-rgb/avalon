@@ -435,6 +435,7 @@ div.gtok{cursor:default}
 @keyframes avShine{0%{background-position:-200% 0}100%{background-position:200% 0}}
 @keyframes avPulseGold{0%,100%{box-shadow:0 0 0 0 rgba(232,195,94,.0)}50%{box-shadow:0 0 0 6px rgba(232,195,94,.25)}}
 [data-still],[data-still] *{animation:none!important}
+[data-still] .avfc{transform:perspective(600px) rotateY(180deg)}
 /* 역할 카드 */
 .avrc{position:relative;border-radius:20px;padding:22px 16px 18px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;overflow:hidden;border:2px solid var(--rc);background:radial-gradient(120% 80% at 50% 0,var(--rc2),#0E1222 75%);--rc:#D8B45A;--rc2:#24356F}
 .avrc.e{--rc:#E5484D;--rc2:#5A1119}
@@ -716,3 +717,38 @@ g.tap polygon{stroke:var(--hi);stroke-width:.1}
 .avmy-bar b{font-size:16px}
 .avmy-bar small{font-size:12px;color:#5F5848}
 .btn.avmy-btn{min-height:48px;font-size:16px;white-space:nowrap}
+
+/* 각자 투표 · 결과 */
+.avlive{border-radius:14px;background:var(--panel2,#F5EFDF);border:1.5px solid var(--line,#E3D8BA);padding:12px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.avlive-n{font-family:var(--display);font-size:40px;line-height:1}
+.avlive-n b{font-weight:400;color:#2A56D6}
+.avlive small{color:#5F5848;font-weight:700}
+.avlive-bar{width:100%;height:10px;border-radius:99px;background:#E3D8BA;overflow:hidden}
+.avlive-bar i{display:block;height:100%;background:linear-gradient(90deg,#2A56D6,#5B8CFF);transition:width .4s}
+.avlive-p{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.avlive-p span{font-size:13px;font-weight:800;padding:4px 10px;border-radius:99px;background:#fff;border:1.5px solid #E3D8BA;color:#9A927E}
+.avlive-p span.on{border-color:#2A56D6;color:#1F44B8}
+.avmine{border-radius:14px;padding:14px;text-align:center;font-size:18px;display:flex;flex-direction:column;gap:2px;border:2px solid}
+.avmine.y{background:#EEF3FF;border-color:#2A56D6}.avmine.n{background:#FDEEEE;border-color:#C8323A}
+.avmine b{font-size:24px}.avmine small{color:#5F5848;font-size:13px}
+.btn.avnext{width:100%;min-height:76px;font-size:clamp(22px,6vw,28px);font-family:var(--display);font-weight:400;border-radius:16px;background:#fff;color:#1C2033;border:none;margin-top:6px;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+.avb2.ok .btn.avnext{color:#1F44B8}.avb2.no .btn.avnext{color:#A61E26}
+.avnext-s{font-size:12px;opacity:.85}
+
+/* 원정 기록 */
+.avqh{display:flex;flex-direction:column;gap:8px}
+.btn.avqh-btn{width:100%;min-height:50px;font-size:16px;background:#fff;border:2px solid #D9B65A;color:#6A4D0C}
+.avqh.open .btn.avqh-btn{background:#FFF6DC}
+.avqrs{display:flex;flex-direction:column;gap:8px}
+.avqr{display:flex;gap:10px;align-items:stretch;border-radius:14px;background:#fff;border:2px solid #E3D8BA;padding:10px}
+.avqr-n{flex:none;width:48px;border-radius:10px;display:grid;place-items:center;font-family:var(--display);font-size:20px;background:#F5EFDF;color:#5F5848}
+.avqr.ok{border-color:#2A56D6}.avqr.ok .avqr-n{background:#2A56D6;color:#fff}
+.avqr.no{border-color:#C8323A}.avqr.no .avqr-n{background:#C8323A;color:#fff}
+.avqr.now{border-color:#E5B437;border-style:dashed}.avqr.now .avqr-n{background:#FFE79A;color:#6A4D0C}
+.avqr.wait{opacity:.6}
+.avqr-b{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+.avqr-b b{font-size:17px}.avqr.ok .avqr-b b{color:#1F44B8}.avqr.no .avqr-b b{color:#A61E26}
+.avqr-b em{font-style:normal;font-size:12px;font-weight:700;color:#5F5848;margin-left:4px}
+.avqr-b small{font-size:12px;color:#5F5848;font-weight:700}
+.avqr-t{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
+.avqr-t span{font-size:14px;font-weight:800;padding:3px 10px;border-radius:99px;background:#F5EFDF;border:1px solid #E3D8BA}
