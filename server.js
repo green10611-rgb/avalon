@@ -1,4 +1,4 @@
-// 원탁의 기사단 실시간 서버 (Node.js + WebSocket)
+// 아발론: 레지스탕스 실시간 서버 (Node.js + WebSocket)
 // 실행: npm install && npm start   →  http://localhost:3000
 const http = require('http');
 const fs = require('fs');
@@ -147,4 +147,4 @@ setInterval(() => {
   for (const [c, r] of rooms) if (now - r.touched > 6 * 3600 * 1000) rooms.delete(c);
 }, 10000);
 
-server.listen(PORT, () => console.log(`원탁의 기사단 서버 실행 중: http://localhost:${PORT}`));
+server.listen(PORT, () => console.log(`아발론: 레지스탕스 서버 실행 중: http://localhost:${PORT}`));
