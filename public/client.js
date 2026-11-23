@@ -2,8 +2,8 @@
 (function(){
 const $app = document.getElementById('app');
 const esc = U.esc;
-const GAMES = ['avalon', 'kraken', 'splendor', 'cockroach', 'halli'];
-const SOLO = (location.pathname.match(/^\/(kraken|avalon|splendor|cockroach|halli)\/?$/) || [])[1] || '';
+const GAMES = ['avalon', 'kraken', 'splendor', 'cockroach', 'halli', 'dixit'];
+const SOLO = (location.pathname.match(/^\/(kraken|avalon|splendor|cockroach|halli|dixit)\/?$/) || [])[1] || '';
 let g = G[SOLO] || G.avalon;
 if (SOLO) document.title = G[SOLO].name;
 document.body.classList.toggle('solo-' + (SOLO || 'all'), true);
@@ -59,19 +59,29 @@ const conn = () => `<div class="connline ${connected ? 'ok' : 'bad'}"><i></i>${c
 function render(){
   if (dock){ dock.show(true); if (room && myIdx() >= 0){ dock.enable(true); dock.update(room.chat || [], pid); } else dock.enable(false, '방에 들어가면 여기서 같이 채팅할 수 있어요 💬'); }
   const y = window.scrollY;
+  const keep = {}; document.querySelectorAll('#game [data-field]').forEach(f => { if (f.id) keep[f.id] = f.value; }); const focus = document.activeElement && document.activeElement.id;
   $app.innerHTML = !code ? homeHTML() : !room ? `<div class="empty">방 <b>${esc(code)}</b>에 연결하는 중…</div><button type="button" class="btn ghost" data-nav="leaveLocal">처음으로</button>` : room.status === 'lobby' ? lobbyHTML() : gameHTML();
+  document.body.classList.toggle('g-dixit', !!(room && room.status !== 'lobby' && room.game === 'dixit' && state()));
   document.body.classList.toggle('g-halli', !!(room && room.status !== 'lobby' && room.game === 'halli' && state()));
   document.body.classList.toggle('g-cockroach', !!(room && room.status !== 'lobby' && room.game === 'cockroach' && state()));
   document.body.classList.toggle('g-splendor', !!(room && room.status !== 'lobby' && room.game === 'splendor' && state()));
   const st = state(), lk = st && st.last && !st.decks ? JSON.stringify(st.last) + (st.quest || 0) : '';
   if (lk && render.lk !== undefined && lk !== render.lk) window.scrollTo(0, 0); else window.scrollTo(0, y);
   render.lk = lk;
+  for (const id in keep) { const f = document.getElementById(id); if (f) f.value = keep[id]; }
+  if (focus && keep[focus] !== undefined) { const f = document.getElementById(focus); if (f) { f.focus(); try { f.setSelectionRange(f.value.length, f.value.length); } catch (e) {} } }
 }
 function homeHTML(){
   if (invite) return `<div class="hero"><span class="kicker">초대장이 도착했어요</span><h1>우리끼리 보드게임</h1><p>방 <b>${esc(invite)}</b>에 초대받았어요. 이름만 적고 들어가세요!</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn primary big avjoin" data-nav="joinInvite">${esc(invite)} 방 들어가기</button>
 <button type="button" class="btn ghost" data-nav="noInvite">다른 방으로 가기</button>`;
+  if (SOLO === 'dixit') { const X = G.dixit; return `<div class="dxhero"><div class="dxh-art">${X.art('card', 2)}${X.art('card', 0)}${X.art('card', 16)}</div><span class="kicker">각자 폰으로 · 실시간 · 3~8명</span><h1>딕싯</h1><p>그림 한 장에 담긴 이야기를 찾아요.<br>너무 쉽지도, 너무 어렵지도 않은 제시어가 승리의 비결! AI와 함께 해도 돼요.</p></div>${conn()}
+<section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
+<button type="button" class="btn big dx-start" data-nav="create" data-key="dixit">🔮 딕싯 방 만들기</button>
+<section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
+<details class="ref"><summary>규칙 보기</summary><ol class="rules">${X.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol>${X.rulesExtra()}</details>
+<p class="small muted" style="text-align:center"><a href="/">다른 게임도 보기 →</a></p>`; }
   if (SOLO === 'halli') { const H = G.halli; return `<div class="hghero"><div class="hgh-art">${H.art('card', 2)}${H.art('card', 9)}${H.art('back')}</div><span class="kicker">각자 폰으로 · 실시간 · 2~6명</span><h1>할리갈리</h1><p>같은 과일이 딱 5개! 먼저 종을 치는 사람이 카드를 다 가져가요.<br>AI와 함께 해도 돼요. 스페이스바로도 종을 칠 수 있어요.</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn big hg-start" data-nav="create" data-key="halli">🔔 할리갈리 방 만들기</button>
@@ -168,7 +178,7 @@ document.addEventListener('click', e => {
     const v = JSON.parse(d.val); ui[d.ui] = (d.tog !== undefined && JSON.stringify(ui[d.ui]) === JSON.stringify(v)) ? null : v; return render();
   }
   if (d.g){ g.uiAct(ui, S, myIdx(), d.g, d.val ? JSON.parse(d.val) : null, players()); return render(); }
-  if (d.act){ if (busy) return; act(d.act, d.arg ? JSON.parse(d.arg) : {}); }
+  if (d.act){ if (busy) return; let arg = d.arg ? JSON.parse(d.arg) : {}; if (d.fields !== undefined) { if (typeof arg !== 'object' || !arg) arg = {}; document.querySelectorAll('#game [data-field]').forEach(f => arg[f.dataset.field] = f.value); } act(d.act, arg); }
 });
 
 
