@@ -10,8 +10,9 @@ require('./public/games-d.js');
 require('./public/games-k.js');
 require('./public/games-s.js');
 require('./public/games-r.js');
+require('./public/games-h.js');
 const G = globalThis.G, U = globalThis.U;
-const GAMES = ['avalon', 'kraken', 'splendor', 'cockroach'];
+const GAMES = ['avalon', 'kraken', 'splendor', 'cockroach', 'halli'];
 const gOf = r => G[r && GAMES.includes(r.game) ? r.game : 'avalon'];
 
 const PORT = process.env.PORT || 3000;
