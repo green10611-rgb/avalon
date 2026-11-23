@@ -175,10 +175,9 @@ G.avalon = {
       return `<section class="avcfg"><div class="avt-h"><b>역할 구성 고르기</b><span>${n}명 게임 · 선 ${n - 2}명 vs 악 2명</span></div>${Object.keys(AVAR).map(k => { const v = AVAR[k]; return `<div class="avcfg-o"><div class="avcfg-t"><b>${v.name}</b></div><div class="avcfg-r"><span class="g">선</span> 멀린 · ${k === 'MD' ? `기사 ${n - 3}` : `퍼시벌 · 기사 ${n - 4}`}</div><div class="avcfg-r"><span class="e">악</span> ${v.evil}</div><p>${v.d}</p>${me >= 0 ? U.btn('이 구성으로 시작', 'cfg', {v: k}, k === 'MO' ? 'primary big' : 'big') : ''}</div>`; }).join('')}<p class="small muted">누구든 한 명이 골라 주세요. 고르면 역할이 섞여서 나눠져요.</p></section>`;
     }
     if (!end && (S.phase === 'team' || S.phase === 'vote')) h += `<div class="avlead${me === S.lead ? ' me' : ''}"><span class="avl-cr">♛</span><div><small>${S.quest + 1}번째 원정 · 원정대장</small><b>${U.nm(P, S.lead)}${me === S.lead && !ui._local ? ' (나)' : ''}</b></div><span class="avl-tag">${S.phase === 'team' ? `원정대 ${ASIZE[n][S.quest]}명 고르는 중` : '찬반 투표 중'}</span></div>`;
-    if (me >= 0 && !end && S.phase === 'look') h += roleCard(S, me, P, true);
-    else if (me >= 0 && !end && !(ui._local && (S.phase === 'vote' || S.phase === 'team' || S.phase === 'reveal' || S.phase === 'kill' || S.phase === 'qdone'))) {
-      h += `<details class="avpeek"${ui.peek ? ' open' : ''}><summary data-ui="peek" data-tog data-val="true"><span>📜 내 역할 다시 보기</span><small>남에게 안 보이게</small></summary>${roleCard(S, me, P, false)}</details>`;
-    }
+    const sharedScreen = ui._local && ['vote', 'team', 'reveal', 'kill', 'qdone'].includes(S.phase);
+    if (me >= 0 && !end && S.phase === 'look' && !S.seen[me]) h += ui.drawn ? roleCard(S, me, P, true) : avDeck(n);
+    else if (me >= 0 && !end && !sharedScreen) h += `<section class="avmy${ui.peek ? ' open' : ''}">${ui.peek ? roleCard(S, me, P, false) : ''}<div class="avmy-bar"><span class="avmy-c">⚜</span><div><b>내 역할 카드</b><small>${ui.peek ? '다 봤으면 숨겨 주세요' : '남에게 안 보이게 확인하세요'}</small></div>${U.ub(ui.peek ? '🙈 숨기기' : '👁 카드 보기', 'peek', true, ui.peek ? 'avmy-btn' : 'primary avmy-btn')}</div></section>`;
     if (end) h += avEnd(S, P);
     else if (S.phase === 'kill') h += avKill(S, me, ui, P);
     else if (S.phase === 'reveal') h += `<div class="avreveal"><small>${S.quest + 1}번째 원정 · ${S.team.map(i => U.nm(P, i)).join(', ')}</small><div class="avseal">🔒</div><b>봉인된 카드 ${S.team.length}장</b><div class="avdeck">${S.team.map(() => '<span class="avback in">⚜</span>').join('')}</div><p>모두 화면 앞에 모였나요? 하나, 둘, 셋!</p>${me >= 0 ? U.btn('원정 결과 보기', 'reveal', {}, 'primary avopen') : ''}<span class="small">누구든 누르면 모든 화면에 결과가 동시에 떠요.</span></div>`;
@@ -187,7 +186,7 @@ G.avalon = {
     if (end) {
     } else if (S.phase === 'look') {
       const left = ids(P).filter(i => !S.seen[i]).length;
-      h += mine ? U.btn('기억했어요 · 확인 완료', 'seen', {}, 'primary big avgo avseen') : `<div class="avwait"><div>📜 역할 확인 중</div><span>아직 ${left}명이 확인하고 있어요</span></div>`;
+      h += mine ? (ui.drawn ? U.btn('기억했어요 · 확인 완료', 'seen', {}, 'primary big avgo avseen') : '') : `<div class="avwait"><div>📜 역할 확인 중</div><span>아직 ${left}명이 확인하고 있어요</span></div>`;
     } else if (S.phase === 'team') {
       const need = ASIZE[n][S.quest];
       if (mine) { const sel = Array.isArray(ui.pick) ? ui.pick : [];
@@ -228,6 +227,7 @@ ${me >= 0 ? `<div class="avres2">${U.btn('<b>가결</b><small>찬성이 더 많�
   allTurn(S) { return S.phase === 'cfg' ? '역할 구성 고르기' : S.phase === 'vote' ? '모두 함께 투표' : S.phase === 'qdone' ? '원정 3번 성공!' : S.phase === 'kill' ? '🗡 암살의 시간' : S.phase === 'reveal' ? '모두 함께 결과 보기' : S.phase === 'vote' ? '모두 함께 투표' : ''; },
   open(S) { return S.phase === 'cfg' || S.phase === 'vote' || S.phase === 'team' || S.phase === 'reveal' || S.phase === 'kill' || S.phase === 'qdone'; },
   uiAct(ui, S, me, name, val) {
+    if (name === 'draw') { ui.drawn = true; ui.dk = val; return; }
     if (name === 'nofail') { ui.nofail = (ui.nofail || 0) + 1; return; }
     if (name === 'kt') { ui.kt = ui.kt === val ? null : val; return; }
     if (name === 'vv') { ui.vv = Object.assign({}, ui.vv); ui.vv[val[0]] = val[1]; return; }
@@ -261,6 +261,10 @@ function avBanner(S, P) {
   const R0 = typeof window !== 'undefined' ? window : globalThis; R0.__avCards = R0.__avCards || {};
   const ck = 'q' + S.res.length + S.role.join(''); if (!R0.__avCards[ck]) R0.__avCards[ck] = cards; const cs = R0.__avCards[ck];
   return `<section class="avb2 q ${L.ok ? 'ok' : 'no'}"${el < 0 ? ' data-still' : ` style="--el:${el.toFixed(2)}s;--sd2:${(0.5 + L.sz * 0.6).toFixed(1)}s"`}><small>${L.q + 1}번째 원정 결과 · ${L.team.map(i => U.nm(P, i)).join(', ')}</small><div class="avflip">${cs.map((c, k) => `<span class="avfc ${c ? 'ok' : 'no'}" style="--k:${k}"><i class="b">⚜</i><i class="f">${c ? '☀<b>성공</b>' : '🩸<b>실패</b>'}</i></span>`).join('')}</div><div class="avstamp" style="--sd:${(0.5 + L.sz * 0.6).toFixed(1)}s">원정 ${L.ok ? '성공' : '실패'}</div><div class="avbig avlate" style="--sd:${(0.9 + L.sz * 0.6).toFixed(1)}s">실패 카드 ${L.f}장</div><div class="avlate" style="--sd:${(1.1 + L.sz * 0.6).toFixed(1)}s">${prog}</div></section>`;
+}
+function avDeck(n) {
+  const k = Math.min(Math.max(n, 5), 7), mid = (k - 1) / 2, step = 8;
+  return `<section class="avdraw"><small>운명의 카드</small><b>역할 카드를 한 장 뽑으세요</b><div class="avfan">${Array.from({length: k}, (_, i) => U.gb('<span>⚜</span>', 'draw', i, 'avdc', false).replace('class="btn avdc', `style="--r:${((i - mid) * step).toFixed(1)}deg;--y:${(Math.abs(i - mid) * 6).toFixed(0)}px;--d:${(i * 0.07).toFixed(2)}s" class="btn avdc`)).join('')}</div><p>마음에 드는 카드를 눌러 뒤집어요. 뽑은 카드는 나만 보세요!</p></section>`;
 }
 function roleCard(S, me, P, big) {
   const r = S.role[me], ev = isEvil(r), el = big ? avFresh('look' + me + S.role.join(''), 1.6) : -1;

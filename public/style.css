@@ -695,3 +695,24 @@ g.tap polygon{stroke:var(--hi);stroke-width:.1}
 .avbots span.y{border-color:#2A56D6;color:#1F44B8}.avbots span.n{border-color:#C8323A;color:#A61E26}
 .avbots small{color:#5F5848;font-weight:700}
 .seat .bot,.bot-tag{font-size:11px;font-weight:800;color:#1F44B8}
+
+/* 역할 카드 뽑기 */
+@keyframes avDeal{from{opacity:0;transform:translateY(-60px) rotate(0)}to{opacity:1}}
+@keyframes avHover{0%,100%{margin-top:0}50%{margin-top:-6px}}
+.avdraw{border-radius:20px;padding:20px 12px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;background:radial-gradient(120% 80% at 50% 0,#2A3566,#121528 80%);border:2px solid #D8B45A;color:#F4ECD6;overflow:hidden}
+.avdraw small{font-weight:800;letter-spacing:.2em;color:#D8B45A;font-size:12px}
+.avdraw b{font-family:var(--avserif,serif);font-weight:800;font-size:clamp(22px,6vw,28px)}
+.avdraw p{font-size:14px;opacity:.85;margin:0}
+.avfan{display:flex;justify-content:center;padding:26px 0 18px;min-height:150px}
+.btn.avdc{width:58px;min-width:58px;height:88px;min-height:88px;padding:0;margin:0 -12px;border-radius:12px;border:2.5px solid #D8B45A;background:repeating-linear-gradient(45deg,#2A2F52 0 8px,#222746 8px 16px);color:#D8B45A;font-size:26px;box-shadow:0 6px 14px rgba(0,0,0,.45);transform:rotate(var(--r)) translateY(var(--y));transform-origin:50% 120%;animation:avDeal .45s var(--d) both,avHover 2.4s calc(.6s + var(--d)) ease-in-out infinite;transition:transform .15s}
+.btn.avdc:hover,.btn.avdc:focus-visible{transform:rotate(var(--r)) translateY(calc(var(--y) - 16px)) scale(1.06);z-index:2;border-color:#FFE39A}
+.btn.avdc span{filter:drop-shadow(0 0 6px rgba(216,180,90,.6))}
+/* 내 역할 카드 보기/숨기기 */
+.avmy{border-radius:18px;border:2px solid #4A5068;background:#fff;overflow:hidden}
+.avmy .avrc{margin:10px 10px 0;border-radius:14px}
+.avmy-bar{display:flex;align-items:center;gap:12px;padding:10px 12px}
+.avmy-c{width:40px;height:56px;border-radius:8px;display:grid;place-items:center;flex:none;background:repeating-linear-gradient(45deg,#2A2F52 0 6px,#222746 6px 12px);color:#D8B45A;border:2px solid #D8B45A;font-size:20px}
+.avmy-bar>div{flex:1;display:flex;flex-direction:column;min-width:0}
+.avmy-bar b{font-size:16px}
+.avmy-bar small{font-size:12px;color:#5F5848}
+.btn.avmy-btn{min-height:48px;font-size:16px;white-space:nowrap}
