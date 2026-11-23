@@ -186,7 +186,7 @@ G.avalon = {
       S.winner = S.role[x] === 'ME' ? `암살자가 멀린(${P[x].name}님)을 찾아냈어요! 악의 역전승.` : `${P[x].name}님은 멀린이 아니었어요. 선의 세력 승리!`;
     }
   },
-  view(S, me, ui, P) { return `<div class="avw">${G.avalon._view.call(this, S, me, ui, P)}</div>`; },
+  view(S, me, ui, P) { if (typeof document !== 'undefined') setTimeout(() => avFx(S, me, P), 0); return `<div class="avw">${G.avalon._view.call(this, S, me, ui, P)}</div>`; },
   _view(S, me, ui, P) {
     const n = P.length, r = me >= 0 ? S.role[me] : null, end = S.phase === 'end' || S.winner;
     let h = '';
@@ -261,7 +261,7 @@ ${me >= 0 ? U.btn(V.ok ? '⚔ 원정 출발하기' : last5 ? '결과 보기' : '
     if (S.last && S.last.k === 'quest' && S.phase !== 'reveal') { const qel = avFresh('q' + S.res.length + S.role.join(''), 2.2 + S.last.sz * 0.6); if (qel >= 0) trackAnim = ` style="--el:${qel.toFixed(2)}s;--sd:${(0.6 + S.last.sz * 0.6).toFixed(1)}s" data-late`; }
     h += `<section class="avtrack-w"${trackAnim}><div class="avscore"><span class="g">선 <b>${w}</b></span><i>원정 현황</i><span class="e"><b>${l}</b> 악</span></div><div class="avtrack">${ASIZE[n].map((sz, q) => { const done = q < S.res.length, now = q === S.quest && !end; return `<div class="avm ${done ? (S.res[q] ? 'ok' : 'no') : now ? 'now' : ''}"><div class="avm-c">${done ? (S.res[q] ? '⚔' : '✕') : `<b>${sz}</b>`}</div><small>${done ? (S.res[q] ? '성공' : `실패${S.fails[q] > 1 ? ' ' + S.fails[q] : ''}`) : `${q + 1}차 · ${sz}명`}${!done && needFail(n, q) > 1 ? '<em>실패 2장</em>' : ''}</small></div>`; }).join('')}</div></section>`;
     h += `<section class="avqh${ui.qh ? ' open' : ''}">${U.ub(ui.qh ? '📜 원정 기록 닫기' : `📜 원정 기록 보기 (${(S.qlog || []).length}/5)`, 'qh', true, 'avqh-btn')}${ui.qh ? questLog(S, P) : ''}</section>`;
-    h += `<div class="seats">${P.map((p, i) => `<div class="seat ${i === S.lead && !end ? 'on' : ''}" style="--pc:${U.pc(i)}"><span>${i === S.lead && !end ? '♛ ' : ''}${U.nm(P, i)}</span>${S.team.includes(i) && (S.phase === 'vote' || S.phase === 'quest') ? '<small>원정대</small>' : ''}${S.phase === 'vote' && S.votes[i] !== undefined ? '<small>투표함</small>' : ''}${S.phase === 'look' && S.seen[i] ? '<small>확인</small>' : ''}${end ? `<small class="${isEvil(S.role[i]) ? 'av-et' : 'av-gt'}">${AR[S.role[i]]}</small>` : ''}</div>`).join('')}</div>`;
+    h += `<div class="seats">${P.map((p, i) => `<div class="seat ${i === S.lead && !end ? 'on' : ''}" data-avs="${i}" style="--pc:${U.pc(i)}"><span>${i === S.lead && !end ? '♛ ' : ''}${U.nm(P, i)}</span>${S.team.includes(i) && (S.phase === 'vote' || S.phase === 'quest') ? '<small>원정대</small>' : ''}${S.phase === 'vote' && S.votes[i] !== undefined ? '<small>투표함</small>' : ''}${S.phase === 'look' && S.seen[i] ? '<small>확인</small>' : ''}${end ? `<small class="${isEvil(S.role[i]) ? 'av-et' : 'av-gt'}">${AR[S.role[i]]}</small>` : ''}</div>`).join('')}</div>`;
     if (!end && S.phase !== 'kill' && S.phase !== 'kshow') h += avRules(S, P);
     if (S.hist.length) h += histHTML(S, P);
     return h;
@@ -280,6 +280,90 @@ ${me >= 0 ? U.btn(V.ok ? '⚔ 원정 출발하기' : last5 ? '결과 보기' : '
     ui.pick = s;
   }
 };
+/* ---------- 움직임 (화면 구성은 그대로, 효과만) ---------- */
+function avFx(S, me, P) {
+  const W = window; W.__avfx = W.__avfx || {};
+  const gid = S._g || S.role.join('');
+  const nv = ids(P).filter(i => S.votes && S.votes[i] !== undefined);
+  const cur = {lead: S.lead, ph: S.phase, h: S.hist.length, cs: Object.keys(S.cards || {}).sort().join(','), vs: nv.join(','), res: S.res.length, end: !!S.winner || S.phase === 'end', draft: (S.draft || []).join(',')};
+  const rec = W.__avfx[gid]; W.__avfx[gid] = cur;
+  if (!rec || !document.querySelector('.avw')) return;
+  const still = W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (still) return;
+  const $ = q => document.querySelector(q), seat = i => $(`.seats [data-avs="${i}"]`);
+  // 단계가 바뀌면: 화면 조각들이 차례로 떠오르고, 큰 알림
+  if (cur.ph !== rec.ph) {
+    document.querySelectorAll('.avw > section, .avw > .panel, .avw > div').forEach((e, k) => e.animate && e.animate([{opacity: 0, transform: 'translateY(14px) scale(.98)'}, {opacity: 1, transform: 'none'}], {duration: 450, delay: Math.min(k, 6) * 60, easing: 'cubic-bezier(.2,.9,.3,1.2)', fill: 'backwards'}));
+    const B = {team: rec.ph === 'vresult' || rec.ph === 'qres' || rec.ph === 'look' ? ['♛ 원정대 구성', `${U.nm(P, S.lead)}님이 대장이에요`, 'g'] : null, vote: ['🗳 찬반 투표!', '이 원정대로 출발할까요?', 'b'], quest: ['⚔ 원정 출발!', '원정대는 몰래 카드를 내요', 'q'], reveal: ['🔒 카드 봉인 완료', '다 같이 결과를 확인해요', 'q'], kill: ['🗡 암살의 시간', '암살자가 멀린을 찾아요', 'k']}[cur.ph];
+    if (B) setTimeout(() => banner(B[0], B[1], B[2]), 120);
+    if (cur.ph === 'vresult' && S.vr) setTimeout(() => burst($('.avstamp'), S.vr.ok ? ['#F5C542', '#FFFFFF', '#8EC5FF'] : ['#9AA3B5', '#E5484D', '#5F5848'], S.vr.ok ? 26 : 14), 450);
+    if ((cur.ph === 'qres' || cur.ph === 'qdone') && cur.res > rec.res) {
+      const ok = S.res[S.res.length - 1], d = 900 + ((S.last && S.last.sz) || 3) * 600;
+      setTimeout(() => { burst($('.avb2 .avstamp') || $('.avb2'), ok ? ['#F5C542', '#3E7BFA', '#FFFFFF'] : ['#E5484D', '#7A0F1C', '#2B0A10'], ok ? 34 : 22); if (!ok) shake('.avb2'); }, d);
+    }
+    if (cur.ph === 'kshow') { const as = S.role.indexOf('AS'); fly('<span class="avfx-dag">🗡</span>', seat(as), $('.avk-target') || seat(S.shot), {w: 64, h: 64, dur: 950, lift: -70, rot: 360, done: () => shake('.avk-target')}); }
+  }
+  // 대장이 바뀌면 왕관이 날아가요
+  if (cur.lead !== rec.lead && !cur.end && rec.ph !== 'cfg') {
+    fly('<span class="avfx-crown">♛</span>', seat(rec.lead), seat(cur.lead), {w: 50, h: 50, dur: 900, lift: -70, done: () => pop(seat(cur.lead))});
+    setTimeout(() => pop($('.avlead')), 300);
+  }
+  // 대장이 고를 때마다 칸이 톡 튀어요
+  if (cur.ph === 'team' && cur.draft !== rec.draft) { document.querySelectorAll('.avslot.full').forEach(e => e.classList.add('avfx-in')); }
+  // 누가 투표하면 그 사람 칸이 반짝
+  if (cur.ph === 'vote' && cur.vs !== rec.vs) {
+    const before = new Set((rec.ph === 'vote' ? rec.vs : '').split(',').filter(Boolean));
+    nv.filter(i => !before.has(String(i))).forEach(i => { pop(document.querySelectorAll('.avlive-p > span')[i]); pop(seat(i)); });
+    pop($('.avlive-n b'));
+  }
+  // 원정 카드를 내면 카드가 날아가요
+  if (cur.ph === 'quest' && cur.cs !== rec.cs) {
+    const before = new Set((rec.ph === 'quest' ? rec.cs : '').split(',').filter(Boolean));
+    cur.cs.split(',').filter(x => x && !before.has(x)).forEach((x, j) => fly('<span class="avfx-card">⚜</span>', seat(+x), $('.avdeck') || $('.avquest'), {w: 38, h: 54, dur: 800, delay: j * 140, lift: -60, rot: 14, done: () => pop($('.avdeck-n b'))}));
+  }
+  if (cur.end && !rec.end) setTimeout(() => confetti(S.wt !== 'killmiss'), 700);
+
+  function pop(e) { if (e && e.animate) e.animate([{transform: 'scale(1)'}, {transform: 'scale(1.18)', filter: 'brightness(1.25)'}, {transform: 'scale(1)'}], {duration: 420, easing: 'cubic-bezier(.3,1.6,.5,1)'}); }
+  function shake(q) { const e = typeof q === 'string' ? $(q) : q; if (e && e.animate) e.animate([{transform: 'none'}, {transform: 'translateX(-8px) rotate(-1deg)'}, {transform: 'translateX(8px) rotate(1deg)'}, {transform: 'none'}], {duration: 320, iterations: 2}); }
+  function fly(html, src, dst, o) {
+    if (!src || !dst) { if (o.done) o.done(); return; }
+    const a = src.getBoundingClientRect(), b = dst.getBoundingClientRect(); if (!a.width || !b.width) return;
+    const el = document.createElement('div'); el.className = 'avfx-fly'; el.innerHTML = html;
+    el.style.cssText = `left:${a.left + a.width / 2 - o.w / 2}px;top:${a.top + a.height / 2 - o.h / 2}px;width:${o.w}px;height:${o.h}px`;
+    document.body.appendChild(el);
+    const dx = b.left + b.width / 2 - (a.left + a.width / 2), dy = b.top + b.height / 2 - (a.top + a.height / 2);
+    el.animate([{transform: 'translate(0,0) scale(.5)', opacity: 0}, {transform: 'translate(0,-10px) scale(1.15)', opacity: 1, offset: .15},
+      {transform: `translate(${dx / 2}px,${dy / 2 + (o.lift || -60)}px) scale(1.35) rotate(${(o.rot || 0) / 2}deg)`, opacity: 1, offset: .55},
+      {transform: `translate(${dx}px,${dy}px) scale(1) rotate(${o.rot || 0}deg)`, opacity: .85}],
+    {duration: o.dur || 800, delay: o.delay || 0, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'both'}).onfinish = () => { el.remove(); if (o.done) o.done(); };
+  }
+  function banner(big, small, kind) {
+    document.querySelectorAll('.avfx-banner').forEach(e => e.remove());
+    const el = document.createElement('div'); el.className = 'avfx-banner ' + kind;
+    el.innerHTML = `<b>${U.esc(big)}</b><small>${U.esc(small)}</small>`; const wr = $('.avw') && $('.avw').getBoundingClientRect(); if (wr && wr.width) el.style.left = (wr.left + wr.width / 2) + 'px'; document.body.appendChild(el);
+    el.animate([{transform: 'translate(-50%,-50%) scale(.5)', opacity: 0}, {transform: 'translate(-50%,-50%) scale(1.08)', opacity: 1, offset: .15}, {transform: 'translate(-50%,-50%) scale(1)', opacity: 1, offset: .7}, {transform: 'translate(-50%,-58%) scale(.95)', opacity: 0}], {duration: 1600, easing: 'ease-out', fill: 'both'}).onfinish = () => el.remove();
+  }
+  function burst(src, cols, n) {
+    if (!src) return; const r = src.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    for (let k = 0; k < n; k++) {
+      const el = document.createElement('div'); el.className = 'avfx-spark';
+      const s = 6 + Math.random() * 8; el.style.cssText = `left:${cx}px;top:${cy}px;width:${s}px;height:${s}px;background:${cols[k % cols.length]}`;
+      document.body.appendChild(el);
+      const ang = Math.random() * Math.PI * 2, dist = 80 + Math.random() * 140;
+      el.animate([{transform: 'translate(-50%,-50%) scale(1)', opacity: 1}, {transform: `translate(calc(-50% + ${Math.cos(ang) * dist}px),calc(-50% + ${Math.sin(ang) * dist + 40}px)) scale(.3) rotate(${Math.random() * 540}deg)`, opacity: 0}], {duration: 900 + Math.random() * 500, easing: 'cubic-bezier(.1,.7,.3,1)', fill: 'both'}).onfinish = () => el.remove();
+    }
+  }
+  function confetti(evil) {
+    const cols = evil ? ['#E5484D', '#7A0F1C', '#2B0A10', '#FF8A8E'] : ['#F5C542', '#3E7BFA', '#FFFFFF', '#8EC5FF'];
+    for (let k = 0; k < 70; k++) {
+      const el = document.createElement('div'); el.className = 'avfx-conf';
+      el.style.cssText = `left:${Math.random() * 100}vw;background:${cols[k % cols.length]};width:${6 + Math.random() * 8}px;height:${10 + Math.random() * 12}px`;
+      document.body.appendChild(el);
+      el.animate([{transform: 'translateY(-30px) rotate(0)', opacity: 1}, {transform: `translate(${(Math.random() - .5) * 200}px,${innerHeight + 40}px) rotate(${(Math.random() - .5) * 900}deg)`, opacity: .9}],
+        {duration: 2400 + Math.random() * 2000, delay: Math.random() * 1500, easing: 'cubic-bezier(.3,.1,.7,1)', fill: 'both'}).onfinish = () => el.remove();
+    }
+  }
+}
 function rejStrip(S) {
   return `<div class="avrej ${S.rej >= 3 ? 'hot' : ''}"><div class="avrej-t"><b>⚠ 반대가 찬성과 같거나 많으면 부결</b><span>5번 연속 부결되면 <b>악의 세력 승리</b></span></div><div class="avpips">${[1,2,3,4,5].map(k => `<i class="${k <= S.rej ? 'on' : ''}">${k}</i>`).join('')}</div><div class="avrej-n">연속 부결 <b>${S.rej}</b> / 5${S.rej === 4 ? ' · 이번에 부결되면 악 승리!' : ''}</div></div>`;
 }

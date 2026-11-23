@@ -1252,3 +1252,43 @@ body.g-splendor .connline.ok{display:none}
 @container spbox (max-width:699px){.sp-strip .sp-last{order:9;flex-basis:100%}}
 @container spbox (max-width:520px){.sp-setb>span{display:none}}
 @container spl (min-width:470px){.sp-nobs .spn{--nw:min(calc(var(--cw) * .86),calc((var(--cw) * 4.3 - 46px) / 5))}}
+/* ===== 아발론 효과 (구성은 그대로) ===== */
+.avfx-fly{position:fixed;z-index:80;pointer-events:none;display:grid;place-items:center}
+.avfx-crown{font-size:44px;color:#F5C542;text-shadow:0 2px 0 #8A6510,0 0 18px rgba(255,213,79,1)}
+.avfx-dag{font-size:54px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5))}
+.avfx-card{width:100%;height:100%;border-radius:5px;display:grid;place-items:center;background:linear-gradient(135deg,#3B2A6B,#1C1440);border:2px solid #E6C47A;color:#E6C47A;font-size:18px;box-shadow:0 8px 18px rgba(0,0,0,.45)}
+.avfx-banner{position:fixed;z-index:85;left:50%;top:40%;transform:translate(-50%,-50%);pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px 36px;border-radius:22px;text-align:center;color:#fff;border:2px solid #E6C47A;box-shadow:0 20px 60px rgba(0,0,0,.45);max-width:90vw;background:radial-gradient(120% 120% at 50% 0,#4F7FF0,#1C2E7A)}
+.avfx-banner.g{background:radial-gradient(120% 120% at 50% 0,#F5C542,#8A6510);color:#2A1600}
+.avfx-banner.q{background:radial-gradient(120% 120% at 50% 0,#D9A83A,#7A5410)}
+.avfx-banner.k{background:radial-gradient(120% 120% at 50% 0,#C8323A,#3A0A10)}
+.avfx-banner b{font-family:var(--avserif,serif);font-size:clamp(28px,6vw,46px);line-height:1.1}.avfx-banner small{font-size:15px;opacity:.92}
+.avfx-spark{position:fixed;z-index:84;pointer-events:none;border-radius:2px;box-shadow:0 0 6px rgba(255,255,255,.6)}
+.avfx-conf{position:fixed;top:0;z-index:84;pointer-events:none;border-radius:2px}
+.avw .avlead{position:relative;overflow:hidden}
+.avw .avlead::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.55) 48%,transparent 66%);background-size:250% 100%;animation:avfxSweep 3.6s ease-in-out infinite}
+.avw .avl-cr{display:inline-block;animation:avfxBob 2.2s ease-in-out infinite;text-shadow:0 0 14px rgba(255,213,79,.9)}
+.avw .avlead.me{animation:avfxGlow 1.8s ease-in-out infinite}
+.avw .seat{transition:transform .2s,box-shadow .2s}
+.avw .seat.on{animation:avfxGlow 2s ease-in-out infinite}
+.avw .avm.now .avm-c{animation:avfxNow 1.6s ease-in-out infinite}
+.avw .btn.primary,.avw .avgo,.avw .avnext,.avw .avk-go,.avw .avopen{position:relative;overflow:hidden}
+.avw .btn.primary:not(:disabled)::after,.avw .avgo:not(:disabled)::after,.avw .avnext::after,.avw .avk-go::after,.avw .avopen::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.5) 50%,transparent 65%);background-size:260% 100%;animation:avfxSweep 2.8s ease-in-out infinite}
+.avw .btn:not(:disabled){transition:transform .15s,box-shadow .15s}
+.avw .btn:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,.16)}
+.avw .btn:not(:disabled):active{transform:scale(.97)}
+.avw .avslot.full{animation:avfxPop .45s cubic-bezier(.2,1.6,.4,1) both}
+.avw .avback.in{animation:avfxFloat 2.6s ease-in-out infinite}
+.avw .avback.in:nth-child(2n){animation-delay:.4s}.avw .avback.in:nth-child(3n){animation-delay:.8s}
+.avw .avrc{position:relative;overflow:hidden}
+.avw .avrc::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.35) 45%,rgba(180,220,255,.25) 52%,transparent 68%);background-size:280% 100%;animation:avfxSweep 4s ease-in-out infinite}
+.avw .avlive-bar i{background-size:200% 100%;background-image:linear-gradient(90deg,currentColor,rgba(255,255,255,.6),currentColor);transition:width .5s cubic-bezier(.3,1.3,.5,1)}
+.avw .avpips i.on{animation:avfxPop .4s both}
+.avw .avrej.hot .avpips i.on{animation:avfxBlink 1s ease-in-out infinite}
+@keyframes avfxSweep{0%{background-position:130% 0}60%,100%{background-position:-60% 0}}
+@keyframes avfxBob{50%{transform:translateY(-4px) rotate(-6deg)}}
+@keyframes avfxGlow{50%{box-shadow:0 0 0 3px rgba(245,197,66,.55),0 0 22px rgba(245,197,66,.6)}}
+@keyframes avfxNow{50%{transform:scale(1.08);box-shadow:0 0 0 4px rgba(245,197,66,.5),0 0 22px rgba(245,197,66,.8)}}
+@keyframes avfxPop{0%{transform:scale(.6);opacity:0}100%{transform:none;opacity:1}}
+@keyframes avfxFloat{50%{transform:translateY(-5px) rotate(-2deg)}}
+@keyframes avfxBlink{50%{opacity:.4}}
+@media (prefers-reduced-motion:reduce){.avw *,.avw *::after{animation:none!important}}
