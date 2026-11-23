@@ -8,11 +8,25 @@ const R = typeof window !== 'undefined' ? window : globalThis;
 R.ChatDock = function(opts){
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const root = document.createElement('section');
-  root.className = 'chatdock'; root.hidden = false; document.body.classList.add('has-chat'); root.setAttribute('aria-label', '채팅');
-  root.innerHTML = `<header><b>💬 채팅</b><small class="cd-cnt"></small></header>
+  root.className = 'chatdock'; root.setAttribute('aria-label', '채팅');
+  root.innerHTML = `<header><b>💬 채팅</b><small class="cd-cnt"></small><button type="button" class="cd-x" aria-label="채팅 닫기">✕ 닫기</button></header>
 <div class="cd-list" aria-live="polite"></div>
 <form class="cd-form"><input class="cd-in" maxlength="60" placeholder="메시지 입력…" autocomplete="off" enterkeyhint="send"><button type="submit" class="cd-send">보내기</button></form>`;
   document.body.appendChild(root);
+  const opener = document.createElement('button');
+  opener.type = 'button'; opener.className = 'cd-open'; opener.hidden = true;
+  opener.innerHTML = '💬 채팅<span class="cd-badge" hidden></span>';
+  document.body.appendChild(opener);
+  const badge = opener.querySelector('.cd-badge');
+  let closed = false; try { closed = localStorage.getItem('chat_closed') === '1'; } catch(e){}
+  let shown = true, seenCount = 0;
+  function layout(){
+    root.hidden = !shown || closed; opener.hidden = !shown || !closed;
+    document.body.classList.toggle('has-chat', shown && !closed);
+  }
+  function setClosed(v){ closed = v; try { localStorage.setItem('chat_closed', v ? '1' : '0'); } catch(e){} if (!v){ seenCount = msgs.length; badge.hidden = true; setTimeout(() => input.focus(), 30); } layout(); }
+  root.querySelector('.cd-x').addEventListener('click', () => setClosed(true));
+  opener.addEventListener('click', () => setClosed(false));
   const list = root.querySelector('.cd-list'), input = root.querySelector('.cd-in'), cnt = root.querySelector('.cd-cnt');
   let msgs = [], me = '', lastSig = '';
   const time = at => { try { const d = new Date(at); return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; } catch(e){ return ''; } };
@@ -29,8 +43,9 @@ R.ChatDock = function(opts){
     input.value = ''; opts.onSend(t.slice(0, 60)); input.focus();
   });
   let enabled = true, offMsg = '';
+  layout();
   return {
-    show(v){ root.hidden = !v; document.body.classList.toggle('has-chat', !!v); },
+    show(v){ shown = !!v; layout(); },
     enable(v, msg){
       if (enabled === !!v && offMsg === (msg || '')) return;
       enabled = !!v; offMsg = msg || '';
@@ -38,7 +53,12 @@ R.ChatDock = function(opts){
       input.placeholder = enabled ? '메시지 입력…' : (offMsg || '방에 들어가면 채팅할 수 있어요');
       if (!enabled){ msgs = []; lastSig = '';  list.innerHTML = `<div class="cd-empty">${esc(offMsg || '방에 들어가면 여기서 같이 채팅할 수 있어요 💬')}</div>`; cnt.textContent = ''; }
     },
-    update(m, myId){ me = myId; msgs = (m || []).slice(-40); paint(); }
+    update(m, myId){
+      me = myId; msgs = (m || []).slice(-40); paint();
+      if (!closed) seenCount = msgs.length; else if (seenCount > msgs.length) seenCount = msgs.length;
+      const unread = closed ? msgs.slice(seenCount).filter(x => x.id !== me).length : 0;
+      badge.hidden = !unread; badge.textContent = unread > 9 ? '9+' : unread;
+    }
   };
 };
 })();

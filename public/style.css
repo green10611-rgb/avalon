@@ -796,3 +796,10 @@ g.tap polygon{stroke:var(--hi);stroke-width:.1}
 .avk-sub b{color:#FF8A8E}
 .btn.avk-pulse{animation:avPulseRed 1.4s ease-in-out infinite}
 @keyframes avPulseRed{0%,100%{box-shadow:0 0 18px rgba(255,59,66,.5)}50%{box-shadow:0 0 38px rgba(255,59,66,.95)}}
+
+.cd-x{margin-left:auto;border:1.5px solid rgba(255,255,255,.4);background:transparent;color:#fff;font-size:13px;font-weight:800;border-radius:10px;padding:5px 10px;cursor:pointer}
+.chatdock header small{margin-left:8px}
+.cd-open{position:fixed;z-index:30;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));min-height:54px;padding:0 18px;border-radius:99px;border:none;background:#2A56D6;color:#fff;font-size:17px;font-weight:800;box-shadow:0 6px 18px rgba(20,30,80,.35);cursor:pointer}
+.cd-open[hidden]{display:none}
+.cd-open .cd-badge{position:absolute;top:-6px;right:-4px;min-width:22px;height:22px;padding:0 6px;border-radius:99px;background:#E5484D;color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center;border:2px solid #fff}
+.cd-open .cd-badge[hidden]{display:none}
