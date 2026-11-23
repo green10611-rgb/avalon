@@ -39,6 +39,10 @@ function avFresh(key, dur) {
 const animAttr = el => el < 0 ? ' data-still' : ` style="--el:${el.toFixed(2)}s"`;
 const needFail = (n, q) => (n >= 7 && q === 3) ? 2 : 1;
 const ids = P => P.map((_, i) => i);
+// 이름표: 색깔 방패 + 이름
+const avNm = (P, i) => U.esc(((P[i] && P[i].name) || '').replace('🤖', '').trim() || U.nm(P, i));
+const avSh = (P, i) => `<i class="avsh" style="--pc:${U.pc(i)}">${P[i] && P[i].bot ? '🤖' : U.esc(Array.from(avNm(P, i))[0] || '?')}</i>`;
+const avChip = (P, i, k) => `<span class="avchip" style="--pc:${U.pc(i)}${k != null ? `;--k:${k}` : ''}">${avSh(P, i)}<em>${avNm(P, i)}</em></span>`;
 function aKnow(S, me, P) {
   const r = S.role[me], o = [];
   if (r === 'ME') { const s = ids(P).filter(i => isEvil(S.role[i]) && S.role[i] !== 'MD'); o.push(`악의 세력: ${s.map(i => U.nm(P, i)).join(', ') || '없음'}`); if (S.role.includes('MD')) o.push('모드레드는 이 목록에 없어요.'); }
@@ -209,7 +213,7 @@ G.avalon = {
       h += mine ? (ui.drawn ? U.btn('기억했어요 · 확인 완료', 'seen', {}, 'primary big avgo avseen') : '') : `<div class="avwait"><div>📜 역할 확인 중</div><span>아직 ${left}명이 확인하고 있어요</span></div>`;
     } else if (S.phase === 'team') {
       const need = ASIZE[n][S.quest], sel = S.draft || [];
-      const slots = `<div class="avslots">${Array.from({length: need}, (_, k) => sel[k] != null ? `<span class="avslot full avpop" style="--pc:${U.pc(sel[k])}">${U.nm(P, sel[k])}</span>` : `<span class="avslot">${k + 1}</span>`).join('')}</div>`;
+      const slots = `<div class="avslots">${Array.from({length: need}, (_, k) => sel[k] != null ? `<span class="avslot full avpop" style="--pc:${U.pc(sel[k])}">${avSh(P, sel[k])}${avNm(P, sel[k])}</span>` : `<span class="avslot">${k + 1}</span>`).join('')}</div>`;
       if (mine) {
         h += `<div class="panel avteam"><div class="avt-h"><b>${S.quest + 1}번째 원정대</b><span>${need}명을 골라 주세요 · 대장 본인도 가능 · 고르는 대로 모두에게 보여요</span></div>
 ${slots}
@@ -217,10 +221,10 @@ ${slots}
 ${U.btn(sel.length === need ? '이 원정대로 제안하기' : `${need - sel.length}명 더 고르세요`, 'propose', {}, 'primary big avgo', sel.length !== need)}<p class="small muted">제안 전에 다 같이 이야기해 보세요. 다시 누르면 선택이 취소돼요.</p></div>`;
       } else {
         h += `<div class="panel avteam avwatch"><div class="avt-h"><b>♛ ${U.nm(P, S.lead)}님이 고르는 중</b><span>${S.quest + 1}번째 원정대 ${need}명 · 실시간으로 보여요</span></div>${slots}
-<div class="avlive-p">${P.map((p, i) => `<span class="${sel.includes(i) ? 'on' : ''}">${sel.includes(i) ? '✔' : '·'} ${U.nm(P, i)}</span>`).join('')}</div><p class="small muted" style="text-align:center">${sel.length === need ? '다 골랐어요! 곧 제안할 거예요.' : '의견을 말해 보세요!'}</p></div>`;
+<div class="avlive-p">${P.map((p, i) => `<span class="${sel.includes(i) ? 'on' : ''}">${avSh(P, i)}${avNm(P, i)}${sel.includes(i) ? ' ✔' : ''}</span>`).join('')}</div><p class="small muted" style="text-align:center">${sel.length === need ? '다 골랐어요! 곧 제안할 거예요.' : '의견을 말해 보세요!'}</p></div>`;
       }
     } else if (S.phase === 'vote') {
-      const head = `<div class="avt-h"><b>${S.quest + 1}번째 원정대 찬반 투표</b><span>대장 ${U.nm(P, S.lead)}님 제안</span></div><div class="avslots">${S.team.map(i => `<span class="avslot full" style="--pc:${U.pc(i)}">${U.nm(P, i)}</span>`).join('')}</div>`;
+      const head = `<div class="avt-h"><b>${S.quest + 1}번째 원정대 찬반 투표</b><span>대장 ${U.nm(P, S.lead)}님 제안</span></div><div class="avslots">${S.team.map(i => `<span class="avslot full" style="--pc:${U.pc(i)}">${avSh(P, i)}${avNm(P, i)}</span>`).join('')}</div>`;
       if (ui._local) {
         const bots = ids(P).filter(i => P[i].bot);
         h += `<section class="panel avteam">${head}
@@ -230,13 +234,13 @@ ${bots.length ? (bots.every(i => S.votes[i] !== undefined) ? `<div class="avbots
       } else {
         const done = ids(P).filter(i => S.votes[i] !== undefined).length, mine2 = me >= 0 && S.votes[me] !== undefined;
         h += `<section class="panel avteam">${head}
-<div class="avlive"><div class="avlive-n"><b>${done}</b> / ${n}</div><small>명이 투표했어요 · 모두 내면 누가 찬성·반대했는지 공개돼요</small><div class="avlive-bar"><i style="width:${(done / n * 100).toFixed(0)}%"></i></div><div class="avlive-p">${P.map((p, i) => `<span class="${S.votes[i] !== undefined ? 'on' : ''}">${S.votes[i] !== undefined ? '✔' : '…'} ${U.nm(P, i)}</span>`).join('')}</div></div>
+<div class="avlive"><div class="avlive-n"><b>${done}</b> / ${n}</div><small>명이 투표했어요 · 모두 내면 누가 찬성·반대했는지 공개돼요</small><div class="avlive-bar"><i style="width:${(done / n * 100).toFixed(0)}%"></i></div><div class="avlive-p">${P.map((p, i) => `<span class="${S.votes[i] !== undefined ? 'on' : ''}">${avSh(P, i)}${avNm(P, i)}${S.votes[i] !== undefined ? ' <b class="avsealed">✉</b>' : ' …'}</span>`).join('')}</div></div>
 ${me < 0 ? '' : mine2 ? `<div class="avmine ${S.votes[me] ? 'y' : 'n'}">내 선택: <b>${S.votes[me] ? '👍 찬성' : '✊ 반대'}</b><small>모두 내기 전까지는 바꿀 수 있어요</small></div><div class="avyn ch">${U.btn(S.votes[me] ? '✔ 찬성 (선택됨)' : '👍 찬성으로 바꾸기', 'vote', {ok: true}, 'avy big' + (S.votes[me] ? ' cur' : ''), !!S.votes[me])}${U.btn(!S.votes[me] ? '✔ 반대 (선택됨)' : '✊ 반대로 바꾸기', 'vote', {ok: false}, 'avn big' + (!S.votes[me] ? ' cur' : ''), !S.votes[me])}</div>` : `<div class="avhow">이 원정대로 출발할까요? 몰래 골라 주세요.</div><div class="avyn">${U.btn('👍 찬성', 'vote', {ok: true}, 'avy big')}${U.btn('✊ 반대', 'vote', {ok: false}, 'avn big')}</div>`}${rejStrip(S)}</section>`;
       }
     } else if (S.phase === 'vresult') {
       const V = S.vr || {}, last5 = !V.ok && S.rej >= 5;
       const el = avFresh('vr' + S.hist.length + (S._g || ''), 2);
-      h += `<section class="avb2 ${V.ok ? 'ok' : 'no'}"${animAttr(el)}><small>${(V.q || 0) + 1}번째 원정대 투표 결과</small><div class="avstamp">${V.ok ? '가결' : '부결'}</div>${V.y != null ? `<div class="avbig">👍 찬성 ${V.y} : ✊ 반대 ${V.n}</div>` : ''}${V.yes && (V.yes.length || V.no.length) ? `<div class="avcols"><div class="avcol y"><small>👍 찬성${V.hand ? ' (AI)' : ''}</small>${V.yes.map(i => `<span>${U.nm(P, i)}</span>`).join('') || '<span class="x">없음</span>'}</div><div class="avcol n"><small>✊ 반대${V.hand ? ' (AI)' : ''}</small>${V.no.map(i => `<span>${U.nm(P, i)}</span>`).join('') || '<span class="x">없음</span>'}</div></div>` : ''}<div class="avl">${V.ok ? `원정대: ${S.team.map(i => U.nm(P, i)).join(' · ')}` : last5 ? '5번 연속 부결! 악의 세력이 이겨요' : `연속 부결 ${S.rej} / 5`}</div>
+      h += `<section class="avb2 ${V.ok ? 'ok' : 'no'}"${animAttr(el)}><small>${(V.q || 0) + 1}번째 원정대 투표 결과</small><div class="avstamp">${V.ok ? '가결' : '부결'}</div>${V.y != null ? avTally(V.y, V.n) : ''}${V.yes && (V.yes.length || V.no.length) ? `<div class="avcols"><div class="avcol y"><small>👍 찬성${V.hand ? ' (AI)' : ''}</small>${V.yes.map((i, k) => avChip(P, i, k)).join('') || '<span class="x">없음</span>'}</div><div class="avcol n"><small>✊ 반대${V.hand ? ' (AI)' : ''}</small>${V.no.map((i, k) => avChip(P, i, k + V.yes.length)).join('') || '<span class="x">없음</span>'}</div></div>` : ''}<div class="avl">${V.ok ? `<span class="avl-t">⚔ 원정대</span>${S.team.map(i => avChip(P, i)).join('')}` : last5 ? '5번 연속 부결! 악의 세력이 이겨요' : `연속 부결 ${S.rej} / 5`}</div>
 ${me >= 0 ? U.btn(V.ok ? '⚔ 원정 출발하기' : last5 ? '결과 보기' : '↻ 다시 원정대 구성하기', 'vnext', {}, 'avnext') : ''}<small class="avnext-s">누구든 한 명이 누르면 모두 다음으로 넘어가요</small></section>`;
     } else if (S.phase === 'quest') {
       const sub = S.team.filter(i => S.cards[i] !== undefined).length, sz = S.team.length;
@@ -261,7 +265,7 @@ ${me >= 0 ? U.btn(V.ok ? '⚔ 원정 출발하기' : last5 ? '결과 보기' : '
     if (S.last && S.last.k === 'quest' && S.phase !== 'reveal') { const qel = avFresh('q' + S.res.length + S.role.join(''), 2.2 + S.last.sz * 0.6); if (qel >= 0) trackAnim = ` style="--el:${qel.toFixed(2)}s;--sd:${(0.6 + S.last.sz * 0.6).toFixed(1)}s" data-late`; }
     h += `<section class="avtrack-w"${trackAnim}><div class="avscore"><span class="g">선 <b>${w}</b></span><i>원정 현황</i><span class="e"><b>${l}</b> 악</span></div><div class="avtrack">${ASIZE[n].map((sz, q) => { const done = q < S.res.length, now = q === S.quest && !end; return `<div class="avm ${done ? (S.res[q] ? 'ok' : 'no') : now ? 'now' : ''}"><div class="avm-c">${done ? (S.res[q] ? '⚔' : '✕') : `<b>${sz}</b>`}</div><small>${done ? (S.res[q] ? '성공' : `실패${S.fails[q] > 1 ? ' ' + S.fails[q] : ''}`) : `${q + 1}차 · ${sz}명`}${!done && needFail(n, q) > 1 ? '<em>실패 2장</em>' : ''}</small></div>`; }).join('')}</div></section>`;
     h += `<section class="avqh${ui.qh ? ' open' : ''}">${U.ub(ui.qh ? '📜 원정 기록 닫기' : `📜 원정 기록 보기 (${(S.qlog || []).length}/5)`, 'qh', true, 'avqh-btn')}${ui.qh ? questLog(S, P) : ''}</section>`;
-    h += `<div class="seats">${P.map((p, i) => `<div class="seat ${i === S.lead && !end ? 'on' : ''}" data-avs="${i}" style="--pc:${U.pc(i)}"><span>${i === S.lead && !end ? '♛ ' : ''}${U.nm(P, i)}</span>${S.team.includes(i) && (S.phase === 'vote' || S.phase === 'quest') ? '<small>원정대</small>' : ''}${S.phase === 'vote' && S.votes[i] !== undefined ? '<small>투표함</small>' : ''}${S.phase === 'look' && S.seen[i] ? '<small>확인</small>' : ''}${end ? `<small class="${isEvil(S.role[i]) ? 'av-et' : 'av-gt'}">${AR[S.role[i]]}</small>` : ''}</div>`).join('')}</div>`;
+    h += `<div class="seats">${P.map((p, i) => `<div class="seat ${i === S.lead && !end ? 'on' : ''}" data-avs="${i}" style="--pc:${U.pc(i)}"><span>${i === S.lead && !end ? '♛ ' : ''}${avSh(P, i)}${avNm(P, i)}</span>${S.team.includes(i) && (S.phase === 'vote' || S.phase === 'quest') ? '<small>원정대</small>' : ''}${S.phase === 'vote' && S.votes[i] !== undefined ? '<small>투표함</small>' : ''}${S.phase === 'look' && S.seen[i] ? '<small>확인</small>' : ''}${end ? `<small class="${isEvil(S.role[i]) ? 'av-et' : 'av-gt'}">${AR[S.role[i]]}</small>` : ''}</div>`).join('')}</div>`;
     if (!end && S.phase !== 'kill' && S.phase !== 'kshow') h += avRules(S, P);
     if (S.hist.length) h += histHTML(S, P);
     return h;
@@ -364,6 +368,10 @@ function avFx(S, me, P) {
     }
   }
 }
+function avTally(y, n) {
+  const w = y + n ? Math.round(y / (y + n) * 100) : 50;
+  return `<div class="avbig avtally"><span class="y"><i>👍</i><b>${y}</b><small>찬성</small></span><span class="vs">VS</span><span class="n"><i>✊</i><b>${n}</b><small>반대</small></span></div><div class="avratio" style="--w:${w}%"><i></i></div>`;
+}
 function rejStrip(S) {
   return `<div class="avrej ${S.rej >= 3 ? 'hot' : ''}"><div class="avrej-t"><b>⚠ 반대가 찬성과 같거나 많으면 부결</b><span>5번 연속 부결되면 <b>악의 세력 승리</b></span></div><div class="avpips">${[1,2,3,4,5].map(k => `<i class="${k <= S.rej ? 'on' : ''}">${k}</i>`).join('')}</div><div class="avrej-n">연속 부결 <b>${S.rej}</b> / 5${S.rej === 4 ? ' · 이번에 부결되면 악 승리!' : ''}</div></div>`;
 }
@@ -381,7 +389,7 @@ function avBanner(S, P) {
   const prog = `<div class="avprog"><div class="avdots">${[0,1,2,3,4].map(q => `<span class="avd ${q < S.res.length ? (S.res[q] ? 'ok' : 'no') : ''}">${q < S.res.length ? (S.res[q] ? '⚔' : '✕') : q + 1}</span>`).join('')}</div><div>원정 현황 · 성공 ${w} : 실패 ${l}</div></div>`;
   if (L.k === 'vote') {
     const el = avFresh('v' + S.hist.length + S.role.join(''), 3);
-    return `<section class="avb2 ${L.ok ? 'ok' : 'no'}"${animAttr(el)}><small>${L.q + 1}번째 원정대 투표 결과</small><div class="avstamp">${L.ok ? '가결' : '부결'}</div>${L.yes ? `<div class="avbig">찬성 ${L.yes.length} : 반대 ${L.no.length}</div>` : ''}<div class="avl">${L.ok ? `원정대 출발: ${L.team.map(i => U.nm(P, i)).join(' · ')}` : `연속 부결 ${S.rej} / 5${S.rej ? ' · 5번이면 악 승리' : ''}`}</div>${prog}</section>`;
+    return `<section class="avb2 ${L.ok ? 'ok' : 'no'}"${animAttr(el)}><small>${L.q + 1}번째 원정대 투표 결과</small><div class="avstamp">${L.ok ? '가결' : '부결'}</div>${L.yes ? avTally(L.yes.length, L.no.length) : ''}<div class="avl">${L.ok ? `<span class="avl-t">⚔ 원정대 출발</span>${L.team.map(i => avChip(P, i)).join('')}` : `연속 부결 ${S.rej} / 5${S.rej ? ' · 5번이면 악 승리' : ''}`}</div>${prog}</section>`;
   }
   const el = avFresh('q' + S.res.length + S.role.join(''), 2.2 + L.sz * 0.6);
   const cards = U.shuffle(Array(L.sz - L.f).fill(1).concat(Array(L.f).fill(0)));
