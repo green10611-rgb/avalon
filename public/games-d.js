@@ -1,0 +1,308 @@
+(function(){
+const R = typeof window !== 'undefined' ? window : globalThis;
+const G = R.G, U = R.U;
+
+/* =================== 원탁의 기사단 (아발론 규칙) =================== */
+const AR = {ME: '멀린', PE: '퍼시벌', LS: '충성스러운 기사', AS: '암살자', MO: '모르가나', MD: '모드레드', OB: '오베론', MI: '모드레드의 부하'};
+const EVIL = {AS: 1, MO: 1, MD: 1, OB: 1, MI: 1};
+const ARD = {
+  ME: '악의 세력이 누군지 알고 있어요(모드레드만 빼고). 하지만 들키면 마지막에 암살당해요. 티 안 나게 선의 편을 도우세요.',
+  PE: '멀린 후보 두 명이 보여요. 한 명은 진짜 멀린, 한 명은 멀린인 척하는 모르가나예요.',
+  LS: '아무 정보도 없어요. 대화와 투표 기록으로 악의 세력을 찾아내세요.',
+  AS: '악의 편. 선이 원정 3번을 성공해도, 마지막에 멀린을 맞히면 악의 승리예요.',
+  MO: '악의 편. 퍼시벌에게 멀린처럼 보여요. 퍼시벌을 헷갈리게 하세요.',
+  MD: '악의 편. 멀린에게도 정체가 보이지 않아요.',
+  OB: '악의 편이지만 동료가 누군지 모르고, 동료도 나를 몰라요. 멀린에게는 보여요.',
+  MI: '악의 편. 동료와 함께 원정을 실패시키세요.'
+};
+const ASIZE = {4: [2,2,2,3,3], 5: [2,3,2,3,3], 6: [2,3,4,3,4], 7: [2,3,3,4,4], 8: [3,4,4,5,5], 9: [3,4,4,5,5], 10: [3,4,4,5,5]};
+const AROLES = {
+  4: ['ME','LS','LS','AS'],
+  5: ['ME','PE','LS','AS','MO'],
+  6: ['ME','PE','LS','LS','AS','MO'],
+  7: ['ME','PE','LS','LS','AS','MO','MD'],
+  8: ['ME','PE','LS','LS','LS','AS','MO','MD'],
+  9: ['ME','PE','LS','LS','LS','LS','AS','MO','MD'],
+  10: ['ME','PE','LS','LS','LS','LS','AS','MO','MD','OB']
+};
+const isEvil = r => !!EVIL[r];
+const AVAR = {
+  MO: {name: '기본 (모르가나)', good: '멀린 · 퍼시벌 · 기사', evil: '암살자 · 모르가나', d: '퍼시벌에게 멀린 후보 2명(멀린·모르가나)이 보여요. 진짜를 가려내는 재미.'},
+  MDP: {name: '모드레드 + 퍼시벌', good: '멀린 · 퍼시벌 · 기사', evil: '암살자 · 모드레드', d: '모드레드는 멀린에게 안 보여요. 퍼시벌은 진짜 멀린을 바로 알아요. 퍼시벌의 연기가 중요해요.'}
+};
+const AE = {ME: '🔮', PE: '🛡️', LS: '⚔️', AS: '🗡️', MO: '🌙', MD: '👑', OB: '👁️', MI: '🐍'};
+function avFresh(key, dur) {
+  const R0 = typeof window !== 'undefined' ? window : globalThis; R0.__avSeen = R0.__avSeen || {};
+  const now = Date.now(); if (!R0.__avSeen[key]) R0.__avSeen[key] = now;
+  const el = (now - R0.__avSeen[key]) / 1000; return el < dur ? el : -1;
+}
+const animAttr = el => el < 0 ? ' data-still' : ` style="--el:${el.toFixed(2)}s"`;
+const needFail = (n, q) => (n >= 7 && q === 3) ? 2 : 1;
+const ids = P => P.map((_, i) => i);
+function aKnow(S, me, P) {
+  const r = S.role[me], o = [];
+  if (r === 'ME') { const s = ids(P).filter(i => isEvil(S.role[i]) && S.role[i] !== 'MD'); o.push(`악의 세력: ${s.map(i => U.nm(P, i)).join(', ') || '없음'}`); if (S.role.includes('MD')) o.push('모드레드는 이 목록에 없어요.'); }
+  if (r === 'PE') { const s = ids(P).filter(i => S.role[i] === 'ME' || S.role[i] === 'MO'); o.push(`멀린 후보: ${s.map(i => U.nm(P, i)).join(', ')}`); }
+  if (isEvil(r) && r !== 'OB') { const s = ids(P).filter(i => i !== me && isEvil(S.role[i]) && S.role[i] !== 'OB'); o.push(`동료: ${s.map(i => `${U.nm(P, i)}(${AR[S.role[i]]})`).join(', ') || '없음'}`); if (S.role.includes('OB')) o.push('오베론도 악의 편이지만 누군지 몰라요.'); }
+  return o;
+}
+function aNext(S, P) {
+  S.lead = (S.lead + 1) % P.length; S.phase = 'team'; S.votes = {};
+}
+G.avalon = {
+  name: '원탁의 기사단', tag: '아발론 규칙 · 원정대를 꾸리고 배신자 찾기', min: 4, max: 10, mark: '⚔', hue: 'var(--p6)',
+  banner(S, P) { return avBanner(S, P); },
+  rules: ['선(아서왕의 기사)과 악(모드레드의 부하)으로 나뉘어요. 처음에 각자 몰래 역할을 확인해요.',
+    '대장이 원정대원을 정해 제안하면 모두 주먹을 쥐고 "하나, 둘, 셋!"에 엄지를 올리면 찬성, 주먹 그대로면 반대예요. 찬성이 과반이면 가결(출발), 반대가 같거나 많으면 부결되고 대장이 다음 사람에게 넘어가요. 5번 연속 부결되면 악의 승리. 앱에는 가결/부결만 눌러요.',
+    '원정대원은 몰래 성공/실패 카드를 내요. 선은 성공만 낼 수 있어요. 실패가 1장이라도 나오면 원정 실패(7명 이상일 때 4번째 원정은 2장 필요).',
+    '원정 3번이 먼저 성공하면 선, 3번 실패하면 악이 이겨요.',
+    '선이 3번 성공해도 암살자가 멀린을 맞히면 악의 역전승!',
+    '4명은 공식 규칙에 없는 변형이에요: 멀린·기사 2명 vs 암살자 1명, 원정 인원 2-2-2-3-3.'],
+  rulesExtra() {
+    const card = (k, d, when) => `<div class="avrole ${isEvil(k) ? 'e' : 'g'}"><div class="avrole-em">${AE[k]}</div><b>${AR[k]}</b><p>${d}</p><small>${when}</small></div>`;
+    return `<section class="avroles"><div class="avroles-h">7. 역할 카드</div>
+<div class="avroles-side g"><div class="avroles-t">⚜ 선의 세력 <small>아서 왕의 편</small></div><div class="avroles-g">${card('ME', '악의 세력이 누군지 알아요(모드레드 빼고). 들키면 마지막에 암살당해요.', '항상')}${card('PE', '멀린 후보 2명(멀린·모르가나)이 보여요. 진짜 멀린을 지켜요.', '5명부터')}${card('LS', '아무 정보도 없어요. 대화와 원정 결과로 악을 찾아요.', '남는 자리')}</div></div>
+<div class="avroles-side e"><div class="avroles-t">🩸 악의 세력 <small>모드레드의 편 · 서로를 알아요</small></div><div class="avroles-g">${card('AS', '원정 실패를 노리고, 마지막에 멀린을 맞히면 역전승!', '항상')}${card('MO', '퍼시벌에게 멀린처럼 보여요. 퍼시벌을 헷갈리게 해요.', '5명부터')}${card('MD', '멀린에게도 정체가 보이지 않아요.', '7명부터 · 5~6명은 선택')}${card('OB', '동료를 모르고 동료도 나를 몰라요. 멀린에게는 보여요.', '10명')}</div></div></section>`;
+  },
+  setup(P) {
+    const n = P.length;
+    if (!AROLES[n]) throw U.err('4~10명이 필요해요.');
+    if (n === 5 || n === 6) return {role: [], phase: 'cfg', seen: {}, lead: U.rint(n), quest: 0, res: [], fails: [], rej: 0, team: [], votes: {}, cards: {}, hist: [], log: ['역할 구성을 골라 주세요.']};
+    const roles = U.shuffle(AROLES[n].slice());
+    return {role: roles, phase: 'look', seen: {}, lead: U.rint(n), quest: 0, res: [], fails: [], rej: 0, team: [], votes: {}, cards: {}, hist: [],
+      log: [`악의 세력 ${roles.filter(isEvil).length}명이 숨어 있어요. 각자 역할을 확인하세요.`]};
+  },
+  turns(S, P) {
+    if (S.phase === 'cfg') return [0];
+    if (S.phase === 'look') return ids(P).filter(i => !S.seen[i]);
+    if (S.phase === 'team') return [S.lead];
+    if (S.phase === 'vote') return [S.lead];
+    if (S.phase === 'quest') return S.team.filter(i => S.cards[i] === undefined);
+    if (S.phase === 'reveal' || S.phase === 'qdone') return [S.lead];
+    if (S.phase === 'kill') return [S.role.indexOf('AS')];
+    return [];
+  },
+  act(S, me, t, a, P) {
+    const n = P.length;
+    if (t === 'cfg') {
+      if (S.phase !== 'cfg') return;
+      const v = AVAR[a.v] ? a.v : 'MO', good = ['ME'], evil = ['AS', v === 'MO' ? 'MO' : 'MD'];
+      if (v !== 'MD') good.push('PE');
+      while (good.length < n - 2) good.push('LS');
+      S.role = U.shuffle(good.concat(evil)); S.cfg = v; S.phase = 'look';
+      U.log(S, `역할 구성: ${AVAR[v].name}. 악의 세력 2명이 숨어 있어요. 각자 역할을 확인하세요.`); return;
+    }
+    if (t === 'seen') { if (S.phase !== 'look') throw U.err('지금은 할 수 없어요.'); S.seen[me] = true;
+      if (ids(P).every(i => S.seen[i])) { S.phase = 'team'; U.log(S, `모두 확인했어요. 첫 대장은 ${P[S.lead].name}님!`); } return; }
+    if (t === 'propose') {
+      if (S.phase !== 'team' || me !== S.lead) throw U.err('대장만 제안할 수 있어요.');
+      const team = Array.isArray(a.team) ? [...new Set(a.team.map(Number))].filter(i => i >= 0 && i < n) : [];
+      if (team.length !== ASIZE[n][S.quest]) throw U.err(`${ASIZE[n][S.quest]}명을 골라야 해요.`);
+      S.team = team.sort((x, y) => x - y); S.votes = {}; S.phase = 'vote';
+      U.log(S, `대장 ${P[me].name}님 제안: ${S.team.map(i => P[i].name).join(', ')}`); return;
+    }
+    if (t === 'vres') {
+      if (S.phase !== 'vote') return;
+      const pass = !!a.ok;
+      S.hist.push({q: S.quest, lead: S.lead, team: S.team.slice(), ok: pass});
+      S.last = {k: 'vote', q: S.quest, ok: pass, team: S.team.slice()};
+      U.log(S, `원정대 투표 ${pass ? '가결' : '부결'}`);
+      if (pass) { S.rej = 0; S.phase = 'quest'; S.cards = {}; S.votes = {}; }
+      else { S.rej++; if (S.rej >= 5) { S.phase = 'end'; S.wt = 'rej'; S.winner = '5번 연속 부결! 악의 세력 승리.'; return; } aNext(S, P); U.log(S, `연속 부결 ${S.rej}/5. 새 대장은 ${P[S.lead].name}님.`); }
+      return;
+    }
+    if (t === 'votes') {
+      if (S.phase !== 'vote') throw U.err('지금은 투표할 수 없어요.');
+      const v = a.v || {};
+      if (!ids(P).every(i => typeof v[i] === 'boolean')) throw U.err('모든 사람의 찬반을 입력하세요.');
+      ids(P).forEach(i => { S.votes[i] = v[i]; });
+    } else if (t === 'vote') {
+      if (S.phase !== 'vote' || S.votes[me] !== undefined) throw U.err('지금은 투표할 수 없어요.');
+      S.votes[me] = !!a.ok;
+    }
+    if (t === 'vote' || t === 'votes') {
+      if (ids(P).every(i => S.votes[i] !== undefined)) {
+        const yes = ids(P).filter(i => S.votes[i]), no = ids(P).filter(i => !S.votes[i]);
+        const pass = yes.length > n / 2;
+        S.hist.push({q: S.quest, lead: S.lead, team: S.team.slice(), yes, no, ok: pass});
+        S.last = {k: 'vote', q: S.quest, ok: pass, yes, no, team: S.team.slice()};
+        U.log(S, `투표 ${pass ? '가결' : '부결'} (찬성 ${yes.length} : 반대 ${no.length}) · 반대: ${no.map(i => P[i].name).join(', ') || '없음'}`);
+        if (pass) { S.rej = 0; S.phase = 'quest'; S.cards = {}; S.votes = {}; }
+        else { S.rej++; if (S.rej >= 5) { S.phase = 'end'; S.wt = 'rej'; S.winner = '5번 연속 부결! 악의 세력 승리.'; return; } aNext(S, P); U.log(S, `연속 부결 ${S.rej}/5. 새 대장은 ${P[S.lead].name}님.`); }
+      }
+      return;
+    }
+    if (t === 'card') {
+      if (S.phase !== 'quest' || !S.team.includes(me) || S.cards[me] !== undefined) throw U.err('지금은 낼 수 없어요.');
+      if (!a.ok && !isEvil(S.role[me])) throw U.err('선의 편은 성공만 낼 수 있어요.');
+      S.cards[me] = !!a.ok;
+      if (S.team.every(i => S.cards[i] !== undefined)) {
+        const f = S.team.filter(i => !S.cards[i]).length, ok = f < needFail(n, S.quest);
+        S.pend = {ok, f}; S.cards = {}; S.phase = 'reveal';
+        U.log(S, `${S.quest + 1}번째 원정대가 카드를 모두 냈어요. 다 같이 결과를 확인하세요!`);
+      }
+      return;
+    }
+    if (t === 'reveal') {
+      if (S.phase !== 'reveal' || !S.pend) return;
+      const {ok, f} = S.pend; S.pend = null;
+      S.res.push(ok); S.fails.push(f);
+      S.last = {k: 'quest', q: S.quest, ok, f, sz: S.team.length, team: S.team.slice()};
+      U.log(S, `${S.quest + 1}번째 원정 ${ok ? '성공' : '실패'}! (실패 카드 ${f}장)`);
+      S.quest++;
+      const w = S.res.filter(Boolean).length, l = S.res.length - w;
+      if (l >= 3) { S.phase = 'end'; S.wt = 'fail'; S.winner = '원정 3번 실패. 악의 세력 승리!'; return; }
+      if (w >= 3) { S.phase = 'qdone'; U.log(S, '원정 3번 성공!'); return; }
+      aNext(S, P); U.log(S, `새 대장은 ${P[S.lead].name}님.`);
+      return;
+    }
+    if (t === 'tokill') {
+      if (S.phase !== 'qdone') return;
+      S.phase = 'kill'; U.log(S, '하지만 암살자가 멀린을 노립니다…'); return;
+    }
+    if (t === 'kill') {
+      if (S.phase !== 'kill' || S.role[me] !== 'AS') throw U.err('암살자만 할 수 있어요.');
+      const x = +a.t; if (!(x >= 0 && x < n) || isEvil(S.role[x])) throw U.err('선의 편 중에서 고르세요.');
+      S.shot = x; S.phase = 'end'; S.wt = S.role[x] === 'ME' ? 'killhit' : 'killmiss';
+      S.winner = S.role[x] === 'ME' ? `암살자가 멀린(${P[x].name}님)을 찾아냈어요! 악의 역전승.` : `${P[x].name}님은 멀린이 아니었어요. 선의 세력 승리!`;
+    }
+  },
+  view(S, me, ui, P) { return `<div class="avw">${G.avalon._view.call(this, S, me, ui, P)}</div>`; },
+  _view(S, me, ui, P) {
+    const n = P.length, r = me >= 0 ? S.role[me] : null, end = S.phase === 'end' || S.winner;
+    let h = '';
+    if (S.phase === 'cfg') {
+      return `<section class="avcfg"><div class="avt-h"><b>역할 구성 고르기</b><span>${n}명 게임 · 선 ${n - 2}명 vs 악 2명</span></div>${Object.keys(AVAR).map(k => { const v = AVAR[k]; return `<div class="avcfg-o"><div class="avcfg-t"><b>${v.name}</b></div><div class="avcfg-r"><span class="g">선</span> 멀린 · ${k === 'MD' ? `기사 ${n - 3}` : `퍼시벌 · 기사 ${n - 4}`}</div><div class="avcfg-r"><span class="e">악</span> ${v.evil}</div><p>${v.d}</p>${me >= 0 ? U.btn('이 구성으로 시작', 'cfg', {v: k}, k === 'MO' ? 'primary big' : 'big') : ''}</div>`; }).join('')}<p class="small muted">누구든 한 명이 골라 주세요. 고르면 역할이 섞여서 나눠져요.</p></section>`;
+    }
+    if (!end && (S.phase === 'team' || S.phase === 'vote')) h += `<div class="avlead${me === S.lead ? ' me' : ''}"><span class="avl-cr">♛</span><div><small>${S.quest + 1}번째 원정 · 원정대장</small><b>${U.nm(P, S.lead)}${me === S.lead && !ui._local ? ' (나)' : ''}</b></div><span class="avl-tag">${S.phase === 'team' ? `원정대 ${ASIZE[n][S.quest]}명 고르는 중` : '찬반 투표 중'}</span></div>`;
+    if (me >= 0 && !end && S.phase === 'look') h += roleCard(S, me, P, true);
+    else if (me >= 0 && !end && !(ui._local && (S.phase === 'vote' || S.phase === 'team' || S.phase === 'reveal' || S.phase === 'kill' || S.phase === 'qdone'))) {
+      h += `<details class="avpeek"${ui.peek ? ' open' : ''}><summary data-ui="peek" data-tog data-val="true"><span>📜 내 역할 다시 보기</span><small>남에게 안 보이게</small></summary>${roleCard(S, me, P, false)}</details>`;
+    }
+    if (end) h += avEnd(S, P);
+    else if (S.phase === 'kill') h += avKill(S, me, ui, P);
+    else if (S.phase === 'reveal') h += `<div class="avreveal"><small>${S.quest + 1}번째 원정 · ${S.team.map(i => U.nm(P, i)).join(', ')}</small><div class="avseal">🔒</div><b>봉인된 카드 ${S.team.length}장</b><div class="avdeck">${S.team.map(() => '<span class="avback in">⚜</span>').join('')}</div><p>모두 화면 앞에 모였나요? 하나, 둘, 셋!</p>${me >= 0 ? U.btn('원정 결과 보기', 'reveal', {}, 'primary avopen') : ''}<span class="small">누구든 누르면 모든 화면에 결과가 동시에 떠요.</span></div>`;
+    else h += avBanner(S, P);
+    const mine = end ? false : this.turns(S, P).includes(me);
+    if (end) {
+    } else if (S.phase === 'look') {
+      const left = ids(P).filter(i => !S.seen[i]).length;
+      h += mine ? U.btn('기억했어요 · 확인 완료', 'seen', {}, 'primary big avgo avseen') : `<div class="avwait"><div>📜 역할 확인 중</div><span>아직 ${left}명이 확인하고 있어요</span></div>`;
+    } else if (S.phase === 'team') {
+      const need = ASIZE[n][S.quest];
+      if (mine) { const sel = Array.isArray(ui.pick) ? ui.pick : [];
+        h += `<div class="panel avteam"><div class="avt-h"><b>${S.quest + 1}번째 원정대</b><span>${need}명을 골라 주세요 · 대장 본인도 가능</span></div>
+<div class="avslots">${Array.from({length: need}, (_, k) => sel[k] != null ? `<span class="avslot full" style="--pc:${U.pc(sel[k])}">${U.nm(P, sel[k])}</span>` : `<span class="avslot">${k + 1}</span>`).join('')}</div>
+<div class="avgrid big">${P.map((p, i) => U.gb(`<span class="pdot" style="--pc:${U.pc(i)}"></span><span class="avnm">${U.nm(P, i)}</span>${i === S.lead ? '<small>대장</small>' : ''}${sel.includes(i) ? '<em>✓</em>' : ''}`, 'pick', i, 'avbtn' + (sel.includes(i) ? ' sel' : ''), !sel.includes(i) && sel.length >= need)).join('')}</div>
+${U.btn(sel.length === need ? '이 원정대로 제안하기' : `${need - sel.length}명 더 고르세요`, 'propose', {team: sel}, 'primary big avgo', sel.length !== need)}<p class="small muted">제안 전에 다 같이 이야기해 보세요. 다시 누르면 선택이 취소돼요.</p></div>`; }
+      else h += `<div class="avwait"><div><b>♛ ${U.nm(P, S.lead)}님</b>이</div><div>원정대 <b>${need}명</b>을 고르고 있어요</div><span>의견을 말해 보세요!</span></div>`;
+    } else if (S.phase === 'vote') {
+      h += `<section class="panel avteam"><div class="avt-h"><b>${S.quest + 1}번째 원정대 찬반 투표</b><span>대장 ${U.nm(P, S.lead)}님 제안</span></div><div class="avslots">${S.team.map(i => `<span class="avslot full" style="--pc:${U.pc(i)}">${U.nm(P, i)}</span>`).join('')}</div>
+<div class="avhand"><b>✊ 모두 주먹을 쥐고 "하나, 둘, 셋!"</b><div class="avhand-r"><span>👍 엄지 위로<b>찬성</b></span><span>✊ 주먹 그대로<b>반대</b></span></div><small>찬성이 과반이면 가결 · 반대가 같거나 많으면 부결</small></div>
+${me >= 0 ? `<div class="avres2">${U.btn('<b>가결</b><small>찬성이 더 많아요</small>', 'vres', {ok: true}, 'avr-ok')}${U.btn(`<b>부결</b><small>${S.rej === 4 ? '5번째 부결 → 악 승리!' : '반대가 같거나 많아요'}</small>`, 'vres', {ok: false}, 'avr-no')}</div><p class="small muted">결과를 보고 누구든 한 명이 눌러 주세요.</p>` : ''}${rejStrip(S)}</section>`;
+    } else if (S.phase === 'quest') {
+      const sub = S.team.filter(i => S.cards[i] !== undefined).length, sz = S.team.length;
+      h += `<section class="avquest"><div class="avt-h"><b>${S.quest + 1}번째 원정 출발</b><span>${S.team.map(i => U.nm(P, i)).join(' · ')}</span></div>
+<div class="avdeck">${S.team.map((i, k) => `<span class="avback ${k < sub ? 'in' : ''}">${k < sub ? '⚜' : ''}</span>`).join('')}</div><div class="avdeck-n">카드 제출 <b>${sub}</b> / ${sz}</div>`;
+      if (mine) h += `<div class="avhow">아무도 못 보게 몰래 한 장을 내세요.</div><div class="avplay">${U.btn('<i>☀</i><b>성공</b><small>원정을 돕는다</small>', 'card', {ok: true}, 'avpc ok')}${isEvil(r) ? U.btn('<i>🩸</i><b>실패</b><small>원정을 망친다</small>', 'card', {ok: false}, 'avpc no') : U.gb('<i>🩸</i><b>실패</b><small>원정을 망친다</small>', 'nofail', 1, 'avpc no')}</div>${ui.nofail ? `<div class="avnofail" data-k="${ui.nofail}">🚫 선의 세력은 실패 카드를 낼 수 없어요!<small>성공 카드를 내 주세요.</small></div>` : ''}`;
+      else if (S.team.includes(me)) h += `<div class="avhow">카드를 냈어요. 다른 원정대원을 기다려요.</div>`;
+      else h += `<div class="avhow">원정대가 몰래 카드를 내는 중이에요. 표정을 살펴보세요 👀</div>`;
+      h += `</section>`;
+    } else if (S.phase === 'reveal') {
+    } else if (S.phase === 'qdone') {
+      const qel = avFresh('q' + S.res.length + S.role.join(''), 2.2 + S.last.sz * 0.6);
+      h += `<section class="avqdone"${qel < 0 ? ' data-still' : ` style="--el:${qel.toFixed(2)}s;--sd:${(1.4 + S.last.sz * 0.6).toFixed(1)}s"`}><b>선의 세력이 원정 3번을 성공했어요!</b><p>하지만 아직 끝나지 않았어요…<br>모두 준비되면 다음으로 넘어가세요.</p>${me >= 0 ? U.btn('🗡 다음: 암살의 시간', 'tokill', {}, 'avk-go') : ''}</section>`;
+    }
+    // quest track
+    const w = S.res.filter(Boolean).length, l = S.res.length - w;
+    let trackAnim = '';
+    if (S.last && S.last.k === 'quest' && S.phase !== 'reveal') { const qel = avFresh('q' + S.res.length + S.role.join(''), 2.2 + S.last.sz * 0.6); if (qel >= 0) trackAnim = ` style="--el:${qel.toFixed(2)}s;--sd:${(0.6 + S.last.sz * 0.6).toFixed(1)}s" data-late`; }
+    h += `<section class="avtrack-w"${trackAnim}><div class="avscore"><span class="g">선 <b>${w}</b></span><i>원정 현황</i><span class="e"><b>${l}</b> 악</span></div><div class="avtrack">${ASIZE[n].map((sz, q) => { const done = q < S.res.length, now = q === S.quest && !end; return `<div class="avm ${done ? (S.res[q] ? 'ok' : 'no') : now ? 'now' : ''}"><div class="avm-c">${done ? (S.res[q] ? '⚔' : '✕') : `<b>${sz}</b>`}</div><small>${done ? (S.res[q] ? '성공' : `실패${S.fails[q] > 1 ? ' ' + S.fails[q] : ''}`) : `${q + 1}차 · ${sz}명`}${!done && needFail(n, q) > 1 ? '<em>실패 2장</em>' : ''}</small></div>`; }).join('')}</div></section>`;
+    h += `<div class="seats">${P.map((p, i) => `<div class="seat ${i === S.lead && !end ? 'on' : ''}" style="--pc:${U.pc(i)}"><span>${i === S.lead && !end ? '♛ ' : ''}${U.nm(P, i)}</span>${S.team.includes(i) && (S.phase === 'vote' || S.phase === 'quest') ? '<small>원정대</small>' : ''}${S.phase === 'vote' && S.votes[i] !== undefined ? '<small>투표함</small>' : ''}${S.phase === 'look' && S.seen[i] ? '<small>확인</small>' : ''}${end ? `<small class="${isEvil(S.role[i]) ? 'av-et' : 'av-gt'}">${AR[S.role[i]]}</small>` : ''}</div>`).join('')}</div>`;
+    if (!end && S.phase !== 'kill') h += avRules(S, P);
+    if (S.hist.length) h += histHTML(S, P);
+    return h;
+  },
+  splash: true,
+  allTurn(S) { return S.phase === 'cfg' ? '역할 구성 고르기' : S.phase === 'vote' ? '모두 함께 투표' : S.phase === 'qdone' ? '원정 3번 성공!' : S.phase === 'kill' ? '🗡 암살의 시간' : S.phase === 'reveal' ? '모두 함께 결과 보기' : S.phase === 'vote' ? '모두 함께 투표' : ''; },
+  open(S) { return S.phase === 'cfg' || S.phase === 'vote' || S.phase === 'team' || S.phase === 'reveal' || S.phase === 'kill' || S.phase === 'qdone'; },
+  uiAct(ui, S, me, name, val) {
+    if (name === 'nofail') { ui.nofail = (ui.nofail || 0) + 1; return; }
+    if (name === 'kt') { ui.kt = ui.kt === val ? null : val; return; }
+    if (name === 'vv') { ui.vv = Object.assign({}, ui.vv); ui.vv[val[0]] = val[1]; return; }
+    if (name !== 'pick') return;
+    const s = Array.isArray(ui.pick) ? ui.pick.slice() : [];
+    const i = s.indexOf(val); if (i >= 0) s.splice(i, 1); else s.push(val);
+    ui.pick = s;
+  }
+};
+function rejStrip(S) {
+  return `<div class="avrej ${S.rej >= 3 ? 'hot' : ''}"><div class="avrej-t"><b>⚠ 반대가 찬성과 같거나 많으면 부결</b><span>5번 연속 부결되면 <b>악의 세력 승리</b></span></div><div class="avpips">${[1,2,3,4,5].map(k => `<i class="${k <= S.rej ? 'on' : ''}">${k}</i>`).join('')}</div><div class="avrej-n">연속 부결 <b>${S.rej}</b> / 5${S.rej === 4 ? ' · 이번에 부결되면 악 승리!' : ''}</div></div>`;
+}
+function avRules(S, P) {
+  const n = P.length, q = Math.min(S.quest, 4), sz = ASIZE[n][q], nf = needFail(n, q);
+  const good = S.role.filter(r => !isEvil(r)), evil = S.role.filter(isEvil);
+  const cnt = a => Object.entries(a.reduce((o, r) => (o[AR[r]] = (o[AR[r]] || 0) + 1, o), {})).map(([k, v]) => v > 1 ? `${k} ${v}` : k).join(' · ');
+  return `<section class="avrule"><div class="avr-h">이번 라운드 규칙 · ${n}명 게임${n === 4 ? ' (변형)' : ''}</div>
+<div class="avr-big"><div><small>지금</small><b>${q + 1}번째 원정</b></div><div><small>원정대</small><b>${sz}명</b></div><div><small>실패 조건</small><b>실패 ${nf}장${nf > 1 ? '↑' : ''}</b></div><div class="${S.rej >= 3 ? 'warn' : ''}"><small>연속 부결</small><b>${S.rej} / 5</b></div></div>
+<ul class="avr-l"><li><b>구성</b> 선 ${good.length}명(${cnt(good)}) vs 악 ${evil.length}명(${cnt(evil)})</li><li><b>투표</b> 공개 투표 · 찬성이 과반이어야 출발 · <b class="avred">반대가 같거나 많으면 부결, 5번 연속 부결이면 악 승리</b></li><li><b>원정</b> 선은 성공만 · 실패 ${nf}장${nf > 1 ? ' 이상' : '만'} 나와도 원정 실패</li><li><b>승리</b> 성공 3번 → 선(단, 암살자가 멀린을 맞히면 악) · 실패 3번 → 악</li></ul>${S.phase === 'vote' ? '' : rejStrip(S)}</section>`;
+}
+function avBanner(S, P) {
+  const L = S.last; if (!L) return '';
+  const w = S.res.filter(Boolean).length, l = S.res.length - w;
+  const prog = `<div class="avprog"><div class="avdots">${[0,1,2,3,4].map(q => `<span class="avd ${q < S.res.length ? (S.res[q] ? 'ok' : 'no') : ''}">${q < S.res.length ? (S.res[q] ? '⚔' : '✕') : q + 1}</span>`).join('')}</div><div>원정 현황 · 성공 ${w} : 실패 ${l}</div></div>`;
+  if (L.k === 'vote') {
+    const el = avFresh('v' + S.hist.length + S.role.join(''), 3);
+    return `<section class="avb2 ${L.ok ? 'ok' : 'no'}"${animAttr(el)}><small>${L.q + 1}번째 원정대 투표 결과</small><div class="avstamp">${L.ok ? '가결' : '부결'}</div>${L.yes ? `<div class="avbig">찬성 ${L.yes.length} : 반대 ${L.no.length}</div>` : ''}<div class="avl">${L.ok ? `원정대 출발: ${L.team.map(i => U.nm(P, i)).join(' · ')}` : `연속 부결 ${S.rej} / 5${S.rej ? ' · 5번이면 악 승리' : ''}`}</div>${prog}</section>`;
+  }
+  const el = avFresh('q' + S.res.length + S.role.join(''), 2.2 + L.sz * 0.6);
+  const cards = U.shuffle(Array(L.sz - L.f).fill(1).concat(Array(L.f).fill(0)));
+  const R0 = typeof window !== 'undefined' ? window : globalThis; R0.__avCards = R0.__avCards || {};
+  const ck = 'q' + S.res.length + S.role.join(''); if (!R0.__avCards[ck]) R0.__avCards[ck] = cards; const cs = R0.__avCards[ck];
+  return `<section class="avb2 q ${L.ok ? 'ok' : 'no'}"${el < 0 ? ' data-still' : ` style="--el:${el.toFixed(2)}s;--sd2:${(0.5 + L.sz * 0.6).toFixed(1)}s"`}><small>${L.q + 1}번째 원정 결과 · ${L.team.map(i => U.nm(P, i)).join(', ')}</small><div class="avflip">${cs.map((c, k) => `<span class="avfc ${c ? 'ok' : 'no'}" style="--k:${k}"><i class="b">⚜</i><i class="f">${c ? '☀<b>성공</b>' : '🩸<b>실패</b>'}</i></span>`).join('')}</div><div class="avstamp" style="--sd:${(0.5 + L.sz * 0.6).toFixed(1)}s">원정 ${L.ok ? '성공' : '실패'}</div><div class="avbig avlate" style="--sd:${(0.9 + L.sz * 0.6).toFixed(1)}s">실패 카드 ${L.f}장</div><div class="avlate" style="--sd:${(1.1 + L.sz * 0.6).toFixed(1)}s">${prog}</div></section>`;
+}
+function roleCard(S, me, P, big) {
+  const r = S.role[me], ev = isEvil(r), el = big ? avFresh('look' + me + S.role.join(''), 1.6) : -1;
+  const know = [];
+  if (r === 'ME') { know.push({t: '악의 세력', who: ids(P).filter(i => isEvil(S.role[i]) && S.role[i] !== 'MD'), c: 'e'}); if (S.role.includes('MD')) know.push({note: '모드레드는 이 목록에 없어요.'}); }
+  if (r === 'PE' && !S.role.includes('MO')) know.push({t: '멀린', who: ids(P).filter(i => S.role[i] === 'ME'), c: 'g'});
+  else if (r === 'PE') know.push({t: '멀린 후보 (한 명은 모르가나)', who: ids(P).filter(i => S.role[i] === 'ME' || S.role[i] === 'MO'), c: 'g'});
+  if (ev && r !== 'OB') { know.push({t: '함께하는 동료', who: ids(P).filter(i => i !== me && isEvil(S.role[i]) && S.role[i] !== 'OB'), c: 'e', role: true}); if (S.role.includes('OB')) know.push({note: '오베론도 악의 편이지만 누군지 몰라요.'}); }
+  return `<section class="avrc${big ? ' big' : ''}"${big ? animAttr(el) : ' data-still'}><div class="avrc-side">${ev ? '악의 세력 · 모드레드의 편' : '선의 세력 · 아서 왕의 편'}</div><div class="avrc-name">${AR[r]}</div><p class="avrc-desc">${r === 'PE' && !S.role.includes('MO') ? '진짜 멀린이 누군지 알아요. 멀린을 돕되, 마지막 암살을 피하도록 내가 멀린인 척해 주세요.' : ARD[r]}</p>${know.map(k => k.note ? `<div class="avrc-note">${k.note}</div>` : `<div class="avrc-k"><small>${k.t}</small><div>${k.who.map(i => `<span>${U.nm(P, i)}${k.role ? ` <em>${AR[S.role[i]]}</em>` : ''}</span>`).join('') || '<span class="x">없음</span>'}</div></div>`).join('')}</section>`;
+}
+function avKill(S, me, ui, P) {
+  const as = S.role.indexOf('AS'), isAs = me === as, kt = ui.kt;
+  const goods = ids(P).filter(i => !isEvil(S.role[i])), evils = ids(P).filter(i => isEvil(S.role[i]));
+  let h = `<section class="avkill"><div class="avk-ttl"><span class="avk-dag">🗡</span><b>암살의 시간</b></div>
+<p class="avk-sub">선의 세력이 원정 3번을 성공했어요.<br>하지만 아직 끝나지 않았어요…</p>
+<div class="avk-who">암살자 <b>${U.nm(P, as)}</b>님이 멀린을 찾습니다</div>
+<div class="avk-evil">악의 세력: ${evils.map(i => `<span>${U.nm(P, i)} <small>${AR[S.role[i]]}</small></span>`).join('')}</div>`;
+  if (isAs) {
+    h += `<div class="avk-q">누가 멀린일까요?</div><div class="avk-grid">${goods.map(i => U.gb(`<span class="pdot" style="--pc:${U.pc(i)}"></span><span>${U.nm(P, i)}</span>${kt === i ? '<em>🎯</em>' : ''}`, 'kt', i, 'avk-t' + (kt === i ? ' sel' : ''))).join('')}</div>`;
+    h += kt != null ? U.btn(`🗡 ${U.nm(P, kt)}님을 암살한다`, 'kill', {t: kt}, 'avk-go') : `<div class="avk-hint">한 명을 고른 뒤 암살 버튼을 누르세요. 동료들과 상의해도 돼요.</div>`;
+  } else if (me >= 0 && isEvil(S.role[me])) h += `<div class="avk-hint">암살자와 함께 멀린이 누군지 상의하세요!</div>`;
+  else h += `<div class="avk-hint">선의 세력은 표정 관리! 멀린을 들키지 마세요.</div>`;
+  return h + `</section>`;
+}
+function avEnd(S, P) {
+  const key = 'av' + S.role.join('') + (S.shot == null ? '' : S.shot) + S.wt + S.res.length + S.hist.length;
+  const el0 = avFresh(key, 6), fresh = el0 >= 0, el = Math.max(el0, 0);
+  const evilWin = S.wt !== 'killmiss', mer = S.role.indexOf('ME'), as = S.role.indexOf('AS');
+  let h = `<section class="avend ${evilWin ? 'evil' : 'good'}${fresh ? '' : ' still'}" style="--el:${fresh ? el.toFixed(2) : 0}s">`;
+  if (S.wt === 'killhit' || S.wt === 'killmiss') {
+    const hit = S.wt === 'killhit';
+    h += `<div class="ave-s1">🗡 암살자 <b>${U.nm(P, as)}</b>님이 지목한 사람은…</div>
+<div class="ave-target ${hit ? 'hit' : 'miss'}"><span class="pdot" style="--pc:${U.pc(S.shot)}"></span><b>${U.nm(P, S.shot)}</b><small>${AR[S.role[S.shot]]}</small></div>
+<div class="ave-stamp">${hit ? '멀린이었다!' : '멀린이 아니다!'}</div>
+${hit ? '' : `<div class="ave-real">진짜 멀린은 <b>${U.nm(P, mer)}</b>님이었어요 ✨</div>`}`;
+  } else {
+    h += `<div class="ave-s1">${S.wt === 'rej' ? '원정대 제안이 5번 연속 부결되었어요…' : '원정이 3번 실패했어요…'}</div>`;
+  }
+  h += `<div class="ave-win"><small>${evilWin ? '모드레드의 그림자가 원탁을 덮었습니다' : '아서 왕의 원탁이 지켜졌습니다'}</small><b>${evilWin ? '악의 세력 승리' : '선의 세력 승리'}</b></div>
+<div class="ave-teams"><div class="g"><small>선의 세력</small>${ids(P).filter(i => !isEvil(S.role[i])).map(i => `<span>${U.nm(P, i)} <em>${AR[S.role[i]]}</em></span>`).join('')}</div><div class="e"><small>악의 세력</small>${ids(P).filter(i => isEvil(S.role[i])).map(i => `<span>${U.nm(P, i)} <em>${AR[S.role[i]]}</em></span>`).join('')}</div></div></section>`;
+  return h;
+}
+function histHTML(S, P) {
+  return `<details class="ref"><summary>투표 기록 (${S.hist.length})</summary>${S.hist.slice().reverse().map(x => `<div>${x.q + 1}원정 · 대장 ${U.nm(P, x.lead)} · [${x.team.map(i => U.nm(P, i)).join(', ')}] → <b>${x.ok ? '가결' : '부결'}</b>${x.yes ? ` · 찬성: ${x.yes.map(i => U.nm(P, i)).join(', ') || '없음'} / 반대: ${x.no.map(i => U.nm(P, i)).join(', ') || '없음'}` : ''}</div>`).join('')}</details>`;
+}
+})();

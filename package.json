@@ -1,0 +1,9 @@
+{
+  "name": "avalon-round-table",
+  "version": "1.0.0",
+  "description": "원탁의 기사단 (아발론 규칙) 실시간 멀티플레이 서버",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "dependencies": { "ws": "^8.18.0" }
+}
