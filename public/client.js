@@ -3,7 +3,10 @@
 const $app = document.getElementById('app');
 const esc = U.esc;
 const GAMES = ['avalon', 'kraken'];
-let g = G.avalon;
+const SOLO = (location.pathname.match(/^\/(kraken|avalon)\/?$/) || [])[1] || '';
+let g = G[SOLO] || G.avalon;
+if (SOLO) document.title = G[SOLO].name;
+document.body.classList.toggle('solo-' + (SOLO || 'all'), true);
 const GN = () => g.name;
 const ls = { get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }, set(k, v){ try { localStorage.setItem(k, v); } catch(e){} }, del(k){ try { localStorage.removeItem(k); } catch(e){} } };
 // 탭(창)마다 다른 사람으로 취급해요. 같은 브라우저에서 링크를 열어도 방장이 되지 않게.
@@ -47,7 +50,7 @@ const act = (t, a) => { ui = {}; sendMsg({type: 'act', t, a, gid: room && room.g
 const leaveRoom = () => { sendMsg({type: 'leave'}); leaveLocal(); };
 const backToLobby = () => sendMsg({type: 'lobby'});
 const kick = id => sendMsg({type: 'kick', id});
-const inviteURL = c => `${location.origin}/?room=${c}`;
+const inviteURL = c => `${location.origin}${room && room.game && SOLO === room.game ? '/' + room.game : ''}/?room=${c}`.replace(/\/\/\?room/, '/?room');
 function qrSVG(text){ try { const q = qrcode(0, 'M'); q.addData(text); q.make(); return q.createSvgTag({cellSize: 6, margin: 2, scalable: true}); } catch(e){ return ''; } }
 function clearInvite(){ invite = ''; try { history.replaceState(null, '', location.pathname); } catch(e){} }
 
@@ -66,9 +69,20 @@ function homeHTML(){
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn primary big avjoin" data-nav="joinInvite">${esc(invite)} 방 들어가기</button>
 <button type="button" class="btn ghost" data-nav="noInvite">다른 방으로 가기</button>`;
+  if (SOLO === 'kraken') return `<div class="khero"><div class="kh-art">${G.kraken.art('K')}${G.kraken.art('T')}${G.kraken.art('back')}</div><span class="kicker">각자 폰으로 · 실시간 · 4~8명</span><h1>노 터치 크라켄</h1><p>보물 상자를 열어라! 단, 크라켄은 절대 건드리지 마.<br>탐험대와 해골 해적단의 정체 숨김 게임이에요.</p></div>${conn()}
+<section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
+<button type="button" class="btn big kh-go" data-nav="create" data-key="kraken">🐙 크라켄 방 만들기</button>
+<section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
+<details class="ref"><summary>규칙 보기</summary><ol class="rules">${G.kraken.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol>${G.kraken.rulesExtra()}</details>
+<p class="small muted" style="text-align:center"><a href="/">다른 게임도 보기 →</a></p>`;
+  if (SOLO === 'avalon') return `<div class="hero"><span class="kicker">각자 폰으로 · 실시간 · 4~10명</span><h1>아발론: 레지스탕스</h1><p>원정대를 꾸리고 숨은 배신자를 찾아요. 방을 만들고 대기실의 QR이나 링크를 친구들에게 보내세요.</p></div>${conn()}
+<section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
+<button type="button" class="btn primary big" data-nav="create" data-key="avalon">⚔ 아발론 방 만들기</button>
+<section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
+<p class="small muted" style="text-align:center"><a href="/">다른 게임도 보기 →</a></p>`;
   return `<div class="hero"><span class="kicker">각자 폰으로 · 실시간</span><h1>우리끼리 보드게임</h1><p>게임을 골라 방을 만들고, 대기실의 QR이나 링크를 친구들에게 보내세요. 로그인 필요 없어요.</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
-<section class="stack"><h2>방 만들기</h2><div class="gpick">${GAMES.map(k => { const x = G[k]; return `<button type="button" class="gp gp-${k}" data-nav="create" data-key="${k}"><span class="gp-ic">${esc(x.mark)}</span><b>${esc(x.name)}</b><small>${esc(x.tag)}</small><em>${x.min}~${x.max}명</em></button>`; }).join('')}</div></section>
+<section class="stack"><h2>방 만들기</h2><div class="gpick">${GAMES.map(k => { const x = G[k]; return `<button type="button" class="gp gp-${k}" data-nav="create" data-key="${k}"><span class="gp-ic">${esc(x.mark)}</span><b>${esc(x.name)}</b><small>${esc(x.tag)}</small><em>${x.min}~${x.max}명</em></button>`; }).join('')}</div><p class="small muted">게임별 전용 주소: ${GAMES.map(k => `<a href="/${k}">${esc(location.host)}/${k}</a>`).join(' · ')}</p></section>
 <section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>`;
 }
 function lobbyHTML(){
@@ -77,7 +91,7 @@ function lobbyHTML(){
   const link = inviteURL(code);
   h += `<section class="invite"><div class="inv-qr">${qrSVG(link)}</div><div class="inv-r"><span class="small">방 코드</span><b class="inv-code">${esc(code)}</b><p>폰 카메라로 QR을 찍거나 링크를 열면 바로 들어와요.</p><div class="inv-link">${esc(link.replace(/^https?:\/\//, ''))}</div><div class="row"><button type="button" class="btn primary" data-nav="copyLink">🔗 링크 복사</button>${navigator.share ? '<button type="button" class="btn" data-nav="shareLink">📤 공유하기</button>' : ''}</div></div></section>`;
   h += `<section class="panel"><div class="lbl">참가자 ${n}명</div><div class="plist">${P.map((p, i) => `<div class="seat" style="--pc:${U.pc(i)}"><span>${p.bot ? '' : room.online && room.online[i] === false ? '⚪ ' : '🟢 '}${esc(p.name)}${p.bot ? ' <small class="bot-tag">AI</small>' : ''}${p.id === room.host ? ' · 방장' : ''}${p.id === pid ? ' (나)' : ''}</span>${host && p.id !== pid ? `<button type="button" class="btn tiny ghost" data-nav="kick" data-id="${esc(p.id)}">내보내기</button>` : ''}</div>`).join('')}</div></section>`;
-  if (host) h += `<div class="row">${GAMES.map(k => `<button type="button" class="btn${k === room.game ? ' primary' : ''}" data-nav="setgame" data-key="${k}">${esc(G[k].mark)} ${esc(G[k].name)}</button>`).join('')}</div>`;
+  if (host && !SOLO) h += `<div class="row">${GAMES.map(k => `<button type="button" class="btn${k === room.game ? ' primary' : ''}" data-nav="setgame" data-key="${k}">${esc(G[k].mark)} ${esc(G[k].name)}</button>`).join('')}</div>`;
   if (host) h += `<div class="row"><button type="button" class="btn" data-nav="addbot"${n >= g.max ? ' disabled' : ''}>🤖 AI 참가자 추가</button><span class="small muted">사람이 모자랄 때 AI가 같이 해요</span></div>`;
   h += host ? `<button type="button" class="btn primary big" data-nav="start"${ok && !busy ? '' : ' disabled'}>${ok ? `${n}명으로 시작하기` : `${g.min}명 이상 모이면 시작할 수 있어요`}</button>` : `<div class="hint">방장이 시작하기를 기다리는 중이에요.</div>`;
   h += `<details class="ref"><summary>규칙 보기</summary><ol class="rules">${g.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol>${g.rulesExtra ? g.rulesExtra() : ''}</details>`;

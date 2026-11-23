@@ -922,3 +922,13 @@ button.kc.pick:hover,button.kc.pick:focus-visible{transform:translateY(-8px) sca
 .gp-avalon .gp-ic{background:linear-gradient(160deg,#2A56D6,#121528)}
 .gp-kraken .gp-ic{background:linear-gradient(160deg,#2E6FB0,#0D2338)}
 .gp b{font-size:18px}.gp small{font-size:13px;color:var(--muted)}.gp em{font-style:normal;font-size:12px;font-weight:800;color:var(--accent)}
+/* 크라켄 전용 홈 */
+body.solo-kraken{background:linear-gradient(180deg,#D3E7F5,#EAF4FB 40%)}
+.khero{text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 12px 22px;border-radius:24px;background:radial-gradient(120% 80% at 50% 0,#1E4E79,#0D2338 80%);color:#EAF4FB;border:2px solid #E6C47A}
+.kh-art{display:flex;gap:10px;justify-content:center;margin-bottom:6px}
+.kh-art svg{width:78px;height:auto;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
+.kh-art svg:nth-child(1){transform:rotate(-10deg) translateY(6px)}.kh-art svg:nth-child(3){transform:rotate(10deg) translateY(6px)}
+.khero .kicker{color:#E6C47A;font-weight:800;font-size:12px;letter-spacing:.12em}
+.khero h1{font-family:var(--display);font-weight:400;font-size:clamp(40px,12vw,60px);line-height:1.05;color:#fff}
+.khero p{margin:0;opacity:.92}
+.btn.kh-go{width:100%;min-height:68px;font-size:22px;background:linear-gradient(90deg,#1E4E79,#2E6FB0);color:#fff;border:2px solid #E6C47A}

@@ -222,5 +222,6 @@ function kBotStep(S, P) {
   return false;
 }
 G.kraken.botStep = kBotStep;
+G.kraken.art = k => ART[k] || '';
 G.kraken.BOTNAMES = ['바다거북', '갈매기', '돌고래', '해마', '불가사리', '앵무새', '고래', '문어'];
 })();
