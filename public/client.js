@@ -2,8 +2,8 @@
 (function(){
 const $app = document.getElementById('app');
 const esc = U.esc;
-const GAMES = ['avalon', 'kraken'];
-const SOLO = (location.pathname.match(/^\/(kraken|avalon)\/?$/) || [])[1] || '';
+const GAMES = ['avalon', 'kraken', 'splendor'];
+const SOLO = (location.pathname.match(/^\/(kraken|avalon|splendor)\/?$/) || [])[1] || '';
 let g = G[SOLO] || G.avalon;
 if (SOLO) document.title = G[SOLO].name;
 document.body.classList.toggle('solo-' + (SOLO || 'all'), true);
@@ -69,6 +69,12 @@ function homeHTML(){
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn primary big avjoin" data-nav="joinInvite">${esc(invite)} 방 들어가기</button>
 <button type="button" class="btn ghost" data-nav="noInvite">다른 방으로 가기</button>`;
+  if (SOLO === 'splendor') { const S = G.splendor; return `<div class="sphero"><div class="sph-art">${S.art('card', 20)}${S.art('card', 85)}${S.art('card', 61)}</div><div class="sph-chips">${['w','u','g','r','k','y'].map(x => `<span>${S.art('chip', x)}</span>`).join('')}</div><span class="kicker">각자 폰으로 · 실시간 · 2~4명</span><h1>스플렌더</h1><p>보석을 모아 광산·상선·궁전 카드를 사고, 귀족을 맞이해 먼저 15점을 노려요.<br>사람이 모자라면 AI와 함께 해도 돼요.</p></div>${conn()}
+<section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
+<button type="button" class="btn big sp-go" data-nav="create" data-key="splendor">💎 스플렌더 방 만들기</button>
+<section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
+<details class="ref"><summary>규칙 보기</summary><ol class="rules">${S.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol>${S.rulesExtra()}</details>
+<p class="small muted" style="text-align:center"><a href="/">다른 게임도 보기 →</a></p>`; }
   if (SOLO === 'kraken') return `<div class="khero"><div class="kh-art">${G.kraken.art('K')}${G.kraken.art('T')}${G.kraken.art('back')}</div><span class="kicker">각자 폰으로 · 실시간 · 4~8명</span><h1>노 터치 크라켄</h1><p>보물 상자를 열어라! 단, 크라켄은 절대 건드리지 마.<br>탐험대와 해골 해적단의 정체 숨김 게임이에요.</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn big kh-go" data-nav="create" data-key="kraken">🐙 크라켄 방 만들기</button>

@@ -8,8 +8,9 @@ const { WebSocketServer } = require('ws');
 require('./public/core.js');
 require('./public/games-d.js');
 require('./public/games-k.js');
+require('./public/games-s.js');
 const G = globalThis.G, U = globalThis.U;
-const GAMES = ['avalon', 'kraken'];
+const GAMES = ['avalon', 'kraken', 'splendor'];
 const gOf = r => G[r && GAMES.includes(r.game) ? r.game : 'avalon'];
 
 const PORT = process.env.PORT || 3000;
@@ -20,7 +21,7 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
 const server = http.createServer((req, res) => {
   let p = decodeURIComponent((req.url || '/').split('?')[0]);
   if (p === '/health') { res.writeHead(200, { 'Content-Type': 'text/plain' }); return res.end('ok'); }
-  if (p === '/' || p === '/kraken' || p === '/kraken/' || p === '/avalon' || p === '/avalon/') p = '/index.html';
+  if (p === '/' || p === '/kraken' || p === '/kraken/' || p === '/avalon' || p === '/avalon/' || p === '/splendor' || p === '/splendor/') p = '/index.html';
   const f = path.normalize(path.join(PUB, p));
   if (!f.startsWith(PUB)) { res.writeHead(403); return res.end(); }
   fs.readFile(f, (err, buf) => {
