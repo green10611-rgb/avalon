@@ -56,7 +56,7 @@ function finishVote(S, P, pass, y, no, bv) {
   U.log(S, `원정대 투표 ${pass ? '가결' : '부결'}${y != null ? ` (찬성 ${y} : 반대 ${no})` : ''}`);
 }
 function aNext(S, P) {
-  S.lead = (S.lead + 1) % P.length; S.phase = 'team'; S.votes = {};
+  S.lead = (S.lead + 1) % P.length; S.phase = 'team'; S.votes = {}; S.draft = [];
 }
 G.avalon = {
   name: '아발론: 레지스탕스', tag: '원정대를 꾸리고 숨은 배신자 찾기', min: 4, max: 10, mark: '⚔', hue: 'var(--p6)',
@@ -105,11 +105,20 @@ G.avalon = {
     }
     if (t === 'seen') { if (S.phase !== 'look') throw U.err('지금은 할 수 없어요.'); S.seen[me] = true;
       if (ids(P).every(i => S.seen[i])) { S.phase = 'team'; U.log(S, `모두 확인했어요. 첫 대장은 ${P[S.lead].name}님!`); } return; }
+    if (t === 'pick') {   // 대장이 고르는 중인 원정대를 모두에게 실시간으로
+      if (S.phase !== 'team' || me !== S.lead) throw U.err('대장만 고를 수 있어요.');
+      const x = Number(a.i), need = ASIZE[n][S.quest], d = (S.draft || []).slice();
+      if (!(x >= 0 && x < n)) return;
+      const k = d.indexOf(x);
+      if (k >= 0) d.splice(k, 1); else { if (d.length >= need) throw U.err(`${need}명까지 고를 수 있어요. 먼저 한 명을 빼 주세요.`); d.push(x); }
+      S.draft = d; return;
+    }
     if (t === 'propose') {
       if (S.phase !== 'team' || me !== S.lead) throw U.err('대장만 제안할 수 있어요.');
-      const team = Array.isArray(a.team) ? [...new Set(a.team.map(Number))].filter(i => i >= 0 && i < n) : [];
+      const src = Array.isArray(a.team) && a.team.length ? a.team : (S.draft || []);
+      const team = [...new Set(src.map(Number))].filter(i => i >= 0 && i < n);
       if (team.length !== ASIZE[n][S.quest]) throw U.err(`${ASIZE[n][S.quest]}명을 골라야 해요.`);
-      S.team = team.sort((x, y) => x - y); S.votes = {}; S.phase = 'vote';
+      S.team = team.sort((x, y) => x - y); S.votes = {}; S.phase = 'vote'; S.draft = [];
       U.log(S, `대장 ${P[me].name}님 제안: ${S.team.map(i => P[i].name).join(', ')}`); return;
     }
     if (t === 'vres') {   // 폰 하나로: 손으로 투표한 결과만 입력
@@ -200,13 +209,17 @@ G.avalon = {
       const left = ids(P).filter(i => !S.seen[i]).length;
       h += mine ? (ui.drawn ? U.btn('기억했어요 · 확인 완료', 'seen', {}, 'primary big avgo avseen') : '') : `<div class="avwait"><div>📜 역할 확인 중</div><span>아직 ${left}명이 확인하고 있어요</span></div>`;
     } else if (S.phase === 'team') {
-      const need = ASIZE[n][S.quest];
-      if (mine) { const sel = Array.isArray(ui.pick) ? ui.pick : [];
-        h += `<div class="panel avteam"><div class="avt-h"><b>${S.quest + 1}번째 원정대</b><span>${need}명을 골라 주세요 · 대장 본인도 가능</span></div>
-<div class="avslots">${Array.from({length: need}, (_, k) => sel[k] != null ? `<span class="avslot full" style="--pc:${U.pc(sel[k])}">${U.nm(P, sel[k])}</span>` : `<span class="avslot">${k + 1}</span>`).join('')}</div>
-<div class="avgrid big">${P.map((p, i) => U.gb(`<span class="pdot" style="--pc:${U.pc(i)}"></span><span class="avnm">${U.nm(P, i)}</span>${i === S.lead ? '<small>대장</small>' : ''}${sel.includes(i) ? '<em>✓</em>' : ''}`, 'pick', i, 'avbtn' + (sel.includes(i) ? ' sel' : ''), !sel.includes(i) && sel.length >= need)).join('')}</div>
-${U.btn(sel.length === need ? '이 원정대로 제안하기' : `${need - sel.length}명 더 고르세요`, 'propose', {team: sel}, 'primary big avgo', sel.length !== need)}<p class="small muted">제안 전에 다 같이 이야기해 보세요. 다시 누르면 선택이 취소돼요.</p></div>`; }
-      else h += `<div class="avwait"><div><b>♛ ${U.nm(P, S.lead)}님</b>이</div><div>원정대 <b>${need}명</b>을 고르고 있어요</div><span>의견을 말해 보세요!</span></div>`;
+      const need = ASIZE[n][S.quest], sel = S.draft || [];
+      const slots = `<div class="avslots">${Array.from({length: need}, (_, k) => sel[k] != null ? `<span class="avslot full avpop" style="--pc:${U.pc(sel[k])}">${U.nm(P, sel[k])}</span>` : `<span class="avslot">${k + 1}</span>`).join('')}</div>`;
+      if (mine) {
+        h += `<div class="panel avteam"><div class="avt-h"><b>${S.quest + 1}번째 원정대</b><span>${need}명을 골라 주세요 · 대장 본인도 가능 · 고르는 대로 모두에게 보여요</span></div>
+${slots}
+<div class="avgrid big">${P.map((p, i) => U.btn(`<span class="pdot" style="--pc:${U.pc(i)}"></span><span class="avnm">${U.nm(P, i)}</span>${i === S.lead ? '<small>대장</small>' : ''}${sel.includes(i) ? '<em>✓</em>' : ''}`, 'pick', {i}, 'avbtn' + (sel.includes(i) ? ' sel' : ''), !sel.includes(i) && sel.length >= need)).join('')}</div>
+${U.btn(sel.length === need ? '이 원정대로 제안하기' : `${need - sel.length}명 더 고르세요`, 'propose', {}, 'primary big avgo', sel.length !== need)}<p class="small muted">제안 전에 다 같이 이야기해 보세요. 다시 누르면 선택이 취소돼요.</p></div>`;
+      } else {
+        h += `<div class="panel avteam avwatch"><div class="avt-h"><b>♛ ${U.nm(P, S.lead)}님이 고르는 중</b><span>${S.quest + 1}번째 원정대 ${need}명 · 실시간으로 보여요</span></div>${slots}
+<div class="avlive-p">${P.map((p, i) => `<span class="${sel.includes(i) ? 'on' : ''}">${sel.includes(i) ? '✔' : '·'} ${U.nm(P, i)}</span>`).join('')}</div><p class="small muted" style="text-align:center">${sel.length === need ? '다 골랐어요! 곧 제안할 거예요.' : '의견을 말해 보세요!'}</p></div>`;
+      }
     } else if (S.phase === 'vote') {
       const head = `<div class="avt-h"><b>${S.quest + 1}번째 원정대 찬반 투표</b><span>대장 ${U.nm(P, S.lead)}님 제안</span></div><div class="avslots">${S.team.map(i => `<span class="avslot full" style="--pc:${U.pc(i)}">${U.nm(P, i)}</span>`).join('')}</div>`;
       if (ui._local) {
@@ -262,7 +275,7 @@ ${me >= 0 ? U.btn(V.ok ? '⚔ 원정 출발하기' : last5 ? '결과 보기' : '
     if (name === 'nofail') { ui.nofail = (ui.nofail || 0) + 1; return; }
     if (name === 'kt') { ui.kt = ui.kt === val ? null : val; return; }
     if (name === 'vv') { ui.vv = Object.assign({}, ui.vv); ui.vv[val[0]] = val[1]; return; }
-    if (name !== 'pick') return;
+    if (name !== 'pick') return; // (예전 방식: 이제 대장 선택은 게임 상태로 공유돼요)
     const s = Array.isArray(ui.pick) ? ui.pick.slice() : [];
     const i = s.indexOf(val); if (i >= 0) s.splice(i, 1); else s.push(val);
     ui.pick = s;
@@ -422,7 +435,13 @@ function botStep(S, P) {
   let acted = false;
   const run = (i, t, a) => { try { G.avalon.act(S, i, t, a, P); acted = true; } catch (e) {} };
   if (S.phase === 'look') { for (let i = 0; i < n; i++) if (isBot(i) && !S.seen[i]) { run(i, 'seen', {}); break; } }
-  else if (S.phase === 'team' && isBot(S.lead)) run(S.lead, 'propose', {team: botTeam(S, S.lead, n)});
+  else if (S.phase === 'team' && isBot(S.lead)) {
+    const need = ASIZE[n][S.quest], d = S.draft || [];
+    if (!S._bplan || S._bplan.q !== S.quest || S._bplan.l !== S.lead || S._bplan.r !== S.rej) S._bplan = {q: S.quest, l: S.lead, r: S.rej, t: botTeam(S, S.lead, n)};
+    const nx = S._bplan.t.find(i => !d.includes(i));
+    if (d.length < need && nx !== undefined) run(S.lead, 'pick', {i: nx});
+    else run(S.lead, 'propose', {});
+  }
   else if (S.phase === 'vote') { const i = [...Array(n).keys()].find(k => isBot(k) && S.votes[k] === undefined); if (i !== undefined) run(i, 'vote', {ok: botVote(S, i)}); }
   else if (S.phase === 'quest') { const i = S.team.find(k => isBot(k) && S.cards[k] === undefined); if (i !== undefined) run(i, 'card', {ok: botCard(S, i, n)}); }
   else if (S.phase === 'kill') { const as = S.role.indexOf('AS'); if (isBot(as)) run(as, 'kill', {t: botKill(S, n)}); }

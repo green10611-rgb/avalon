@@ -814,3 +814,7 @@ g.tap polygon{stroke:var(--hi);stroke-width:.1}
 
 .avqr-row.l em{color:#8A6510}
 .avqr-row.l span{background:linear-gradient(90deg,#FFE79A,#F2C94C);border-color:#C99A1E;color:#3A2A00}
+
+@keyframes avPop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:none;opacity:1}}
+.avslot.avpop{animation:avPop .35s both}
+.avwatch .avt-h b{color:#8A6510}
