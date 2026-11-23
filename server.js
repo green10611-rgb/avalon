@@ -27,97 +27,11 @@ const server = http.createServer((req, res) => {
 });
 
 
-/* ---------- AI 참가자 ---------- */
-const EVIL = {AS: 1, MO: 1, MD: 1, OB: 1, MI: 1};
-const isEvil = r => !!EVIL[r];
-const SIZES = {4: [2,2,2,3,3], 5: [2,3,2,3,3], 6: [2,3,4,3,4], 7: [2,3,3,4,4], 8: [3,4,4,5,5], 9: [3,4,4,5,5], 10: [3,4,4,5,5]};
-const BOTNAMES = ['랜슬롯', '가웨인', '트리스탄', '베디비어', '갤러해드', '케이', '보스', '라모락', '가레스'];
-const rnd = () => Math.random();
-const HUNCH = new Map();
-const pickN = (arr, k) => U.shuffle(arr.slice()).slice(0, k);
-// 이 AI가 아는 '확실한 악' 목록
-function knownEvil(S, me) {
-  const r = S.role[me], n = S.role.length, out = new Set();
-  if (r === 'ME') for (let i = 0; i < n; i++) if (isEvil(S.role[i]) && S.role[i] !== 'MD') out.add(i);
-  if (isEvil(r) && r !== 'OB') for (let i = 0; i < n; i++) if (isEvil(S.role[i]) && S.role[i] !== 'OB') out.add(i);
-  return out;
-}
-// 원정 실패 기록으로 계산한 의심 점수 (선의 AI 시점)
-function suspicion(S, me) {
-  const n = S.role.length, sc = Array(n).fill(0), ke = knownEvil(S, me);
-  const ql = S.qlog || [];
-  ql.forEach((q, k) => {
-    const others = q.team.filter(i => i !== me);
-    const h = S.hist.filter(x => x.ok && x.q === k).pop();
-    if (q.f > 0) { for (const i of others) sc[i] += q.f / Math.max(1, others.length) * 1.5; if (h && h.lead !== me) sc[h.lead] += 0.3; if (h && h.bv) for (const i in h.bv) if (+i !== me) sc[+i] += h.bv[i] ? 0.25 : -0.15; }
-    else for (const i of others) sc[i] -= 0.2;
-  });
-  if (S.role[me] === 'PE') for (let i = 0; i < n; i++) if (S.role[i] === 'ME' || S.role[i] === 'MO') sc[i] -= 0.1;
-  // 사람처럼 '감'이 있는 AI: 게임마다 정해지는 막연한 느낌(가끔 틀려요)
-  const hk = (S._g || '') + ':' + me; if (HUNCH.size > 5000) HUNCH.clear(); if (!HUNCH.has(hk)) HUNCH.set(hk, S.role.map(r => (isEvil(r) ? 0.45 : 0) + (rnd() - 0.5) * 0.7));
-  const hu = HUNCH.get(hk); for (let i = 0; i < n; i++) sc[i] += hu[i] * Math.min(1, 0.5 + 0.25 * ql.length);
-  sc[me] = -9;
-  if (S.role[me] === 'ME') for (const i of ke) sc[i] += rnd() < 0.85 ? 3 : 0; // 티 안 나게 가끔 실수
-  return sc;
-}
-function botTeam(S, me, n) {
-  const need = SIZES[n][S.quest], all = [...Array(n).keys()];
-  if (isEvil(S.role[me])) {
-    const mates = [...knownEvil(S, me)].filter(i => i !== me);
-    const team = [me];
-    if (need >= 3 && mates.length && rnd() < 0.4) team.push(mates[U.rint(mates.length)]);
-    const goods = pickN(all.filter(i => !team.includes(i) && !mates.includes(i)), need);
-    for (const i of goods) if (team.length < need) team.push(i);
-    for (const i of pickN(all, n)) if (team.length < need && !team.includes(i)) team.push(i);
-    return team;
-  }
-  const sc = suspicion(S, me);
-  return all.map(i => [i, sc[i] + rnd() * 0.3]).sort((a, b) => a[1] - b[1]).slice(0, need).map(x => x[0]);
-}
-function botVote(S, me) {
-  const team = S.team;
-  if (isEvil(S.role[me])) {
-    if (S.rej >= 4) return false;
-    const ke = knownEvil(S, me); ke.add(me);
-    if (S.role[me] === 'OB') return team.includes(me) || rnd() < 0.3;
-    return team.some(i => ke.has(i)) ? rnd() < 0.9 : rnd() < 0.15;
-  }
-  if (S.rej >= 4) return true;
-  const sc = suspicion(S, me), worst = Math.max(...team.filter(i => i !== me).map(i => sc[i]), -1);
-  if (S.role[me] === 'ME' && team.some(i => knownEvil(S, me).has(i))) return rnd() < 0.15;
-  if (S.quest === 0) return team.includes(me) ? rnd() < 0.9 : rnd() < 0.4;
-  if (worst >= 0.5) return rnd() < 0.08;
-  return team.includes(me) ? (worst < 0.3 ? rnd() < 0.9 : rnd() < 0.4) : (worst < 0.1 ? rnd() < 0.6 : rnd() < 0.2);
-}
-function botCard(S, me, n) {
-  if (!isEvil(S.role[me])) return true;
-  const evilsOnTeam = S.team.filter(i => isEvil(S.role[i]) && S.role[i] !== 'OB' && S.role[me] !== 'OB');
-  const leadEvil = evilsOnTeam.length ? Math.min(...evilsOnTeam) : me;
-  const needF = (n >= 7 && S.quest === 3) ? 2 : 1;
-  if (needF === 1 && S.role[me] !== 'OB' && leadEvil !== me) return true; // 동료가 실패를 낼 거라 믿고 숨기
-  return rnd() < (S.quest === 0 ? 0.55 : 0.9) ? false : true;
-}
-function botKill(S, n) {
-  const goods = [...Array(n).keys()].filter(i => !isEvil(S.role[i]));
-  const score = goods.map(i => {
-    let s = rnd() * 0.5;
-    for (const h of S.hist) if (h.lead === i) s += h.team.some(t => isEvil(S.role[t])) ? -1 : 1;
-    if (S.role[i] === 'PE') s += 0.5;
-    return [i, s];
-  }).sort((a, b) => b[1] - a[1]);
-  return score[0][0];
-}
+/* ---------- AI 참가자 (두뇌는 public/games-d.js에 있어요) ---------- */
+const BOTNAMES = g.BOTNAMES;
 function botStep(r) {
   if (r.status !== 'play' || !r.state || r.state.winner) return false;
-  const S = r.state, P = r.players, n = P.length, isBot = i => P[i] && P[i].bot;
-  let acted = false;
-  const run = (i, t, a) => { try { g.act(S, i, t, a, P); acted = true; } catch (e) {} };
-  if (S.phase === 'look') { for (let i = 0; i < n; i++) if (isBot(i) && !S.seen[i]) { run(i, 'seen', {}); break; } }
-  else if (S.phase === 'team' && isBot(S.lead)) run(S.lead, 'propose', {team: botTeam(S, S.lead, n)});
-  else if (S.phase === 'vote' && !S.bv && P.some(p => p.bot)) { const bv = {}; for (let i = 0; i < n; i++) if (isBot(i)) bv[i] = botVote(S, i); S.bv = bv; acted = true; }
-  else if (S.phase === 'quest') { const i = S.team.find(k => isBot(k) && S.cards[k] === undefined); if (i !== undefined) run(i, 'card', {ok: botCard(S, i, n)}); }
-  else if (S.phase === 'kill') { const as = S.role.indexOf('AS'); if (isBot(as)) run(as, 'kill', {t: botKill(S, n)}); }
-  return acted;
+  return g.botStep(r.state, r.players);
 }
 function scheduleBots(r) {
   if (r.botTimer || !r.players.some(p => p.bot)) return;
