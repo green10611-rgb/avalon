@@ -769,6 +769,8 @@ g.tap polygon{stroke:var(--hi);stroke-width:.1}
 .cd-empty{margin:auto;color:#8A92A6;font-size:13px;text-align:center}
 .cd-form{display:flex;gap:6px;padding:8px;border-top:1px solid #E1E5EC;background:#fff;flex:none}
 .cd-in{flex:1;min-width:0;min-height:42px;border-radius:12px;border:1.5px solid #D3D8E2;padding:6px 12px;font-size:16px;color:#161A2B;background:#fff}
+.cd-in:disabled{background:#F3F5F9}
+.cd-send:disabled{opacity:.4}
 .cd-send{min-height:42px;border:none;border-radius:12px;background:#2A56D6;color:#fff;font-weight:800;padding:0 14px;font-size:15px;cursor:pointer}
 /* 넓은 화면: 오른쪽 고정 */
 @media (min-width:900px){

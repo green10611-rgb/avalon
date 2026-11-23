@@ -51,7 +51,7 @@ function clearInvite(){ invite = ''; try { history.replaceState(null, '', locati
 /* ---------- 화면 ---------- */
 const conn = () => `<div class="connline ${connected ? 'ok' : 'bad'}"><i></i>${connected ? '실시간 서버 연결됨' : (room ? '연결이 잠깐 끊겼어요. 다시 연결하는 중… (방은 그대로 있어요)' : '서버에 연결하는 중… (서버가 잠들어 있었다면 30초~1분 걸려요)')}</div>`;
 function render(){
-  if (dock){ dock.show(!!room && myIdx() >= 0); if (room) dock.update(room.chat || [], pid); }
+  if (dock){ dock.show(true); if (room && myIdx() >= 0){ dock.enable(true); dock.update(room.chat || [], pid); } else dock.enable(false, '방에 들어가면 여기서 같이 채팅할 수 있어요 💬'); }
   const y = window.scrollY;
   $app.innerHTML = !code ? homeHTML() : !room ? `<div class="empty">방 <b>${esc(code)}</b>에 연결하는 중…</div><button type="button" class="btn ghost" data-nav="leaveLocal">처음으로</button>` : room.status === 'lobby' ? lobbyHTML() : gameHTML();
   const st = state(), lk = st && st.last ? JSON.stringify(st.last) + (st.quest || 0) : '';
