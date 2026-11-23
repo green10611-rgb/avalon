@@ -811,3 +811,6 @@ g.tap polygon{stroke:var(--hi);stroke-width:.1}
 .avqr-row span{font-size:14px;font-weight:800;padding:3px 10px;border-radius:99px;background:#F5EFDF;border:1px solid #E3D8BA}
 .avqr-row.y span{background:#EEF3FF;border-color:#9DB5F5}.avqr-row.n span{background:#FDEEEE;border-color:#EFA2A6}
 .avqr-row span.x{background:none;border:none;color:#9A927E;font-weight:600}
+
+.avqr-row.l em{color:#8A6510}
+.avqr-row.l span{background:linear-gradient(90deg,#FFE79A,#F2C94C);border-color:#C99A1E;color:#3A2A00}

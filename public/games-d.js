@@ -443,9 +443,9 @@ function questLog(S, P) {
     const e = ql[q];
     if (!e) {
       const now = q === S.quest && !S.winner, tries = S.hist.filter(x => x.q === q && !x.ok).length;
-      return `<div class="avqr ${now ? 'now' : 'wait'}"><div class="avqr-n">${q + 1}차</div><div class="avqr-b"><b>${now ? '진행 중' : '아직 안 했어요'}</b><small>${sz}명 원정${needFail(n, q) > 1 ? ' · 실패 2장 필요' : ''}${now && tries ? ` · 부결 ${tries}번` : ''}</small>${now && S.team.length && ['vote', 'vresult', 'quest', 'reveal'].includes(S.phase) ? `<div class="avqr-row t"><em>⚔ 원정대</em><div>${S.team.map(i => `<span>${U.nm(P, i)}</span>`).join('')}</div></div>` : ''}</div></div>`;
+      return `<div class="avqr ${now ? 'now' : 'wait'}"><div class="avqr-n">${q + 1}차</div><div class="avqr-b"><b>${now ? '진행 중' : '아직 안 했어요'}</b><small>${sz}명 원정${needFail(n, q) > 1 ? ' · 실패 2장 필요' : ''}${now && tries ? ` · 부결 ${tries}번` : ''}</small>${now ? `<div class="avqr-row l"><em>♛ 대장</em><div><span>${U.nm(P, S.lead)}</span></div></div>` : ''}${now && S.team.length && ['vote', 'vresult', 'quest', 'reveal'].includes(S.phase) ? `<div class="avqr-row t"><em>⚔ 원정대</em><div>${S.team.map(i => `<span>${U.nm(P, i)}</span>`).join('')}</div></div>` : ''}</div></div>`;
     }
-    return `<div class="avqr ${e.ok ? 'ok' : 'no'}"><div class="avqr-n">${q + 1}차</div><div class="avqr-b"><b>${e.ok ? '⚔ 성공' : '✕ 실패'} <em>실패 카드 ${e.f}장</em></b><small>대장 ${e.lead != null ? U.nm(P, e.lead) : '?'}${e.tries > 1 ? ` · ${e.tries}번째 제안에 가결` : ''}</small><div class="avqr-row t"><em>⚔ 원정대</em><div>${e.team.map(i => `<span>${U.nm(P, i)}</span>`).join('')}</div></div>${voteLine(S, P, q)}</div></div>`;
+    return `<div class="avqr ${e.ok ? 'ok' : 'no'}"><div class="avqr-n">${q + 1}차</div><div class="avqr-b"><b>${e.ok ? '⚔ 성공' : '✕ 실패'} <em>실패 카드 ${e.f}장</em></b>${e.tries > 1 ? `<small>${e.tries}번째 제안에 가결</small>` : ''}<div class="avqr-row l"><em>♛ 대장</em><div><span>${e.lead != null ? U.nm(P, e.lead) : '?'}</span></div></div><div class="avqr-row t"><em>⚔ 원정대</em><div>${e.team.map(i => `<span>${U.nm(P, i)}</span>`).join('')}</div></div>${voteLine(S, P, q)}</div></div>`;
   }).join('');
   return `<div class="avqrs">${rows}</div>`;
 }
