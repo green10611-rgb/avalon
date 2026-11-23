@@ -60,7 +60,8 @@ function render(){
   if (dock){ dock.show(true); if (room && myIdx() >= 0){ dock.enable(true); dock.update(room.chat || [], pid); } else dock.enable(false, '방에 들어가면 여기서 같이 채팅할 수 있어요 💬'); }
   const y = window.scrollY;
   $app.innerHTML = !code ? homeHTML() : !room ? `<div class="empty">방 <b>${esc(code)}</b>에 연결하는 중…</div><button type="button" class="btn ghost" data-nav="leaveLocal">처음으로</button>` : room.status === 'lobby' ? lobbyHTML() : gameHTML();
-  const st = state(), lk = st && st.last ? JSON.stringify(st.last) + (st.quest || 0) : '';
+  document.body.classList.toggle('g-splendor', !!(room && room.status !== 'lobby' && room.game === 'splendor' && state()));
+  const st = state(), lk = st && st.last && !st.decks ? JSON.stringify(st.last) + (st.quest || 0) : '';
   if (lk && render.lk !== undefined && lk !== render.lk) window.scrollTo(0, 0); else window.scrollTo(0, y);
   render.lk = lk;
 }

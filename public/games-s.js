@@ -19,41 +19,70 @@ const NOBLES = [{w: 4, u: 4}, {u: 4, g: 4}, {g: 4, r: 4}, {r: 4, k: 4}, {k: 4, w
   {w: 3, u: 3, g: 3}, {u: 3, g: 3, r: 3}, {g: 3, r: 3, k: 3}, {r: 3, k: 3, w: 3}, {k: 3, w: 3, u: 3}];
 const NOBN = ['메디치 공', '카를 대공', '이사벨 여왕', '술레이만 황제', '앙리 왕', '엘리자베스 여왕', '프란치스코 공', '마키아벨리 경', '안 왕비', '샤를 공작'];
 
+
 /* ---------- 직접 그린 그림 (SVG) ---------- */
-const GF = {w: ['#F7F9FC', '#8A93A6', '#FFFFFF'], u: ['#2F6FE0', '#163A84', '#9CC2FF'], g: ['#1FA463', '#0B5531', '#9BE8BF'],
-  r: ['#E0384B', '#76101E', '#FFB0B8'], k: ['#3B404C', '#0B0D12', '#9AA3B5'], y: ['#F5C542', '#946500', '#FFF1B8']};
-const SHAPE = {
-  w: (f, s, h) => `<path d="M8 15 14 7h12l6 8-12 19z" fill="${f}" stroke="${s}" stroke-width="2" stroke-linejoin="round"/><path d="M8 15h24M14 7l2 8 4-8 4 8 2-8M16 15l4 19 4-19" fill="none" stroke="${s}" stroke-width="1" opacity=".7"/><path d="M15 9l-3 5" stroke="${h}" stroke-width="2" stroke-linecap="round"/>`,
-  u: (f, s, h) => `<ellipse cx="20" cy="20" rx="11" ry="14" fill="${f}" stroke="${s}" stroke-width="2"/><ellipse cx="20" cy="20" rx="6" ry="8" fill="none" stroke="${s}" stroke-width="1" opacity=".6"/><path d="M14 13q2-4 6-5" stroke="${h}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`,
-  g: (f, s, h) => `<path d="M12 7h16l5 5v16l-5 5H12l-5-5V12z" fill="${f}" stroke="${s}" stroke-width="2" stroke-linejoin="round"/><path d="M15 12h10l3 3v10l-3 3H15l-3-3V15z" fill="none" stroke="${s}" stroke-width="1" opacity=".6"/><path d="M11 11l3 3M29 11l-3 3M11 29l3-3M29 29l-3-3" stroke="${s}" stroke-width="1" opacity=".5"/><path d="M14 9h8" stroke="${h}" stroke-width="2" stroke-linecap="round"/>`,
-  r: (f, s, h) => `<path d="M20 34 7 18l5-9h16l5 9z" fill="${f}" stroke="${s}" stroke-width="2" stroke-linejoin="round"/><path d="M7 18h26M12 9l4 9 4-9 4 9 4-9M16 18l4 16 4-16" fill="none" stroke="${s}" stroke-width="1" opacity=".55"/><path d="M13 12l-2 4" stroke="${h}" stroke-width="2" stroke-linecap="round"/>`,
-  k: (f, s, h) => `<path d="M20 5l13 7.5v15L20 35 7 27.5v-15z" fill="${f}" stroke="${s}" stroke-width="2" stroke-linejoin="round"/><path d="M20 12l7 4v8l-7 4-7-4v-8z" fill="none" stroke="${h}" stroke-width="1" opacity=".6"/><path d="M20 5v7M33 12.5l-6 3.5M33 27.5l-6-3.5M20 35v-7M7 27.5l6-3.5M7 12.5l6 3.5" stroke="${h}" stroke-width=".8" opacity=".45"/><path d="M11 13l4-2" stroke="${h}" stroke-width="2" stroke-linecap="round"/>`,
-  y: (f, s, h) => `<circle cx="20" cy="20" r="14" fill="${f}" stroke="${s}" stroke-width="2"/><circle cx="20" cy="20" r="10" fill="none" stroke="${s}" stroke-width="1" opacity=".6"/><path d="M13 24l1.5-8 3.5 4 2-6 2 6 3.5-4 1.5 8z" fill="${s}" opacity=".85"/><path d="M12 13q3-4 8-5" stroke="${h}" stroke-width="2.2" fill="none" stroke-linecap="round"/>`
+const isDOM = typeof document !== 'undefined';
+const GST = {w: ['#FFFFFF', '#DCE5F2', '#93A3BC'], u: ['#A3C8FF', '#2F6FE0', '#0D2A6E'], g: ['#9DF2C8', '#1FA463', '#074527'],
+  r: ['#FFA8B2', '#E0384B', '#650A18'], k: ['#A3ABBD', '#3B404C', '#07080C'], y: ['#FFF4B5', '#F5C542', '#8F5E00']};
+const lin = (id, st, x2 = 1, y2 = 1) => `<linearGradient id="${id}" x1="0" y1="0" x2="${x2}" y2="${y2}">${st.map((c, k) => `<stop offset="${k / (st.length - 1)}" stop-color="${c}"/>`).join('')}</linearGradient>`;
+function defsSVG() {
+  let d = '';
+  for (const x in GST) {
+    d += lin('spg-' + x, GST[x]);
+    d += `<radialGradient id="spr-${x}" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="${GST[x][0]}"/><stop offset=".45" stop-color="${GST[x][1]}"/><stop offset="1" stop-color="${GST[x][2]}"/></radialGradient>`;
+  }
+  d += lin('sp-sky0', ['#BFE3FF', '#FDF3DC'], 0, 1) + lin('sp-sky1', ['#7EC3FF', '#DDF1FF'], 0, 1) + lin('sp-sky2', ['#2A1550', '#8C3A78', '#F39A63'], 0, 1)
+    + lin('sp-sea', ['#4FA0E8', '#123F7A'], 0, 1) + lin('sp-mtn', ['#A9B6CC', '#56627C'], 0, 1) + lin('sp-hill', ['#C79B62', '#6A4522'], 0, 1)
+    + lin('sp-wood', ['#9A6431', '#4A2C10'], 0, 1) + lin('sp-gold', ['#FFF0A8', '#E3A92F', '#8A5800']) + lin('sp-parch', ['#FFF9EA', '#EED9AE'], 0, 1)
+    + lin('sp-bk0', ['#4CB873', '#1D6B3E']) + lin('sp-bk1', ['#F0BE3A', '#A86F07']) + lin('sp-bk2', ['#4E86E8', '#1A3F95']) + lin('sp-wall', ['#FFF6E2', '#D9BE8C'], 0, 1);
+  return d;
+}
+function ensureDefs() {
+  if (!isDOM || document.getElementById('sp-defs')) return;
+  const host = document.body || document.documentElement; if (!host) return;
+  const w = document.createElement('div');
+  w.innerHTML = `<svg id="sp-defs" width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false"><defs>${defsSVG()}</defs></svg>`;
+  host.appendChild(w.firstChild);
+}
+if (isDOM) { if (document.body) ensureDefs(); else document.addEventListener('DOMContentLoaded', ensureDefs); }
+
+const GEMP = {
+  w: `<path d="M5 15 12.5 5.5h15L35 15 20 35.5z" fill="url(#spg-w)" stroke="#6F7E99" stroke-width="1.3" stroke-linejoin="round"/><path d="M12.5 5.5h15L24 15h-8z" fill="#fff" opacity=".85"/><path d="M5 15l7.5-9.5L16 15z" fill="#fff" opacity=".5"/><path d="M27.5 5.5 35 15H24z" fill="#5C6C88" opacity=".35"/><path d="M5 15h11l4 20.5z" fill="#C3D0E3" opacity=".7"/><path d="M24 15h11L20 35.5z" fill="#54637F" opacity=".5"/><path d="M16 15h8l-4 20.5z" fill="#fff" opacity=".6"/>`,
+  u: `<ellipse cx="20" cy="20" rx="12.5" ry="15.5" fill="url(#spg-u)" stroke="#0D2A6E" stroke-width="1.3"/><path d="M14 13.5 20 9l6 4.5v13L20 31l-6-4.5z" fill="#CFE1FF" opacity=".45"/><path d="M20 4.5V9M20 31v4.5M7.5 20H14M26 20h6.5M11 9.5l3 4M29 9.5l-3 4M11 30.5l3-4M29 30.5l-3-4" stroke="#0D2A6E" stroke-width=".8" opacity=".55"/><path d="M26 13.5v13l6.5-6.5z" fill="#06173F" opacity=".35"/><path d="M20 31l6-4.5 3 4L20 35.5z" fill="#06173F" opacity=".35"/><path d="M14 13.5 20 9V4.5c-5 0-9 4-10 7.5z" fill="#fff" opacity=".35"/>`,
+  g: `<path d="M12 5.5h16l6.5 6.5v16L28 34.5H12L5.5 28V12z" fill="url(#spg-g)" stroke="#063D22" stroke-width="1.3" stroke-linejoin="round"/><path d="M12 5.5h16l-2.5 4.5h-11z" fill="#fff" opacity=".55"/><path d="M5.5 12l4.5 2.5v11L5.5 28z" fill="#fff" opacity=".25"/><path d="M34.5 12 30 14.5v11l4.5 2.5z" fill="#022314" opacity=".35"/><path d="M28 34.5H12l2.5-4.5h11z" fill="#022314" opacity=".4"/><path d="M14.5 10h11l4.5 4.5v11L25.5 30h-11L10 25.5v-11z" fill="#7BE3AE" opacity=".25" stroke="#063D22" stroke-width=".7"/><path d="M16.5 14h7l2.5 2.5v7L23.5 26h-7L14 23.5v-7z" fill="#C9FFE2" opacity=".5"/>`,
+  r: `<circle cx="20" cy="20" r="15" fill="url(#spg-r)" stroke="#5A0915" stroke-width="1.3"/><path d="M20 12.5l5.3 2.2 2.2 5.3-2.2 5.3-5.3 2.2-5.3-2.2-2.2-5.3 2.2-5.3z" fill="#FFD0D6" opacity=".45" stroke="#5A0915" stroke-width=".7"/><path d="M20 5v7.5M35 20h-7.5M20 35v-7.5M5 20h7.5M9.4 9.4l5.3 5.3M30.6 9.4l-5.3 5.3M30.6 30.6l-5.3-5.3M9.4 30.6l5.3-5.3" stroke="#5A0915" stroke-width=".8" opacity=".5"/><path d="M30.6 9.4A15 15 0 0 1 9.4 30.6L20 20z" fill="#3A0008" opacity=".28"/><path d="M9.4 9.4A15 15 0 0 1 20 5v7.5l-5.3 2.2z" fill="#fff" opacity=".4"/>`,
+  k: `<path d="M20 4.5l13.5 7.8v15.5L20 35.5 6.5 27.8V12.3z" fill="url(#spg-k)" stroke="#000" stroke-width="1.3" stroke-linejoin="round"/><path d="M20 11.5l7.4 4.3v8.5L20 28.5l-7.4-4.2v-8.5z" fill="#5A6275" opacity=".55" stroke="#C5CCDA" stroke-width=".6" stroke-opacity=".5"/><path d="M20 4.5v7l-7.4 4.3-6.1-3.5z" fill="#fff" opacity=".3"/><path d="M33.5 27.8 27.4 24.3 20 28.5v7z" fill="#000" opacity=".45"/><ellipse cx="17" cy="16" rx="3.5" ry="2" fill="#fff" opacity=".45" transform="rotate(-30 17 16)"/>`,
+  y: `<circle cx="20" cy="20" r="15.5" fill="url(#spg-y)" stroke="#7A4D00" stroke-width="1.3"/><circle cx="20" cy="20" r="11.5" fill="none" stroke="#8F5E00" stroke-width="1" opacity=".7"/><path d="M12.5 24.5l1.6-9 3.9 4.3 2-6.3 2 6.3 3.9-4.3 1.6 9z" fill="#8F5E00" opacity=".85"/><rect x="12.5" y="25" width="15" height="2.2" rx="1" fill="#8F5E00" opacity=".85"/><path d="M9 14a12 12 0 0 1 9-8" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".7"/>`
 };
-const gem = x => { const [f, s, h] = GF[x]; return `<svg viewBox="0 0 40 40" aria-hidden="true">${SHAPE[x](f, s, h)}</svg>`; };
-// 포커칩 모양 토큰
-const chip = x => { const [f, s] = GF[x]; const rim = x === 'w' ? '#C9CFDB' : s;
-  return `<svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28" fill="${rim}"/><circle cx="30" cy="30" r="28" fill="none" stroke="#fff" stroke-width="6" stroke-dasharray="7 8.6" opacity=".85"/><circle cx="30" cy="30" r="20" fill="${x === 'k' ? '#1C1F26' : x === 'w' ? '#EEF1F6' : f}" stroke="#fff" stroke-width="1.5" opacity=".98"/><g transform="translate(13 13) scale(.85)">${SHAPE[x](...GF[x])}</g></svg>`; };
-// 카드 그림: 1단계 광산 · 2단계 상단(배) · 3단계 궁전
+const SPARK = `<path class="spk" d="M11 6.5l1.1 3.4 3.4 1.1-3.4 1.1L11 15.5l-1.1-3.4-3.4-1.1 3.4-1.1z" fill="#fff"/>`;
+const gem = x => `<svg viewBox="0 0 40 40" class="spgem" aria-hidden="true">${GEMP[x]}${SPARK}</svg>`;
+const chip = x => { const ins = x === 'w' ? '#7B89A2' : x === 'y' ? '#FFF8D8' : '#fff';
+  return `<svg viewBox="0 0 64 64" class="spchip" aria-hidden="true"><circle cx="32" cy="33.5" r="30" fill="rgba(0,0,0,.28)"/><circle cx="32" cy="32" r="30" fill="url(#spr-${x})" stroke="rgba(0,0,0,.35)"/>${[0, 1, 2, 3, 4, 5, 6, 7].map(k => `<rect x="28.5" y="2.6" width="7" height="8.6" rx="2" fill="${ins}" opacity=".92" transform="rotate(${k * 45 + 22.5} 32 32)"/>`).join('')}<circle cx="32" cy="32" r="21" fill="url(#spr-${x})" stroke="${ins}" stroke-width="1.6" stroke-dasharray="3 2.3"/><circle cx="32" cy="32" r="17.5" fill="rgba(255,255,255,.14)" stroke="rgba(0,0,0,.22)"/><g transform="translate(15.5 15.5) scale(.825)">${GEMP[x]}</g><path d="M10 25A23 23 0 0 1 25 9.5" stroke="#fff" stroke-opacity=".6" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`; };
+
+// 카드 그림: 1단계 광산 · 2단계 상선 · 3단계 궁전 (보너스 색으로 물들어요)
 const SCENE = [
-  `<path d="M0 70 18 40l14 16 16-26 20 30 12-10 20 20v30H0z" fill="currentColor" opacity=".28"/><path d="M0 84 22 62l18 14 22-20 38 30v14H0z" fill="currentColor" opacity=".45"/><path d="M38 100V84q12-12 24 0v16z" fill="#3A2A1A" opacity=".7"/><path d="M62 70l14 14M70 66l-6 14" stroke="#5A4026" stroke-width="3" stroke-linecap="round"/>`,
-  `<path d="M0 82q12-6 25 0t25 0 25 0 25 0v18H0z" fill="currentColor" opacity=".45"/><path d="M28 78h44l-8 10H36z" fill="#6B4220"/><path d="M50 78V40" stroke="#4A2E12" stroke-width="2.5"/><path d="M50 42q18 14 0 32z" fill="#FFF8E6" stroke="#8B6A3C"/><path d="M50 46q-14 10 0 24z" fill="currentColor" opacity=".55"/><path d="M50 40l10-4-10-3z" fill="currentColor"/><circle cx="82" cy="30" r="8" fill="#FFE08A" opacity=".8"/>`,
-  `<path d="M14 100V58h14v-8l7-10 7 10v8h16v-8l7-10 7 10v8h14v42z" fill="currentColor" opacity=".38"/><path d="M42 100V74q8-10 16 0v26z" fill="#3A2A1A" opacity=".55"/><path d="M35 40v-8M65 40v-8" stroke="currentColor" stroke-width="2"/><path d="M35 32l7 3-7 3zM65 32l7 3-7 3z" fill="currentColor"/><rect x="20" y="64" width="6" height="8" rx="3" fill="#FFF8E6" opacity=".8"/><rect x="74" y="64" width="6" height="8" rx="3" fill="#FFF8E6" opacity=".8"/>`
+  x => `<rect width="100" height="140" fill="url(#sp-sky0)"/><circle cx="78" cy="44" r="10" fill="#FFE9A8"/><circle cx="78" cy="44" r="16" fill="#FFE9A8" opacity=".35"/><path d="M0 98 18 62l13 16 19-32 20 34 12-12 18 22v50H0z" fill="url(#sp-mtn)"/><path d="M50 46l6 10-4 2-5-4-3 3z" fill="#fff" opacity=".85"/><path d="M0 108q26-18 54-6t46-4v42H0z" fill="url(#sp-hill)"/><path d="M27 140v-26q17-22 34 0v26z" fill="#1A1006"/><path d="M33 140v-22q11-12 22 0v22z" fill="url(#spg-${x})" opacity=".22"/><path d="M25 140v-28M63 140v-28M22 112h44" stroke="url(#sp-wood)" stroke-width="4.5" stroke-linecap="round"/><circle cx="76" cy="122" r="13" fill="url(#spg-${x})" opacity=".3"/><path d="M70 132l4-17 4 17zM77 133l3-12 3 12zM66 134l2.5-9 2.5 9z" fill="url(#spg-${x})" stroke="#fff" stroke-width=".7"/><path d="M6 130h17l-2.5 8H8.5z" fill="#5A3A18" stroke="#2E1C08" stroke-width=".8"/><path d="M9 130l2-4 3 4zM14 130l2.5-5 3 5z" fill="url(#spg-${x})"/><circle cx="11" cy="139" r="2" fill="#222"/><circle cx="19" cy="139" r="2" fill="#222"/>`,
+  x => `<rect width="100" height="140" fill="url(#sp-sky1)"/><circle cx="80" cy="40" r="9" fill="#FFF1B8"/><ellipse cx="24" cy="44" rx="13" ry="4" fill="#fff" opacity=".85"/><ellipse cx="32" cy="40" rx="8" ry="4" fill="#fff" opacity=".85"/><path d="M0 108q12-6 25 0t25 0 25 0 25 0v32H0z" fill="url(#sp-sea)"/><path d="M20 110h62l-9 15H30z" fill="url(#sp-wood)" stroke="#2E1C08" stroke-width=".8"/><path d="M24 115h54" stroke="url(#sp-gold)" stroke-width="1.6"/><path d="M44 110V52M64 110V62" stroke="#3E260E" stroke-width="2.2"/><path d="M44 56q17 13 0 30zM44 88q13 9 0 19z" fill="#FFF8E8" stroke="#BFA06A" stroke-width=".8"/><path d="M64 64q13 10 0 24zM64 90q10 7 0 15z" fill="#FFF8E8" stroke="#BFA06A" stroke-width=".8"/><path d="M44 64q8.5 6.5 0 14zM64 70q6.5 5 0 11z" fill="url(#spg-${x})"/><path d="M44 52l12 3.5L44 59zM64 62l9 2.7-9 2.8z" fill="url(#spg-${x})"/><path d="M0 124q10-5 20 0t20 0 20 0 20 0 20 0v16H0z" fill="#9ED0FF" opacity=".45"/><path d="M6 132q5-3 10 0M58 134q5-3 10 0M80 128q5-3 10 0" stroke="#fff" stroke-width="1.2" fill="none" opacity=".8"/>`,
+  x => `<rect width="100" height="140" fill="url(#sp-sky2)"/><circle cx="16" cy="40" r=".9" fill="#fff"/><circle cx="84" cy="34" r="1.1" fill="#fff"/><circle cx="66" cy="46" r=".7" fill="#fff"/><circle cx="30" cy="52" r=".7" fill="#fff"/><path d="M10 140V96h14v44zM76 140V96h14v44z" fill="url(#sp-wall)" stroke="#9C7A44" stroke-width=".7"/><path d="M8 96q9-18 18 0zM74 96q9-18 18 0z" fill="url(#spg-${x})" stroke="url(#sp-gold)" stroke-width="1"/><path d="M17 79v-6M83 79v-6" stroke="url(#sp-gold)" stroke-width="1.4"/><path d="M22 140v-34h56v34z" fill="url(#sp-wall)" stroke="#9C7A44" stroke-width=".7"/><path d="M33 106q17-36 34 0z" fill="url(#spg-${x})" stroke="url(#sp-gold)" stroke-width="1.2"/><path d="M50 70v-8" stroke="url(#sp-gold)" stroke-width="1.8"/><circle cx="50" cy="61" r="2" fill="url(#sp-gold)"/><path d="M22 106h56" stroke="url(#sp-gold)" stroke-width="2"/><path d="M42 140v-18q8-10 16 0v18z" fill="#3A2410"/><rect x="28" y="114" width="6" height="9" rx="3" fill="#FFD27A"/><rect x="66" y="114" width="6" height="9" rx="3" fill="#FFD27A"/><rect x="14" y="104" width="5" height="8" rx="2.5" fill="#FFD27A"/><rect x="81" y="104" width="5" height="8" rx="2.5" fill="#FFD27A"/><path d="M36 140h28l-3-4H39z" fill="#E8D2A4"/>`
 ];
-const TINT = {w: '#7F8AA3', u: '#2F6FE0', g: '#1C9A5C', r: '#D7334A', k: '#2C3039'};
-const BG = {w: '#F4F6FA', u: '#E5EEFD', g: '#E3F5EA', r: '#FCE6E9', k: '#E2E4EA'};
-const TIERC = ['#3E9E5A', '#D9A21B', '#2A64C8'];
+const TIERN = ['Ⅰ', 'Ⅱ', 'Ⅲ'];
 const pip = (x, v, cls = '') => `<i class="sp-pip sp-${x} ${cls}">${v}</i>`;
 function cardHTML(id, o = {}) {
-  const c = CARDS[id];
-  const tag = o.btn ? 'button' : 'div';
-  return `<${tag}${o.btn ? ` type="button" ${o.btn}` : ''} class="spc sp-b-${c.b} ${o.cls || ''}" style="--tint:${TINT[c.b]};--cbg:${BG[c.b]}"><svg class="spc-sc" viewBox="0 0 100 100" preserveAspectRatio="xMidYMax slice" aria-hidden="true" style="color:${TINT[c.b]}">${SCENE[c.t]}</svg><span class="spc-top"><b>${c.p || ''}</b><span class="spc-gem">${gem(c.b)}</span></span><span class="spc-cost">${C5.filter(x => c.c[x]).map(x => pip(x, c.c[x], o.need && o.need[x] ? 'short' : '')).join('')}</span><span class="spc-tier" style="background:${TIERC[c.t]}">${'Ⅰ Ⅱ Ⅲ'.split(' ')[c.t]}</span></${tag}>`;
+  const c = CARDS[id], tag = o.btn ? 'button' : 'div';
+  return `<${tag}${o.btn ? ` type="button" ${o.btn}` : ''} class="spc sp-${c.b} t${c.t} ${o.cls || ''}" ${o.style ? `style="${o.style}"` : ''}><svg class="spc-art" viewBox="0 0 100 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${SCENE[c.t](c.b)}</svg><span class="spc-band"><b class="spc-pt">${c.p || ''}</b><span class="spc-gem">${gem(c.b)}</span></span><span class="spc-cost">${C5.filter(x => c.c[x]).map(x => pip(x, c.c[x], o.need && o.need[x] ? 'short' : '')).join('')}</span><span class="spc-tier">${'●'.repeat(c.t + 1)}</span><span class="spc-shine"></span></${tag}>`;
 }
-const backHTML = (t, n, attrs = '') => `<button type="button" class="spc sp-back t${t}" ${attrs}><svg viewBox="0 0 60 84" aria-hidden="true"><rect x="2" y="2" width="56" height="80" rx="7" fill="${TIERC[t]}" stroke="#fff" stroke-width="2"/><rect x="7" y="7" width="46" height="70" rx="4" fill="none" stroke="#fff" stroke-width="1" stroke-dasharray="2 3" opacity=".7"/><g transform="translate(15 22) scale(.75)">${SHAPE.w('#fff', '#fff', '#fff').replace(/fill="#fff"/, 'fill="rgba(255,255,255,.25)"')}</g><text x="30" y="18" text-anchor="middle" font-size="10" font-weight="900" fill="#fff">${t + 1}단계</text></svg><small>${n}장</small></button>`;
-const noblePortrait = i => { const hue = ['#7A3E9D', '#2A56D6', '#B8392E', '#1C7A55', '#8A6510'][i % 5];
-  return `<svg viewBox="0 0 60 60" aria-hidden="true"><rect width="60" height="60" rx="8" fill="#F6EAD0"/><circle cx="30" cy="25" r="10" fill="#F2CFA8" stroke="#8B6A3C"/><path d="M14 60c0-14 7-20 16-20s16 6 16 20z" fill="${hue}"/><path d="M24 40l6 8 6-8" fill="#fff" opacity=".85"/><path d="M20 17l3-9 4 6 3-8 3 8 4-6 3 9z" fill="#F5C542" stroke="#946500" stroke-width="1.2" stroke-linejoin="round"/><circle cx="26" cy="25" r="1.3" fill="#3A2410"/><circle cx="34" cy="25" r="1.3" fill="#3A2410"/><path d="M27 30q3 2 6 0" stroke="#7A3E1D" stroke-width="1.3" fill="none"/></svg>`; };
-const nobleHTML = (ni, cls = '') => { const q = NOBLES[ni];
-  return `<div class="spn ${cls}"><div class="spn-art">${noblePortrait(ni)}<b>3</b></div><div class="spn-req">${C5.filter(x => q[x]).map(x => `<i class="sp-sq sp-${x}">${q[x]}</i>`).join('')}</div><small>${NOBN[ni]}</small></div>`; };
+const backSVG = t => `<svg viewBox="0 0 100 140" aria-hidden="true"><rect x="1" y="1" width="98" height="138" rx="10" fill="url(#sp-bk${t})"/><path d="M-20 0 120 140M0 -20 140 120M-40 20 100 160M20 -40 160 100M120 0-20 140M100 -20-40 120M140 20 0 160M80 -40-60 100" stroke="#fff" stroke-width="1" opacity=".13"/><rect x="7" y="7" width="86" height="126" rx="7" fill="none" stroke="url(#sp-gold)" stroke-width="2"/><rect x="11" y="11" width="78" height="118" rx="5" fill="none" stroke="#fff" stroke-width=".7" opacity=".5" stroke-dasharray="2 3"/><circle cx="50" cy="66" r="25" fill="rgba(255,255,255,.12)" stroke="url(#sp-gold)" stroke-width="1.5"/><g transform="translate(30 46)">${GEMP.w.replace('url(#spg-w)', 'rgba(255,255,255,.55)')}</g><text x="50" y="112" text-anchor="middle" font-size="15" font-weight="900" fill="#fff" font-family="Georgia,serif" letter-spacing="2">${TIERN[t]}</text></svg>`;
+const backHTML = (t, n, attrs = '', cls = '') => `<button type="button" class="spc sp-back t${t} ${cls}" ${attrs}>${backSVG(t)}${n != null ? `<small class="sp-cnt">${n}</small>` : ''}</button>`;
+const ROBE = ['#7A3E9D', '#2A56D6', '#B8392E', '#1C7A55', '#8A6510', '#3B3F8F', '#9C2F6B', '#2E6E8E', '#7E2433', '#4F6B1E'];
+function portrait(i) {
+  const robe = ROBE[i % 10], hat = i % 3, hair = ['#3A2410', '#7A4A1E', '#C9A25E', '#1E1E24'][i % 4], fem = [2, 5, 8].includes(i);
+  const head = hat === 0 ? `<path d="M27 21l3-10 5 6 5-9 5 9 5-6 3 10z" fill="url(#sp-gold)" stroke="#7A4D00" stroke-width="1" stroke-linejoin="round"/><circle cx="40" cy="14" r="1.8" fill="#E0384B"/>`
+    : hat === 1 ? `<ellipse cx="40" cy="20" rx="17" ry="6" fill="${robe}"/><path d="M26 19q14-14 28 0z" fill="${robe}"/><path d="M52 15q10-10 12 0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>`
+      : `<path d="M30 20q10-9 20 0" stroke="url(#sp-gold)" stroke-width="3" fill="none"/><circle cx="40" cy="13.5" r="2.4" fill="url(#spg-u)"/>`;
+  return `<svg viewBox="0 0 80 80" aria-hidden="true"><rect width="80" height="80" rx="9" fill="url(#sp-parch)"/><path d="M0 0h80v80H0z" fill="none" stroke="url(#sp-gold)" stroke-width="5"/><rect x="5" y="5" width="70" height="70" rx="5" fill="none" stroke="#B8955A" stroke-width=".8" opacity=".7"/><path d="M14 80c0-18 11-27 26-27s26 9 26 27z" fill="${robe}"/><path d="M14 80c0-18 11-27 26-27s26 9 26 27z" fill="url(#sp-sky2)" opacity=".12"/><path d="M27 56q13 12 26 0l-3 9q-10 7-20 0z" fill="#fff"/><circle cx="33" cy="61" r=".9" fill="#222"/><circle cx="40" cy="63" r=".9" fill="#222"/><circle cx="47" cy="61" r=".9" fill="#222"/>${fem ? `<path d="M25 34q0-17 15-17t15 17v16q-4-6-4-14H29q0 8-4 14z" fill="${hair}"/>` : `<path d="M27 32q0-14 13-14t13 14q-2-6-5-7-8 4-16 0-3 1-5 7z" fill="${hair}"/>`}<ellipse cx="40" cy="36" rx="11" ry="13" fill="#F3D2AE" stroke="#A8784A" stroke-width=".8"/><circle cx="36" cy="35" r="1.4" fill="#3A2410"/><circle cx="44" cy="35" r="1.4" fill="#3A2410"/><path d="M37 42q3 2 6 0" stroke="#8A4A2A" stroke-width="1.2" fill="none" stroke-linecap="round"/><circle cx="34" cy="39.5" r="2" fill="#F29A8A" opacity=".4"/><circle cx="46" cy="39.5" r="2" fill="#F29A8A" opacity=".4"/>${fem ? '' : i % 2 ? `<path d="M34 46q6 4 12 0q-1 5-6 5t-6-5z" fill="${hair}"/>` : ''}${head}</svg>`;
+}
+const nobleHTML = (ni, cls = '', attrs = '') => { const q = NOBLES[ni];
+  return `<div class="spn ${cls}" ${attrs}>${portrait(ni)}<b class="spn-pt">3</b><span class="spn-req">${C5.filter(x => q[x]).map(x => `<i class="sp-sq sp-${x}">${q[x]}</i>`).join('')}</span><small class="spn-nm">${NOBN[ni]}</small></div>`; };
 
 /* ---------- 규칙 계산 ---------- */
 const ttot = t => C5.reduce((s, x) => s + t[x], 0) + t.y;
@@ -82,7 +111,7 @@ function finish(S, me, P) {
   }
   if (pl.pts >= 15 && !S.final) { S.final = true; lg(S, `🏁 ${P[me].name}님 ${pl.pts}점! 이번 바퀴가 마지막이에요.`); }
   S.phase = 'play';
-  S.turn = (S.turn + 1) % P.length;
+  S.turn = (S.turn + 1) % P.length; S.ts = Date.now();
   if (S.turn === 0) S.round++;
   if (S.final && S.turn === 0) {
     const order = P.map((_, i) => i).sort((a, b) => S.pl[b].pts - S.pl[a].pts || S.pl[a].cards - S.pl[b].cards);
@@ -116,11 +145,37 @@ G.splendor = {
     const nobles = U.shuffle(NOBLES.map((_, i) => i)).slice(0, n + 1);
     return {_g: Math.random().toString(36).slice(2, 9), decks, board, nobles, tok: {w: k, u: k, g: k, r: k, k, y: 5},
       pl: P.map(() => ({tok: Object.assign(z5(), {y: 0}), bon: z5(), res: [], pts: 0, cards: 0, nob: []})),
-      turn: 0, round: 1, final: false, phase: 'play', last: null, log: ['스플렌더 시작! 보석을 모아 카드를 사세요.']};
+      turn: 0, round: 1, final: false, phase: 'play', last: null, lim: 0, ts: Date.now(), log: ['스플렌더 시작! 보석을 모아 카드를 사세요.']};
   },
   turns(S) { return S.winner ? [] : [S.turn]; },
+  // 제한시간: 사람 차례에만 적용. 시간이 지나면 진행하는 쪽(서버·방장·폰)이 timeout을 불러요.
+  due(S, P) { return S.lim && !S.winner && !(P && P[S.turn] && P[S.turn].bot) ? (S.ts || 0) + S.lim * 1000 : null; },
+  timeout(S, P) {
+    if (!S.lim || S.winner || (P[S.turn] && P[S.turn].bot) || Date.now() < (S.ts || 0) + S.lim * 1000 - 400) return false;
+    const me = S.turn, pl = S.pl[me];
+    if (S.phase === 'disc') {
+      while (ttot(pl.tok) > 10) {
+        const x = C5.concat('y').filter(c => pl.tok[c] > 0).sort((a, b) => pl.tok[b] - pl.tok[a] || (a === 'y') - (b === 'y'))[0];
+        pl.tok[x]--; S.tok[x]++; (S.last.ret = S.last.ret || []).push(x);
+      }
+      S.last.to = 1;
+      lg(S, `⏰ ${P[me].name}님 시간 초과! 넘친 보석을 자동으로 돌려놨어요.`);
+    } else {
+      S.last = {p: me, k: 'time', n: (S.last ? S.last.n : 0) + 1};
+      lg(S, `⏰ ${P[me].name}님 시간 초과! 차례가 넘어갔어요.`);
+    }
+    finish(S, me, P);
+    return true;
+  },
   act(S, me, t, a, P) {
     if (S.winner) return;
+    if (t === 'limit') {
+      const sec = +(a && a.s); if (![0, 30, 60].includes(sec)) throw U.err('제한시간은 없음·30초·1분 중에서 골라요.');
+      if (S.lim === sec) return;
+      S.lim = sec; S.ts = Date.now();
+      lg(S, `⏱ ${P[me].name}님이 제한시간을 ${sec ? (sec === 60 ? '1분' : '30초') : '없음'}으로 바꿨어요.`);
+      return;
+    }
     if (me !== S.turn) throw U.err('내 차례가 아니에요.');
     const pl = S.pl[me]; a = a || {};
     if (S.phase === 'disc') {
@@ -152,7 +207,7 @@ G.splendor = {
       else { id = S.board[a.t] && S.board[a.t][a.i]; if (id == null) throw U.err('없는 카드예요.'); S.board[a.t][a.i] = draw(S, a.t); }
       pl.res.push({i: id, h});
       let gold = 0; if (S.tok.y > 0) { S.tok.y--; pl.tok.y++; gold = 1; }
-      S.last = {p: me, k: 'res', id: h ? null : id, tier: CARDS[id].t, gold, n: (S.last ? S.last.n : 0) + 1};
+      S.last = {p: me, k: 'res', id: h ? null : id, tier: CARDS[id].t, gold, src: h ? 'd' : 'b', t: h ? undefined : +a.t, i: h ? undefined : +a.i, n: (S.last ? S.last.n : 0) + 1};
       lg(S, `${P[me].name}님이 ${h ? `${CARDS[id].t + 1}단계 덱에서 몰래` : '카드를'} 예약했어요${gold ? ' (+황금)' : ''}.`);
       return after(S, me, P);
     }
@@ -166,7 +221,8 @@ G.splendor = {
       pl.tok.y -= nd.gold; S.tok.y += nd.gold;
       if (a.r != null) pl.res.splice(a.r, 1); else S.board[a.t][a.i] = draw(S, a.t);
       pl.bon[c.b]++; pl.pts += c.p; pl.cards++;
-      S.last = {p: me, k: 'buy', id, n: (S.last ? S.last.n : 0) + 1};
+      const pay = {}; for (const x of C5) if (nd.pay[x]) pay[x] = nd.pay[x]; if (nd.gold) pay.y = nd.gold;
+      S.last = {p: me, k: 'buy', id, src: a.r != null ? 'r' : 'b', t: a.r != null ? undefined : +a.t, i: a.r != null ? undefined : +a.i, pay, n: (S.last ? S.last.n : 0) + 1};
       lg(S, `${P[me].name}님이 ${SN[c.b]} 카드를 샀어요${c.p ? ` (+${c.p}점)` : ''}.`);
       return finish(S, me, P);
     }
@@ -176,50 +232,10 @@ G.splendor = {
       return finish(S, me, P);
     }
   },
-  view(S, me, ui, P) { return `<div class="spw">${G.splendor._view.call(this, S, me, ui, P)}</div>`; },
-  _view(S, me, ui, P) {
-    const my = me === S.turn && !S.winner, pl = me >= 0 ? S.pl[me] : null;
-    let h = '';
-    if (S.winner) h += spEnd(S, P);
-    // 차례 표시 + 마지막 행동
-    if (!S.winner) h += `<div class="sp-turn${my ? ' me' : ''}" style="--pc:${U.pc(S.turn)}"><span class="sp-ti">💎</span><div><small>${S.round}바퀴째${S.final ? ' · 마지막 바퀴!' : ''}</small><b>${U.nm(P, S.turn)}${my ? ' (나)' : ''} 차례</b></div><span class="sp-tt">${my ? (S.phase === 'disc' ? '보석을 10개로 맞춰 주세요' : '행동 하나를 고르세요') : P[S.turn] && P[S.turn].bot ? 'AI가 생각 중…' : '고르는 중…'}</span></div>`;
-    h += spLast(S, P);
-    // 귀족
-    h += `<section class="sp-nobles"><div class="sp-lbl">👑 귀족 <small>보너스 조건을 채우면 3점</small></div><div class="sp-nrow">${S.nobles.map(ni => nobleHTML(ni, pl && C5.every(x => pl.bon[x] >= (NOBLES[ni][x] || 0)) ? 'ready' : '')).join('') || '<small class="muted">모든 귀족이 떠났어요</small>'}</div></section>`;
-    // 카드 시장
-    const sel = ui.sel || null;
-    h += `<section class="sp-market">`;
-    for (const t of [2, 1, 0]) {
-      h += `<div class="sp-tier">${backHTML(t, S.decks[t].length, my && S.phase === 'play' && S.decks[t].length && pl.res.length < 3 ? `data-ui="sel" data-tog data-val="${U.attr({d: t})}"${sel && sel.d === t ? ' aria-pressed="true"' : ''}` : 'disabled')}${S.board[t].map((id, i) => id == null ? '<div class="spc sp-empty"></div>' : cardHTML(id, {
-        btn: `data-ui="sel" data-tog data-val="${U.attr({t, i})}"${my && S.phase === 'play' ? '' : ' disabled'}`,
-        cls: (sel && sel.t === t && sel.i === i ? 'sel ' : '') + (pl && need(pl, id).ok ? 'afford' : '')
-      })).join('')}</div>`;
-    }
-    h += `</section>`;
-    if (my && S.phase === 'play') h += spSelPanel(S, me, ui, P);
-    // 보석 은행
-    if (!S.winner) {
-      const pick = Array.isArray(ui.pick) ? ui.pick : [];
-      h += `<section class="sp-bank"><div class="sp-lbl">💰 보석 은행 ${my && S.phase === 'play' ? '<small>눌러서 고르기 · 다른 색 3개 또는 같은 색 2개</small>' : ''}</div><div class="sp-chips">${C5.concat('y').map(x => {
-        const n = S.tok[x], cnt = pick.filter(v => v === x).length;
-        const dis = !(my && S.phase === 'play') || x === 'y' || !spCanPick(S, pick, x);
-        return `<button type="button" class="sp-tk${cnt ? ' on' : ''}${x === 'y' ? ' gold' : ''}" data-g="pick" data-val="${U.attr(x)}"${dis ? ' disabled' : ''} aria-label="${SN[x]} ${n}개"><span class="sp-chip">${chip(x)}</span><b>${n}</b>${cnt ? `<em>+${cnt}</em>` : ''}</button>`;
-      }).join('')}</div>`;
-      if (my && S.phase === 'play') {
-        const ok = spPickOk(S, pick), aft = pl ? ttot(pl.tok) + pick.length : 0;
-        h += pick.length ? `<div class="sp-pickbar"><span>고른 보석 ${pick.map(x => `<span class="sp-mini">${gem(x)}</span>`).join('')}</span>${U.gb('다시', 'pick', null, 'ghost')}${U.btn(ok ? `가져오기${aft > 10 ? ` (넘친 ${aft - 10}개는 돌려놔요)` : ''}` : '보석을 더 고르세요', 'take', {g: pick}, 'primary', !ok)}</div>` : '';
-      }
-      h += `</section>`;
-    }
-    // 반납
-    if (my && S.phase === 'disc') h += `<section class="sp-disc"><b>보석이 ${ttot(pl.tok)}개예요. ${ttot(pl.tok) - 10}개를 돌려놔 주세요</b><div class="sp-chips">${C5.concat('y').filter(x => pl.tok[x]).map(x => U.btn(`<span class="sp-chip">${chip(x)}</span><b>${pl.tok[x]}</b>`, 'ret', {x}, 'sp-tk')).join('')}</div><small>누르면 한 개씩 은행으로 돌아가요</small></section>`;
-    // 내 자리
-    if (pl) h += spMine(S, me, ui, P);
-    if (my && S.phase === 'play' && !hasMove(S, me)) h += `<div class="sp-pass">${U.btn('할 수 있는 행동이 없어요 · 차례 넘기기', 'pass', {}, 'big')}</div>`;
-    // 모두의 자리
-    h += `<section class="sp-seats">${P.map((p, i) => i === me ? '' : spSeat(S, i, P)).join('')}</section>`;
-    h += `<details class="ref"><summary>진행 기록</summary><ol class="sp-log">${(S.log || []).slice().reverse().map(l => `<li>${U.esc(l)}</li>`).join('')}</ol></details>`;
-    return h;
+  view(S, me, ui, P) {
+    ensureDefs();
+    if (isDOM) setTimeout(() => spFx(S, me, P), 0);
+    return `<div class="spbox"><div class="spw">${spBody(S, me, ui || {}, P)}</div></div>`;
   },
   uiAct(ui, S, me, name, val) {
     if (name !== 'pick') return;
@@ -233,11 +249,11 @@ G.splendor = {
     } else if (spCanPick(S, p, val)) p.push(val);
     ui.pick = p; ui.sel = null;
   },
-  splash: false
+  splash: true
 };
 function spCanPick(S, p, x) {
-  if (S.tok[x] < 1) return false;
-  if (p.includes(x)) return true; // 다시 누르면 2개로 바꾸거나 빼기
+  if (x === 'y' || S.tok[x] < 1) return false;
+  if (p.includes(x)) return true;
   if (p.length >= 3) return false;
   if (p.length === 2 && p[0] === p[1]) return false;
   return true;
@@ -249,58 +265,272 @@ function spPickOk(S, p) {
   const avail = C5.filter(x => S.tok[x] > 0).length;
   return p.length >= Math.min(3, avail);
 }
-function spSelPanel(S, me, ui, P) {
-  const sel = ui.sel, pl = S.pl[me];
-  if (!sel) return '';
-  if (sel.d != null) {
-    if (!S.decks[sel.d] || !S.decks[sel.d].length) return '';
-    return `<section class="sp-sel"><div class="sp-sel-c">${backHTML(sel.d, S.decks[sel.d].length, 'disabled')}</div><div class="sp-sel-r"><b>${sel.d + 1}단계 덱 맨 위 카드</b><small>무슨 카드인지 모른 채 몰래 예약해요. 다른 사람은 내용을 못 봐요.</small>${U.btn(`📌 몰래 예약하기${S.tok.y ? ' + 황금 1개' : ''}`, 'reserve', {d: sel.d}, 'primary big', pl.res.length >= 3)}${pl.res.length >= 3 ? '<small class="bad">예약은 3장까지예요</small>' : ''}</div></section>`;
+// 처음 보는 행동이면 애니메이션 시작 시각을 기록 (새로고침 직후에는 다시 재생하지 않아요)
+function fresh(S, key, dur) {
+  if (!isDOM) return -1;
+  const W = window; if (!W.__spfx || !W.__spfx[S._g]) return -1;
+  W.__spT = W.__spT || {}; const k = S._g + key, now = Date.now();
+  if (!W.__spT[k]) W.__spT[k] = now;
+  const el = (now - W.__spT[k]) / 1000; return el < dur ? el : -1;
+}
+const anim = el => el < 0 ? ' data-still' : ` style="--el:${el.toFixed(2)}s"`;
+const nm = (P, i) => U.nm(P, i);
+
+function spBody(S, me, ui, P) {
+  const my = me === S.turn && !S.winner, pl = me >= 0 && S.pl[me] ? S.pl[me] : null, act = my && S.phase === 'play';
+  const L = S.last, sel = ui.sel || null;
+  let h = '';
+  // ── 위쪽 띠: 차례 / 게임 끝
+  if (S.winner) h += spEnd(S, P);
+  else {
+    const bot = P[S.turn] && P[S.turn].bot;
+    h += `<header class="sp-strip${my ? ' me' : ''}" style="--pc:${U.pc(S.turn)}"><div class="sp-round"><small>ROUND</small><b>${S.round}</b></div><div class="sp-who"><span class="sp-av">${bot ? '🤖' : '💎'}</span><div><b>${nm(P, S.turn)}${my ? ' (나)' : ''} 차례</b><small>${my ? (S.phase === 'disc' ? '보석이 10개를 넘었어요 · 돌려놓을 보석을 누르세요' : '카드를 누르거나 보석을 고르세요') : bot ? 'AI가 생각하는 중…' : '고르는 중…'}</small></div></div>${spTimer(S, P)}${S.final ? '<span class="sp-final">🏁 <span>마지막 바퀴</span></span>' : '<span class="sp-goal">🏆 <span>먼저 </span><b>15점</b></span>'}</header>`;
   }
-  let id, buyArg, canRes = false;
-  if (sel.r != null) { const r = pl.res[sel.r]; if (!r) return ''; id = r.i; buyArg = {r: sel.r}; }
-  else { id = S.board[sel.t] && S.board[sel.t][sel.i]; if (id == null) return ''; buyArg = {t: sel.t, i: sel.i}; canRes = true; }
-  const c = CARDS[id], nd = need(pl, id);
-  const payTxt = C5.filter(x => nd.pay[x]).map(x => pip(x, nd.pay[x])).join('') + (nd.gold ? pip('y', nd.gold) : '');
-  const free = !C5.some(x => nd.pay[x]) && !nd.gold;
-  return `<section class="sp-sel"><div class="sp-sel-c">${cardHTML(id, {need: nd.short})}</div><div class="sp-sel-r"><b>${SN[c.b]} 카드 · ${c.p}점</b><small>사면 ${SN[c.b]} 할인 +1</small>
-<div class="sp-pay">${nd.ok ? (free ? '<span>보너스만으로 공짜!</span>' : `<span>낼 보석</span>${payTxt}`) : `<span class="bad">모자라요: ${C5.filter(x => nd.short[x]).map(x => pip(x, nd.short[x])).join('')}${pl.tok.y ? ` (황금 ${pl.tok.y}개로는 부족)` : ''}</span>`}</div>
-${U.btn('🛒 이 카드 사기', 'buy', buyArg, 'primary big', !nd.ok)}${canRes ? U.btn(`📌 예약${S.tok.y ? ' (+황금)' : ''}`, 'reserve', {t: sel.t, i: sel.i}, 'big', pl.res.length >= 3) : ''}${canRes && pl.res.length >= 3 ? '<small class="bad">예약은 3장까지예요</small>' : ''}</div></section>`;
+  // ── 왼쪽: 카드 시장 + 귀족
+  const fr = L && (L.k === 'buy' || L.k === 'res') && L.src === 'b' ? fresh(S, 'deal' + L.n, 0.9) : -1;
+  let mk = '';
+  for (const t of [2, 1, 0]) {
+    const canDeck = act && S.decks[t].length && pl.res.length < 3;
+    mk += `<div class="sp-row">${backHTML(t, S.decks[t].length, `data-spdeck="${t}" ${S.decks[t].length ? `data-ui="sel" data-val="${U.attr({d: t, n: S.decks[t].length})}"` : 'disabled'}${canDeck ? '' : ' data-off'}`, sel && sel.d === t ? 'sel' : '')}`;
+    S.board[t].forEach((id, i) => {
+      const deal = fr >= 0 && L.t === t && L.i === i;
+      mk += `<div class="sp-slot" data-spslot="${t}-${i}">${id == null ? '<div class="spc sp-empty"></div>' : cardHTML(id, {
+        btn: `data-ui="sel" data-val="${U.attr({t, i, id})}" aria-label="${CARDS[id].t + 1}단계 ${SN[CARDS[id].b]} 카드 ${CARDS[id].p}점"`,
+        cls: (sel && sel.t === t && sel.i === i ? 'sel ' : '') + (pl && !S.winner && need(pl, id).ok ? 'afford ' : '') + (deal ? 'deal' : ''),
+        style: deal ? `--el:${fr.toFixed(2)}s` : ''})}</div>`;
+    });
+    mk += `</div>`;
+  }
+  const nob = S.nobles.map(ni => nobleHTML(ni, pl && C5.every(x => pl.bon[x] >= (NOBLES[ni][x] || 0)) ? 'ready' : '')).join('') || '<small class="sp-none">귀족이 모두 떠났어요</small>';
+  h += `<div class="sp-left"><div class="sp-lin"><div class="sp-mk">${mk}</div><div class="sp-nobs" data-spnobs><span class="sp-nl">👑 귀족</span>${nob}</div></div></div>`;
+  // ── 오른쪽
+  let r = spLast(S, P);
+  if (!S.winner) {
+    const pick = act && Array.isArray(ui.pick) ? ui.pick : [];
+    r += `<section class="sp-bank"><div class="sp-h"><b>보석 은행</b><small>${act ? '다른 색 3개 · 또는 같은 색 2개(4개 이상 남았을 때)' : '황금은 카드를 예약하면 받아요'}</small></div><div class="sp-chips">${C5.concat('y').map(x => {
+      const n = S.tok[x], cnt = pick.filter(v => v === x).length;
+      const dis = !act || !spCanPick(S, pick, x);
+      return `<button type="button" class="sp-tk sp-${x}${cnt ? ' on' : ''}${n ? '' : ' zero'}" data-spb="${x}" data-g="pick" data-val="${U.attr(x)}"${dis ? ' disabled' : ''} aria-label="${SN[x]} ${n}개"><span class="sp-chipw">${chip(x)}${cnt ? `<em>${cnt > 1 ? '×2' : '✓'}</em>` : ''}</span><b>${n}</b></button>`;
+    }).join('')}</div>`;
+    if (act) {
+      const ok = spPickOk(S, pick), aft = ttot(pl.tok) + pick.length;
+      r += `<div class="sp-actbar">${pick.length ? `<span class="sp-picked">${pick.map(x => `<span class="sp-mini">${gem(x)}</span>`).join('')}</span>${U.gb('취소', 'pick', null, 'ghost sm')}${U.btn(ok ? `가져오기${aft > 10 ? ` · ${aft - 10}개 반납` : ''}` : '더 고르세요', 'take', {g: pick}, 'primary', !ok)}` : `<span class="sp-tip">💡 보석을 누르거나, 카드를 눌러 <b>사기·예약</b>을 하세요</span>`}</div>`;
+    } else if (my && S.phase === 'disc') {
+      r += `<div class="sp-actbar disc"><b>보석 ${ttot(pl.tok)}개 → ${ttot(pl.tok) - 10}개 돌려놓기</b><span class="sp-retrow">${C5.concat('y').filter(x => pl.tok[x]).map(x => U.btn(`<span class="sp-chipw">${chip(x)}</span><b>${pl.tok[x]}</b>`, 'ret', {x}, 'sp-tk ret')).join('')}</span></div>`;
+    } else r += `<div class="sp-actbar idle"><span class="sp-tip">👀 카드나 다른 사람이 예약한 카드를 눌러 자세히 볼 수 있어요</span></div>`;
+    r += `</section>`;
+  }
+  if (pl) r += spSeat(S, me, P, true, act, sel);
+  const others = P.map((_, i) => i).filter(i => i !== me);
+  r += `<section class="sp-opps n${others.length}">${others.map(i => spSeat(S, i, P, false, false, sel)).join('')}</section>`;
+  if (me >= 0 && !S.winner) r += `<div class="sp-limit"><span>⏱ 제한시간</span>${[[0, '없음'], [30, '30초'], [60, '1분']].map(([v, l]) => U.btn(l, 'limit', {s: v}, 'sm' + ((S.lim || 0) === v ? ' on' : ''))).join('')}<small>누구나 바꿀 수 있어요</small></div>`;
+  r += `<details class="sp-logd"><summary>📜 진행 기록</summary><ol>${(S.log || []).slice().reverse().map(l => `<li>${U.esc(l)}</li>`).join('')}</ol></details>`;
+  if (act && !hasMove(S, me)) r += U.btn('할 수 있는 행동이 없어요 · 차례 넘기기', 'pass', {}, 'big');
+  h += `<div class="sp-right">${r}</div>`;
+  // ── 자세히 보기 창
+  h += spModal(S, me, sel, P, act);
+  return h;
 }
-function spMine(S, me, ui, P) {
-  const pl = S.pl[me], my = me === S.turn && S.phase === 'play' && !S.winner, sel = ui.sel;
-  return `<section class="sp-mine" style="--pc:${U.pc(me)}"><div class="sp-mh"><b>${U.nm(P, me)} (나)</b><span class="sp-pts">${pl.pts}<small>점</small></span><span class="sp-cnt">보석 ${ttot(pl.tok)}/10 · 카드 ${pl.cards}${pl.nob.length ? ` · 👑${pl.nob.length}` : ''}</span></div>
-<div class="sp-hold">${C5.map(x => `<div class="sp-col sp-${x}"><span class="sp-bon" title="${SN[x]} 보너스">${pl.bon[x]}</span><span class="sp-chip">${chip(x)}</span><b>${pl.tok[x]}</b></div>`).join('')}<div class="sp-col sp-y"><span class="sp-bon none"></span><span class="sp-chip">${chip('y')}</span><b>${pl.tok.y}</b></div></div>
-<small class="sp-help">위 숫자(카드 할인) · 아래 숫자(가진 보석)</small>
-${pl.res.length ? `<div class="sp-lbl">📌 예약한 카드 <small>${my ? '눌러서 사기' : ''}</small></div><div class="sp-res">${pl.res.map((r, k) => cardHTML(r.i, {btn: `data-ui="sel" data-tog data-val="${U.attr({r: k})}"${my ? '' : ' disabled'}`, cls: (sel && sel.r === k ? 'sel ' : '') + (need(pl, r.i).ok ? 'afford' : '')})).join('')}</div>` : ''}
-${pl.nob.length ? `<div class="sp-nrow sm">${pl.nob.map(ni => nobleHTML(ni, 'got')).join('')}</div>` : ''}</section>`;
+
+function spTimer(S, P) {
+  if (!S.lim || S.winner) return '';
+  if (P[S.turn] && P[S.turn].bot) return `<span class="sp-timer idle">⏱ ${S.lim === 60 ? '1분' : '30초'}</span>`;
+  let seen = Date.now();
+  if (isDOM) { const W = window; W.__spTS = W.__spTS || {}; const k = S._g + ':' + S.ts + ':' + S.lim; seen = W.__spTS[k] = W.__spTS[k] || Date.now(); spTick(); }
+  const el = Math.min(S.lim, (Date.now() - seen) / 1000), rem = Math.max(0, Math.ceil(S.lim - el));
+  return `<span class="sp-timer${rem <= 10 ? ' warn' : ''}" data-end="${seen + S.lim * 1000}" style="--lim:${S.lim}s;--el:${el.toFixed(2)}s" title="남은 시간"><i></i><b>${rem}</b><small>초</small></span>`;
 }
-function spSeat(S, i, P) {
-  const pl = S.pl[i];
-  return `<div class="sp-seat${i === S.turn && !S.winner ? ' on' : ''}" style="--pc:${U.pc(i)}"><div class="sp-sh"><span class="pdot" style="--pc:${U.pc(i)}"></span><b>${U.nm(P, i)}</b><span class="sp-pts">${pl.pts}<small>점</small></span></div>
-<div class="sp-srow">${C5.map(x => `<span class="sp-sc sp-${x}"><i>${pl.bon[x]}</i><em>${pl.tok[x]}</em></span>`).join('')}<span class="sp-sc sp-y"><i></i><em>${pl.tok.y}</em></span></div>
-<small>보석 ${ttot(pl.tok)} · 카드 ${pl.cards}${pl.res.length ? ` · 예약 ${pl.res.length}` : ''}${pl.nob.length ? ` · 👑${pl.nob.length}` : ''}</small>${pl.res.length ? `<div class="sp-ores">${pl.res.map(r => r.h || S.winner ? `<span class="sp-ob t${CARDS[r.i].t}"></span>` : cardHTML(r.i, {cls: 'xs'})).join('')}</div>` : ''}</div>`;
+function spTick() {
+  const W = window; if (W.__spTick) return;
+  W.__spTick = setInterval(() => document.querySelectorAll('.sp-timer[data-end]').forEach(e => {
+    const r = Math.max(0, Math.ceil((+e.dataset.end - Date.now()) / 1000)), b = e.querySelector('b');
+    if (b && b.textContent !== String(r)) b.textContent = r;
+    e.classList.toggle('warn', r <= 10); e.classList.toggle('zero', r === 0);
+  }), 250);
 }
-function spFresh(key, dur) {
-  const R0 = typeof window !== 'undefined' ? window : globalThis; R0.__spSeen = R0.__spSeen || {};
-  const now = Date.now(); if (!R0.__spSeen[key]) R0.__spSeen[key] = now;
-  const el = (now - R0.__spSeen[key]) / 1000; return el < dur ? el : -1;
+function spSeat(S, i, P, mine, act, sel) {
+  const pl = S.pl[i], tot = ttot(pl.tok), on = i === S.turn && !S.winner;
+  const L = S.last, pop = L && L.p === i && (L.k === 'buy' && CARDS[L.id].p || L.nob != null) ? fresh(S, 'pop' + L.n + (L.nob != null ? 'n' : ''), 1.2) : -1;
+  const cols = C5.map(x => `<div class="sp-col sp-${x}"><span class="sp-bon${pl.bon[x] ? '' : ' z'}">${pl.bon[x]}</span><span class="sp-tc${pl.tok[x] ? '' : ' z'}"><span class="sp-chipw">${chip(x)}</span><b>${pl.tok[x]}</b></span></div>`).join('')
+    + `<div class="sp-col sp-y"><span class="sp-bon none"></span><span class="sp-tc${pl.tok.y ? '' : ' z'}"><span class="sp-chipw">${chip('y')}</span><b>${pl.tok.y}</b></span></div>`;
+  const res = pl.res.map((r, k) => {
+    const showFace = mine || !r.h || S.winner;
+    const v = mine ? {r: k, id: r.i} : {o: i, k, id: showFace ? r.i : -1};
+    const isSel = sel && (mine ? sel.r === k && sel.o == null : sel.o === i && sel.k === k);
+    const lbl = showFace ? `${SN[CARDS[r.i].b]} 카드 ${CARDS[r.i].p}점` : `몰래 예약한 ${CARDS[r.i].t + 1}단계 카드`;
+    return showFace ? cardHTML(r.i, {btn: `data-ui="sel" data-val="${U.attr(v)}" aria-label="${nm(P, i)} 예약: ${lbl}"`, cls: 'mini ' + (isSel ? 'sel ' : '') + (mine && need(pl, r.i).ok ? 'afford' : '') + (mine && r.h ? ' secret' : '')})
+      : backHTML(CARDS[r.i].t, null, `data-ui="sel" data-val="${U.attr(v)}" aria-label="${nm(P, i)} 예약: ${lbl}"`, 'mini' + (isSel ? ' sel' : ''));
+  });
+  if (mine) while (res.length < 3) res.push('<span class="spc mini sp-rslot">📌</span>');
+  return `<section class="sp-seat${mine ? ' mine' : ''}${on ? ' on' : ''}" data-sps="${i}" style="--pc:${U.pc(i)}">
+<div class="sp-sid"><div class="sp-sh"><span class="pdot"></span><b class="sp-nm">${nm(P, i)}${mine ? ' (나)' : ''}</b>${pl.nob.map(ni => `<span class="sp-crown" title="${NOBN[ni]}">👑</span>`).join('')}</div><div class="sp-sline"><span class="sp-pts${pop >= 0 ? ' pop' : ''}"${pop >= 0 ? ` style="--el:${pop.toFixed(2)}s"` : ''}><b>${pl.pts}</b><small>점</small></span><span class="sp-gt${tot >= 9 ? ' warn' : ''}" title="가진 보석 (10개까지)">💰${tot}</span></div><div class="sp-prog" title="15점까지"><i style="width:${Math.min(100, pl.pts / 15 * 100)}%"></i></div></div>
+<div class="sp-hold">${cols}</div>
+<div class="sp-resrow" data-spres>${res.join('')}</div>
+</section>`;
 }
+
+function spModal(S, me, sel, P, act) {
+  if (!sel) return '';
+  const pl = me >= 0 && S.pl[me] ? S.pl[me] : null;
+  let art = '', title = '', sub = '', body = '', btns = '';
+  const costRows = (who, id) => {
+    const nd = need(who, id), c = CARDS[id];
+    return `<table class="sp-ct"><tr><th></th>${C5.filter(x => c.c[x]).map(x => `<th>${pip(x, '')}</th>`).join('')}</tr>
+<tr><td>필요</td>${C5.filter(x => c.c[x]).map(x => `<td>${c.c[x]}</td>`).join('')}</tr>
+<tr><td>할인</td>${C5.filter(x => c.c[x]).map(x => `<td class="dim">−${Math.min(who.bon[x], c.c[x])}</td>`).join('')}</tr>
+<tr><td>낼 보석</td>${C5.filter(x => c.c[x]).map(x => `<td><b>${nd.pay[x]}</b>${nd.short[x] ? `<em>+${nd.short[x]}</em>` : ''}</td>`).join('')}</tr></table>
+${nd.ok ? (nd.gold ? `<p class="sp-ok">✓ 살 수 있어요 · 모자란 ${nd.gold}개는 황금으로 내요 ${pip('y', nd.gold)}</p>` : `<p class="sp-ok">✓ 살 수 있어요</p>`) : `<p class="sp-no">✗ 보석 ${nd.gold - who.tok.y}개가 더 있어야 해요 <small>(빨간 +숫자가 모자란 보석, 황금 ${who.tok.y}개 포함)</small></p>`}`;
+  };
+  if (sel.d != null) {
+    if (!S.decks[sel.d] || S.decks[sel.d].length !== sel.n) return '';
+    art = backHTML(sel.d, S.decks[sel.d].length, 'disabled', 'big');
+    title = `${sel.d + 1}단계 덱 · ${S.decks[sel.d].length}장 남음`;
+    sub = '맨 위 카드를 몰래 예약할 수 있어요. 무슨 카드인지는 나만 알게 돼요.';
+    if (act) btns = U.btn(`📌 몰래 예약하기${S.tok.y ? ' + 황금 1개' : ''}`, 'reserve', {d: sel.d}, 'primary big', pl.res.length >= 3) + (pl.res.length >= 3 ? '<p class="sp-no">예약은 3장까지예요</p>' : '');
+  } else if (sel.o != null) {
+    const op = S.pl[sel.o], r = op && op.res[sel.k];
+    if (!r || (sel.id >= 0 && r.i !== sel.id)) return '';
+    if (sel.id < 0) {
+      art = backHTML(CARDS[r.i].t, null, 'disabled', 'big');
+      title = `${nm(P, sel.o)}님이 몰래 예약한 카드`;
+      sub = `${CARDS[r.i].t + 1}단계 덱에서 뒤집힌 채로 가져간 카드라, 무슨 카드인지는 ${nm(P, sel.o)}님만 알아요.`;
+    } else {
+      const c = CARDS[r.i];
+      art = cardHTML(r.i, {cls: 'big'});
+      title = `${nm(P, sel.o)}님이 예약한 카드`;
+      sub = `${c.t + 1}단계 · ${SN[c.b]} 할인 +1 · ${c.p}점`;
+      body = `<div class="sp-whof">${nm(P, sel.o)}님 기준</div>${costRows(op, r.i)}`;
+    }
+  } else {
+    let id;
+    if (sel.r != null) { const r = pl && pl.res[sel.r]; if (!r || r.i !== sel.id) return ''; id = r.i; }
+    else { id = S.board[sel.t] && S.board[sel.t][sel.i]; if (id == null || id !== sel.id) return ''; }
+    const c = CARDS[id];
+    art = cardHTML(id, {cls: 'big', need: pl ? need(pl, id).short : null});
+    title = `${SN[c.b]} 카드 · ${c.p ? `${c.p}점` : '0점'}`;
+    sub = `${c.t + 1}단계 · 사면 앞으로 ${SN[c.b]} 1개씩 계속 할인`;
+    if (pl) body = costRows(pl, id);
+    if (act) {
+      const nd = need(pl, id);
+      btns = U.btn('🛒 이 카드 사기', 'buy', sel.r != null ? {r: sel.r} : {t: sel.t, i: sel.i}, 'primary big', !nd.ok);
+      if (sel.r == null) btns += U.btn(`📌 예약하기${S.tok.y ? ' + 황금 1개' : ''}`, 'reserve', {t: sel.t, i: sel.i}, 'big', pl.res.length >= 3) + (pl.res.length >= 3 ? '<p class="sp-no">예약은 3장까지예요</p>' : '');
+    } else if (pl && !S.winner) btns = `<p class="sp-tip">${me === S.turn ? '보석을 먼저 10개로 맞춰 주세요' : '내 차례가 되면 사거나 예약할 수 있어요'}</p>`;
+  }
+  return `<div class="sp-mbg" data-ui="sel" data-val="null"></div><div class="sp-modal" role="dialog" aria-label="${U.esc(title)}"><button type="button" class="sp-x" data-ui="sel" data-val="null" aria-label="닫기">✕</button><div class="sp-mart">${art}</div><div class="sp-minfo"><b class="sp-mt">${title}</b><small>${sub}</small>${body}<div class="sp-mbtns">${btns}</div></div></div>`;
+}
+
 function spLast(S, P) {
-  const L = S.last; if (!L) return '';
-  const el = spFresh('sp' + S._g + L.n, 1.6), st = el < 0 ? ' data-still' : ` style="--el:${el.toFixed(2)}s"`;
+  const L = S.last;
+  if (!L) return `<div class="sp-last" data-still><span class="sp-tip">✨ 첫 차례예요. 보석을 모으며 시작해 보세요!</span></div>`;
+  const el = fresh(S, 'last' + L.n, 1.2);
   let body = '';
-  if (L.k === 'take') body = `보석을 가져갔어요 ${L.g.map(x => `<span class="sp-mini">${gem(x)}</span>`).join('')}`;
-  else if (L.k === 'buy') body = `카드를 샀어요 ${cardHTML(L.id, {cls: 'xs'})}${CARDS[L.id].p ? ` <b>+${CARDS[L.id].p}점</b>` : ''}`;
-  else if (L.k === 'res') body = `${L.id == null ? `${L.tier + 1}단계 덱에서 몰래` : '카드를'} 예약했어요 ${L.id == null ? `<span class="sp-ob t${L.tier}"></span>` : cardHTML(L.id, {cls: 'xs'})}${L.gold ? ` <span class="sp-mini">${gem('y')}</span>` : ''}`;
-  else body = '차례를 넘겼어요';
+  if (L.k === 'take') body = `보석 ${L.g.map(x => `<span class="sp-mini">${gem(x)}</span>`).join('')} 가져감`;
+  else if (L.k === 'buy') body = `${cardHTML(L.id, {cls: 'xs'})} 구매${CARDS[L.id].p ? ` <b class="sp-plus">+${CARDS[L.id].p}점</b>` : ''}`;
+  else if (L.k === 'res') body = `${L.id == null ? backHTML(L.tier, null, 'disabled', 'xs') : cardHTML(L.id, {cls: 'xs'})} ${L.id == null ? '몰래 ' : ''}예약${L.gold ? ` <span class="sp-mini">${gem('y')}</span>` : ''}`;
+  else if (L.k === 'time') body = '<b class="sp-to">⏰ 시간 초과 · 차례 넘어감</b>';
+  else body = '차례를 넘김';
   if (L.ret && L.ret.length) body += ` <small>· ${L.ret.length}개 반납</small>`;
   if (L.nob != null) body += ` <b class="sp-nv">👑 ${NOBN[L.nob]} 방문 +3</b>`;
-  return `<div class="sp-last"${st}><span class="pdot" style="--pc:${U.pc(L.p)}"></span><b>${U.nm(P, L.p)}</b> ${body}</div>`;
+  return `<div class="sp-last"${anim(el)}><span class="pdot" style="--pc:${U.pc(L.p)}"></span><b>${nm(P, L.p)}</b><span class="sp-lb">${body}</span></div>`;
 }
+
 function spEnd(S, P) {
-  const el = spFresh('spe' + S._g, 4), o = S.rank || [];
-  return `<section class="sp-end"${el < 0 ? ' data-still' : ` style="--el:${el.toFixed(2)}s"`}><div class="sp-end-gems">${C5.map(x => `<span>${gem(x)}</span>`).join('')}</div><small>게임 끝</small><b>${U.esc(S.winner)}</b>
-<ol class="sp-rank">${o.map((i, k) => `<li class="${k === 0 ? 'top' : ''}"><span>${k === 0 ? '👑' : k + 1}</span><b>${U.nm(P, i)}</b><em>${S.pl[i].pts}점</em><small>카드 ${S.pl[i].cards}장${S.pl[i].nob.length ? ` · 귀족 ${S.pl[i].nob.length}` : ''}</small></li>`).join('')}</ol></section>`;
+  const el = fresh(S, 'end', 3), o = S.rank || [];
+  return `<section class="sp-end"${anim(el)}><div class="sp-end-gems">${C5.concat('y').map(x => `<span>${gem(x)}</span>`).join('')}</div><small>게임 끝</small><b class="sp-end-t">${U.esc(S.winner)}</b>
+<ol class="sp-rank">${o.map((i, k) => `<li class="${k === 0 ? 'top' : ''}" style="--d:${k * 0.15 + 0.4}s"><span>${k === 0 ? '👑' : k + 1}</span><b>${nm(P, i)}</b><em>${S.pl[i].pts}점</em><small>카드 ${S.pl[i].cards}장${S.pl[i].nob.length ? ` · 귀족 ${S.pl[i].nob.length}` : ''}</small></li>`).join('')}</ol></section>`;
+}
+
+/* ---------- 움직임 (화면에서만) ---------- */
+function spFx(S, me, P) {
+  const W = window; W.__spfx = W.__spfx || {};
+  const L = S.last || {n: 0};
+  const cur = {n: L.n || 0, ret: L.ret ? L.ret.length : 0, nob: L.nob != null ? 1 : 0, end: S.winner ? 1 : 0, turn: S.turn, fin: S.final ? 1 : 0};
+  const rec = W.__spfx[S._g];
+  W.__spfx[S._g] = cur;
+  if (!rec) return;
+  if (!document.querySelector('.spw')) return;
+  const still = W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const seat = p => document.querySelector(`[data-sps="${p}"]`);
+  const bank = x => document.querySelector(`[data-spb="${x}"] .sp-chipw`) || document.querySelector('.sp-bank');
+  let t0 = 0;
+  if (cur.n !== rec.n) {
+    if (L.k === 'take') L.g.forEach((x, j) => fly(chip(x), bank(x), seat(L.p), {w: 46, h: 46, s2: .55, delay: j * 130, lift: -40, done: () => bump(`[data-sps="${L.p}"] .sp-${x} .sp-tc`)}));
+    if (L.k === 'buy') {
+      const src = L.src === 'b' ? document.querySelector(`[data-spslot="${L.t}-${L.i}"]`) : document.querySelector(`[data-sps="${L.p}"] [data-spres]`) || seat(L.p);
+      let j = 0;
+      for (const x in (L.pay || {})) for (let k = 0; k < Math.min(L.pay[x], 3); k++) fly(chip(x), seat(L.p), bank(x), {w: 40, h: 40, s1: .7, s2: .9, delay: j++ * 70, lift: -30, dur: 600});
+      t0 = Math.min(j * 70, 400) + 100;
+      const r = src && src.getBoundingClientRect();
+      fly(cardHTML(L.id), src, seat(L.p), {w: r ? r.width : 80, h: r ? r.height : 112, s2: .3, delay: t0, dur: 850, lift: -70, rot: 6, done: () => { bump(`[data-sps="${L.p}"] .sp-${CARDS[L.id].b} .sp-bon`); if (CARDS[L.id].p) floatTxt(`+${CARDS[L.id].p}점`, seat(L.p)); }});
+      t0 += 850;
+    }
+    if (L.k === 'res') {
+      const src = L.src === 'b' ? document.querySelector(`[data-spslot="${L.t}-${L.i}"]`) : document.querySelector(`[data-spdeck="${L.tier}"]`);
+      const r = src && src.getBoundingClientRect();
+      fly(L.id == null ? backSVG(L.tier) : cardHTML(L.id), src, seat(L.p), {w: r ? r.width : 80, h: r ? r.height : 112, s2: .3, dur: 800, lift: -60, rot: -6, cls: 'card'});
+      if (L.gold) fly(chip('y'), bank('y'), seat(L.p), {w: 46, h: 46, s2: .55, delay: 250, lift: -40});
+      t0 = 800;
+    }
+  }
+  const r0 = cur.n !== rec.n ? 0 : rec.ret;
+  if (cur.ret > r0) L.ret.slice(r0).forEach((x, j) => fly(chip(x), seat(L.p), bank(x), {w: 42, h: 42, s1: .7, s2: .9, delay: j * 90, lift: -30, dur: 600}));
+  if (cur.nob && (cur.n !== rec.n || !rec.nob)) {
+    const d = t0 + 150;
+    setTimeout(() => {
+      fly(nobleHTML(L.nob), document.querySelector('[data-spnobs]'), seat(L.p), {w: 90, h: 112, s1: 1.4, s2: .35, dur: 1100, lift: -90});
+      banner(`👑 ${NOBN[L.nob]}`, `${nm(P, L.p)}님을 찾아왔어요! +3점`, 'nob');
+    }, d);
+  }
+  if (cur.fin && !rec.fin) setTimeout(() => banner('🏁 마지막 바퀴!', '누군가 15점에 닿았어요. 이번 바퀴가 끝나면 게임 끝!', 'fin'), t0 + 300);
+  else if (!S.winner && cur.turn !== rec.turn && cur.turn === me && P[me] && !P[me].bot) setTimeout(() => banner('내 차례!', `${nm(P, me)}님, 행동 하나를 고르세요`, 'me'), t0 + (cur.nob ? 1600 : 200));
+  if (cur.n !== rec.n && L.k === 'time') banner('⏰ 시간 초과!', `${nm(P, L.p)}님의 차례가 넘어갔어요`, 'fin');
+  if (cur.end && !rec.end) { setTimeout(() => gemRain(), t0 + 200); }
+
+  function fly(html, src, dst, o) {
+    if (!src || !dst || still) { if (o.done) setTimeout(o.done, o.delay || 0); return; }
+    const a = src.getBoundingClientRect(), b = dst.getBoundingClientRect();
+    if (!a.width || !b.width) return;
+    const el = document.createElement('div');
+    el.className = 'sp-fly'; el.innerHTML = html;
+    el.style.cssText = `left:${a.left + a.width / 2 - o.w / 2}px;top:${a.top + a.height / 2 - o.h / 2}px;width:${o.w}px;height:${o.h}px;--cw:${o.w}px`;
+    document.body.appendChild(el);
+    const dx = b.left + b.width / 2 - (a.left + a.width / 2), dy = b.top + Math.min(b.height / 2, 60) - (a.top + a.height / 2);
+    const s1 = o.s1 || 1, s2 = o.s2 || .5;
+    const an = el.animate([
+      {transform: `translate(0,0) scale(${s1}) rotate(0deg)`, opacity: 0},
+      {transform: `translate(0,-6px) scale(${s1 * 1.08}) rotate(0deg)`, opacity: 1, offset: .12},
+      {transform: `translate(${dx * .5}px,${dy * .5 + (o.lift || -50)}px) scale(${(s1 + s2) / 2 + .1}) rotate(${o.rot || 0}deg)`, opacity: 1, offset: .55},
+      {transform: `translate(${dx}px,${dy}px) scale(${s2}) rotate(0deg)`, opacity: .2}
+    ], {duration: o.dur || 700, delay: o.delay || 0, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'both'});
+    an.onfinish = () => { el.remove(); if (o.done) o.done(); };
+  }
+  function bump(q) { const e = document.querySelector(q); if (e && e.animate && !still) e.animate([{transform: 'scale(1)'}, {transform: 'scale(1.35)', filter: 'brightness(1.3)'}, {transform: 'scale(1)'}], {duration: 380, easing: 'ease-out'}); }
+  function floatTxt(txt, dst) {
+    if (!dst || still) return; const b = dst.getBoundingClientRect(), el = document.createElement('div');
+    el.className = 'sp-float'; el.textContent = txt; el.style.cssText = `left:${b.right - 70}px;top:${b.top + 6}px`;
+    document.body.appendChild(el);
+    el.animate([{transform: 'translateY(10px) scale(.6)', opacity: 0}, {transform: 'translateY(-8px) scale(1.25)', opacity: 1, offset: .25}, {transform: 'translateY(-40px) scale(1)', opacity: 0}], {duration: 1400, easing: 'ease-out', fill: 'both'}).onfinish = () => el.remove();
+  }
+  function banner(big, small, kind) {
+    document.querySelectorAll('.sp-banner').forEach(e => e.remove());
+    const el = document.createElement('div'); el.className = 'sp-banner ' + kind;
+    el.innerHTML = `<b>${U.esc(big)}</b><small>${U.esc(small)}</small>`;
+    document.body.appendChild(el);
+    if (still) { setTimeout(() => el.remove(), 1600); return; }
+    el.animate([{transform: 'translate(-50%,-50%) scale(.6)', opacity: 0}, {transform: 'translate(-50%,-50%) scale(1.06)', opacity: 1, offset: .15}, {transform: 'translate(-50%,-50%) scale(1)', opacity: 1, offset: .75}, {transform: 'translate(-50%,-60%) scale(.96)', opacity: 0}], {duration: kind === 'me' ? 1300 : 2000, easing: 'ease-out', fill: 'both'}).onfinish = () => el.remove();
+  }
+  function gemRain() {
+    if (still) return;
+    const xs = C5.concat('y');
+    for (let k = 0; k < 42; k++) {
+      const el = document.createElement('div'); el.className = 'sp-rain';
+      el.innerHTML = gem(xs[k % 6]); const s = 18 + Math.random() * 26;
+      el.style.cssText = `left:${Math.random() * 100}vw;width:${s}px;height:${s}px`;
+      document.body.appendChild(el);
+      el.animate([{transform: `translateY(-60px) rotate(0deg)`, opacity: 1}, {transform: `translateY(${window.innerHeight + 80}px) rotate(${(Math.random() - .5) * 720}deg)`, opacity: .9}],
+        {duration: 2200 + Math.random() * 1800, delay: Math.random() * 1400, easing: 'cubic-bezier(.3,.1,.7,1)', fill: 'both'}).onfinish = () => el.remove();
+    }
+  }
 }
 
 /* ---------- AI ---------- */

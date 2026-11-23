@@ -39,6 +39,18 @@ function botStep(r) {
   if (r.status !== 'play' || !r.state || r.state.winner) return false;
   const g = gOf(r); return g.botStep ? g.botStep(r.state, r.players) : false;
 }
+// 제한시간: 게임이 due()로 마감 시각을 알려주면 그때 timeout()을 불러요
+function scheduleDue(r) {
+  clearTimeout(r.dueTimer); r.dueTimer = null;
+  const g = gOf(r), st = r.state;
+  if (!st || st.winner || !g.due || !g.timeout) return;
+  const d = g.due(st, r.players); if (d == null) return;
+  r.dueTimer = setTimeout(() => {
+    r.dueTimer = null; if (!rooms.has(r.code) || r.state !== st) return;
+    const S = JSON.parse(JSON.stringify(st));
+    if (g.timeout(S, r.players)) { r.state = S; broadcast(r); }
+  }, Math.max(0, d - Date.now()) + 250);
+}
 function scheduleBots(r) {
   if (r.botTimer || !r.players.some(p => p.bot)) return;
   const st = r.state;
@@ -54,7 +66,7 @@ const newCode = () => { for (;;) { const c = Array.from({ length: 4 }, () => A[U
 const pub = r => ({ code: r.code, game: r.game || 'avalon', host: r.host, status: r.status, players: r.players, state: r.state, gid: r.gid, chat: r.chat || [], online: r.players.map(p => p.bot ? true : isOnline(r.code, p.id)) });
 function isOnline(code, pid) { for (const v of socks.values()) if (v.code === code && v.pid === pid) return true; return false; }
 function send(ws, m) { if (ws.readyState === 1) ws.send(JSON.stringify(m)); }
-function broadcast(r) { r.touched = Date.now(); const m = JSON.stringify({ type: 'room', room: pub(r) }); for (const [ws, v] of socks) if (v.code === r.code && ws.readyState === 1) ws.send(m); scheduleBots(r); }
+function broadcast(r) { r.touched = Date.now(); const m = JSON.stringify({ type: 'room', room: pub(r) }); for (const [ws, v] of socks) if (v.code === r.code && ws.readyState === 1) ws.send(m); scheduleBots(r); scheduleDue(r); }
 const err = (ws, msg) => send(ws, { type: 'err', msg });
 
 function handle(ws, m) {
