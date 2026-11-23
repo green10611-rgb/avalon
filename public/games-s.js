@@ -284,7 +284,7 @@ function spBody(S, me, ui, P) {
   if (S.winner) h += spEnd(S, P);
   else {
     const bot = P[S.turn] && P[S.turn].bot;
-    h += `<header class="sp-strip${my ? ' me' : ''}" style="--pc:${U.pc(S.turn)}"><div class="sp-round"><small>ROUND</small><b>${S.round}</b></div><div class="sp-who"><span class="sp-av">${bot ? '🤖' : '💎'}</span><div><b>${nm(P, S.turn)}${my ? ' (나)' : ''} 차례</b><small>${my ? (S.phase === 'disc' ? '보석이 10개를 넘었어요 · 돌려놓을 보석을 누르세요' : '카드를 누르거나 보석을 고르세요') : bot ? 'AI가 생각하는 중…' : '고르는 중…'}</small></div></div>${spTimer(S, P)}${S.final ? '<span class="sp-final">🏁 <span>마지막 바퀴</span></span>' : '<span class="sp-goal">🏆 <span>먼저 </span><b>15점</b></span>'}</header>`;
+    h += `<header class="sp-strip${my ? ' me' : ''}" style="--pc:${U.pc(S.turn)}"><div class="sp-round"><small>ROUND</small><b>${S.round}</b></div><div class="sp-who"><span class="sp-av">${bot ? '🤖' : '💎'}</span><div><b>${nm(P, S.turn)}${my ? ' (나)' : ''} 차례</b><small>${my ? (S.phase === 'disc' ? '보석이 10개를 넘었어요 · 돌려놓을 보석을 누르세요' : '카드를 누르거나 보석을 고르세요') : bot ? 'AI가 생각하는 중…' : '고르는 중…'}</small></div></div>${spLast(S, P)}${spTimer(S, P)}${me >= 0 ? `<span class="sp-setw"><button type="button" class="sp-setb${ui.lim ? ' on' : ''}" data-ui="lim" data-tog data-val="1" aria-label="제한시간 설정">⏱<span>${S.lim ? '' : ' 제한시간'}</span></button>${ui.lim ? `<div class="sp-limit">${[[0, '없음'], [30, '30초'], [60, '1분']].map(([v, l]) => U.btn(l, 'limit', {s: v}, 'sm' + ((S.lim || 0) === v ? ' on' : ''))).join('')}<small>누구나 바꿀 수 있어요</small></div>` : ''}</span>` : ''}${S.final ? '<span class="sp-final">🏁 <span>마지막 바퀴</span></span>' : '<span class="sp-goal">🏆 <span>먼저 </span><b>15점</b></span>'}</header>`;
   }
   // ── 왼쪽: 카드 시장 + 귀족
   const fr = L && (L.k === 'buy' || L.k === 'res') && L.src === 'b' ? fresh(S, 'deal' + L.n, 0.9) : -1;
@@ -304,7 +304,7 @@ function spBody(S, me, ui, P) {
   const nob = S.nobles.map(ni => nobleHTML(ni, pl && C5.every(x => pl.bon[x] >= (NOBLES[ni][x] || 0)) ? 'ready' : '')).join('') || '<small class="sp-none">귀족이 모두 떠났어요</small>';
   h += `<div class="sp-left"><div class="sp-lin"><div class="sp-mk">${mk}</div><div class="sp-nobs" data-spnobs><span class="sp-nl">👑 귀족</span>${nob}</div></div></div>`;
   // ── 오른쪽
-  let r = spLast(S, P);
+  let r = '';
   if (!S.winner) {
     const pick = act && Array.isArray(ui.pick) ? ui.pick : [];
     r += `<section class="sp-bank"><div class="sp-h"><b>보석 은행</b><small>${act ? '다른 색 3개 · 또는 같은 색 2개(4개 이상 남았을 때)' : '황금은 카드를 예약하면 받아요'}</small></div><div class="sp-chips">${C5.concat('y').map(x => {
@@ -323,7 +323,6 @@ function spBody(S, me, ui, P) {
   if (pl) r += spSeat(S, me, P, true, act, sel);
   const others = P.map((_, i) => i).filter(i => i !== me);
   r += `<section class="sp-opps n${others.length}">${others.map(i => spSeat(S, i, P, false, false, sel)).join('')}</section>`;
-  if (me >= 0 && !S.winner) r += `<div class="sp-limit"><span>⏱ 제한시간</span>${[[0, '없음'], [30, '30초'], [60, '1분']].map(([v, l]) => U.btn(l, 'limit', {s: v}, 'sm' + ((S.lim || 0) === v ? ' on' : ''))).join('')}<small>누구나 바꿀 수 있어요</small></div>`;
   r += `<details class="sp-logd"><summary>📜 진행 기록</summary><ol>${(S.log || []).slice().reverse().map(l => `<li>${U.esc(l)}</li>`).join('')}</ol></details>`;
   if (act && !hasMove(S, me)) r += U.btn('할 수 있는 행동이 없어요 · 차례 넘기기', 'pass', {}, 'big');
   h += `<div class="sp-right">${r}</div>`;
