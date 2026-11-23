@@ -1,7 +1,10 @@
 /* ===== 아발론: 레지스탕스 · 자체 서버판 클라이언트 ===== */
 (function(){
 const $app = document.getElementById('app');
-const esc = U.esc, g = G.avalon;
+const esc = U.esc;
+const GAMES = ['avalon', 'kraken'];
+let g = G.avalon;
+const GN = () => g.name;
 const ls = { get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }, set(k, v){ try { localStorage.setItem(k, v); } catch(e){} }, del(k){ try { localStorage.removeItem(k); } catch(e){} } };
 // 탭(창)마다 다른 사람으로 취급해요. 같은 브라우저에서 링크를 열어도 방장이 되지 않게.
 const ss = { get(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }, set(k, v){ try { sessionStorage.setItem(k, v); } catch(e){} }, del(k){ try { sessionStorage.removeItem(k); } catch(e){} } };
@@ -29,7 +32,7 @@ function connect(){
     if (m.type === 'kicked') { toast('방에서 나가게 되었어요.'); return leaveLocal(); }
     if (m.type === 'room') {
       if (!m.room) { room = null; if (code) { code = ''; ss.del('av_room'); } if (invite && myName.trim() && !joinRoom.tried) { joinRoom.tried = true; joinRoom(invite); } return render(); }
-      room = m.room; code = room.code; ss.set('av_room', code); if (invite) clearInvite();
+      room = m.room; g = G[room.game] || G.avalon; code = room.code; ss.set('av_room', code); if (invite) clearInvite();
       if (room.gid !== lastGid) { lastGid = room.gid; ui = {}; }
       render();
     }
@@ -37,7 +40,7 @@ function connect(){
 }
 function sendMsg(m){ if (!ws || ws.readyState !== 1) return toast('서버에 연결하는 중이에요. 잠시 후 다시 눌러 주세요.'); busy = true; ws.send(JSON.stringify(m)); }
 function leaveLocal(){ room = null; code = ''; ss.del('av_room'); ui = {}; render(); }
-const createRoom = () => { if (!myName.trim()) return toast('이름을 먼저 적어 주세요.'); sendMsg({type: 'create', name: myName}); };
+const createRoom = key => { if (!myName.trim()) return toast('이름을 먼저 적어 주세요.'); sendMsg({type: 'create', name: myName, game: key}); };
 const joinRoom = c => { c = (c || '').toUpperCase().replace(/[^A-Z]/g, ''); if (c.length !== 4) return toast('방 코드 4글자를 넣어 주세요.'); if (!myName.trim()) return toast('이름을 먼저 적어 주세요.'); sendMsg({type: 'join', code: c, name: myName}); };
 const startGame = () => sendMsg({type: 'start'});
 const act = (t, a) => { ui = {}; sendMsg({type: 'act', t, a, gid: room && room.gid}); };
@@ -59,21 +62,22 @@ function render(){
   render.lk = lk;
 }
 function homeHTML(){
-  if (invite) return `<div class="hero"><span class="kicker">초대장이 도착했어요</span><h1>아발론: 레지스탕스</h1><p>방 <b>${esc(invite)}</b>에 초대받았어요. 이름만 적고 들어가세요!</p></div>${conn()}
+  if (invite) return `<div class="hero"><span class="kicker">초대장이 도착했어요</span><h1>우리끼리 보드게임</h1><p>방 <b>${esc(invite)}</b>에 초대받았어요. 이름만 적고 들어가세요!</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn primary big avjoin" data-nav="joinInvite">${esc(invite)} 방 들어가기</button>
 <button type="button" class="btn ghost" data-nav="noInvite">다른 방으로 가기</button>`;
-  return `<div class="hero"><span class="kicker">각자 폰으로 · 실시간</span><h1>아발론: 레지스탕스</h1><p>아발론 규칙으로 하는 정체 숨김 게임. 방을 만들고 코드를 친구들에게 알려 주세요. 로그인 필요 없어요.</p></div>${conn()}
+  return `<div class="hero"><span class="kicker">각자 폰으로 · 실시간</span><h1>우리끼리 보드게임</h1><p>게임을 골라 방을 만들고, 대기실의 QR이나 링크를 친구들에게 보내세요. 로그인 필요 없어요.</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
-<section class="panel"><button type="button" class="btn primary big" data-nav="create">방 만들기</button></section>
+<section class="stack"><h2>방 만들기</h2><div class="gpick">${GAMES.map(k => { const x = G[k]; return `<button type="button" class="gp gp-${k}" data-nav="create" data-key="${k}"><span class="gp-ic">${esc(x.mark)}</span><b>${esc(x.name)}</b><small>${esc(x.tag)}</small><em>${x.min}~${x.max}명</em></button>`; }).join('')}</div></section>
 <section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>`;
 }
 function lobbyHTML(){
   const P = players(), host = room.host === pid, n = P.length, ok = n >= g.min && n <= g.max;
-  let h = `<div class="bar"><button type="button" class="btn ghost" data-nav="leave">${host ? '방 닫기' : '나가기'}</button><div class="t"><b>대기실</b><small>아발론: 레지스탕스 · ${g.min}~${g.max}명</small></div></div>${conn()}`;
+  let h = `<div class="bar"><button type="button" class="btn ghost" data-nav="leave">${host ? '방 닫기' : '나가기'}</button><div class="t"><b>대기실</b><small>${esc(GN())} · ${g.min}~${g.max}명</small></div></div>${conn()}`;
   const link = inviteURL(code);
   h += `<section class="invite"><div class="inv-qr">${qrSVG(link)}</div><div class="inv-r"><span class="small">방 코드</span><b class="inv-code">${esc(code)}</b><p>폰 카메라로 QR을 찍거나 링크를 열면 바로 들어와요.</p><div class="inv-link">${esc(link.replace(/^https?:\/\//, ''))}</div><div class="row"><button type="button" class="btn primary" data-nav="copyLink">🔗 링크 복사</button>${navigator.share ? '<button type="button" class="btn" data-nav="shareLink">📤 공유하기</button>' : ''}</div></div></section>`;
   h += `<section class="panel"><div class="lbl">참가자 ${n}명</div><div class="plist">${P.map((p, i) => `<div class="seat" style="--pc:${U.pc(i)}"><span>${p.bot ? '' : room.online && room.online[i] === false ? '⚪ ' : '🟢 '}${esc(p.name)}${p.bot ? ' <small class="bot-tag">AI</small>' : ''}${p.id === room.host ? ' · 방장' : ''}${p.id === pid ? ' (나)' : ''}</span>${host && p.id !== pid ? `<button type="button" class="btn tiny ghost" data-nav="kick" data-id="${esc(p.id)}">내보내기</button>` : ''}</div>`).join('')}</div></section>`;
+  if (host) h += `<div class="row">${GAMES.map(k => `<button type="button" class="btn${k === room.game ? ' primary' : ''}" data-nav="setgame" data-key="${k}">${esc(G[k].mark)} ${esc(G[k].name)}</button>`).join('')}</div>`;
   if (host) h += `<div class="row"><button type="button" class="btn" data-nav="addbot"${n >= g.max ? ' disabled' : ''}>🤖 AI 참가자 추가</button><span class="small muted">사람이 모자랄 때 AI가 같이 해요</span></div>`;
   h += host ? `<button type="button" class="btn primary big" data-nav="start"${ok && !busy ? '' : ' disabled'}>${ok ? `${n}명으로 시작하기` : `${g.min}명 이상 모이면 시작할 수 있어요`}</button>` : `<div class="hint">방장이 시작하기를 기다리는 중이에요.</div>`;
   h += `<details class="ref"><summary>규칙 보기</summary><ol class="rules">${g.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol>${g.rulesExtra ? g.rulesExtra() : ''}</details>`;
@@ -82,13 +86,14 @@ function lobbyHTML(){
 function gameHTML(){
   const P = players(), S = state(), me = myIdx(), host = room.host === pid;
   if (!S) return `<div class="empty">게임을 불러오는 중…</div>`;
-  let h = `<div class="bar"><div class="t"><b>아발론: 레지스탕스</b><small>방 ${esc(code)} · ${P.length}명${me >= 0 ? ` · 나: ${esc(P[me].name)}` : ' · 관전'}</small></div></div>${conn()}`;
+  let h = `<div class="bar"><div class="t"><b>${esc(GN())}</b><small>방 ${esc(code)} · ${P.length}명${me >= 0 ? ` · 나: ${esc(P[me].name)}` : ' · 관전'}</small></div></div>${conn()}`;
   if (S.winner){
     h += `<div class="winbar"><span class="small">게임 끝</span>${host ? `<div class="row"><button type="button" class="btn" data-nav="again">같은 사람들로 다시 하기</button><button type="button" class="btn" data-nav="lobby">대기실로</button></div>` : '<span class="small">방장이 다음 게임을 시작할 수 있어요.</span>'}</div>`;
     h += `<div id="game">${g.view(S, -1, {}, P)}</div>`;
   } else {
     const t = g.turns(S, P), mine = t.includes(me);
-    h += S.phase === 'cfg' ? `<div class="turnbar me">역할 구성 고르기</div>` : S.phase === 'kshow' ? `<div class="turnbar me">🗡 정체 확인</div>` : S.phase === 'qres' ? `<div class="turnbar me">원정 결과</div>` : S.phase === 'vresult' ? `<div class="turnbar me">투표 결과</div>` : S.phase === 'vote' ? `<div class="turnbar me">모두 함께 투표</div>` : S.phase === 'qdone' ? `<div class="turnbar me">원정 3번 성공!</div>` : S.phase === 'kill' ? `<div class="turnbar me">🗡 암살의 시간</div>` : S.phase === 'reveal' ? `<div class="turnbar me">모두 함께 결과 보기</div>` : mine ? `<div class="turnbar me">내 차례예요!</div>` : `<div class="turnbar">${t.length === 1 ? `${U.chip(P, t[0])} 차례` : `${t.length}명 기다리는 중`}</div>`;
+    const at = g.allTurn ? g.allTurn(S) : '';
+    h += at ? `<div class="turnbar me">${at}</div>` : mine ? `<div class="turnbar me">내 차례예요!</div>` : `<div class="turnbar">${t.length === 1 ? `${U.chip(P, t[0])} 차례` : `${t.length}명 기다리는 중`}</div>`;
     h += `<div id="game"${busy ? ' class="busy"' : ''}>${g.view(S, me, ui, P)}</div>`;
   }
   if (S.log && S.log.length) h += `<div class="log">${S.log.slice().reverse().map(l => `<div>${esc(l)}</div>`).join('')}</div>`;
@@ -105,11 +110,12 @@ document.addEventListener('click', e => {
   const d = el.dataset;
   if (d.nav){
     const n = d.nav; confirmQ = null;
-    if (n === 'create') return createRoom();
+    if (n === 'create') return createRoom(d.key);
+    if (n === 'setgame') return sendMsg({type: 'setgame', game: d.key});
     if (n === 'joinInvite') return joinRoom(invite);
     if (n === 'noInvite'){ clearInvite(); return render(); }
     if (n === 'copyLink'){ const l = inviteURL(code); (navigator.clipboard ? navigator.clipboard.writeText(l) : Promise.reject()).then(() => toast('링크를 복사했어요. 단톡방에 붙여 넣으세요!'), () => toast(l)); return; }
-    if (n === 'shareLink'){ navigator.share({title: '아발론: 레지스탕스', text: `아발론: 레지스탕스 ${code} 방으로 와!`, url: inviteURL(code)}).catch(() => {}); return; }
+    if (n === 'shareLink'){ navigator.share({title: GN(), text: `${GN()} ${code} 방으로 와!`, url: inviteURL(code)}).catch(() => {}); return; }
     if (n === 'join') return joinRoom(document.getElementById('code').value);
     if (n === 'leave') return leaveRoom();
     if (n === 'leaveLocal') return leaveLocal();
