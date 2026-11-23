@@ -103,8 +103,8 @@ G.avalon = {
     }
     if (t === 'vres') {
       if (S.phase !== 'vote') return;
-      const pass = !!a.ok;
-      S.hist.push({q: S.quest, lead: S.lead, team: S.team.slice(), ok: pass});
+      const pass = !!a.ok; const bv = S.bv || null; S.bv = null;
+      S.hist.push({q: S.quest, lead: S.lead, team: S.team.slice(), ok: pass, bv});
       S.last = {k: 'vote', q: S.quest, ok: pass, team: S.team.slice()};
       U.log(S, `원정대 투표 ${pass ? '가결' : '부결'}`);
       if (pass) { S.rej = 0; S.phase = 'quest'; S.cards = {}; S.votes = {}; }
@@ -146,7 +146,7 @@ G.avalon = {
     if (t === 'reveal') {
       if (S.phase !== 'reveal' || !S.pend) return;
       const {ok, f} = S.pend; S.pend = null;
-      S.res.push(ok); S.fails.push(f);
+      S.res.push(ok); S.fails.push(f); S.qlog = (S.qlog || []).concat([{team: S.team.slice(), f}]);
       S.last = {k: 'quest', q: S.quest, ok, f, sz: S.team.length, team: S.team.slice()};
       U.log(S, `${S.quest + 1}번째 원정 ${ok ? '성공' : '실패'}! (실패 카드 ${f}장)`);
       S.quest++;
@@ -199,6 +199,7 @@ ${U.btn(sel.length === need ? '이 원정대로 제안하기' : `${need - sel.le
     } else if (S.phase === 'vote') {
       h += `<section class="panel avteam"><div class="avt-h"><b>${S.quest + 1}번째 원정대 찬반 투표</b><span>대장 ${U.nm(P, S.lead)}님 제안</span></div><div class="avslots">${S.team.map(i => `<span class="avslot full" style="--pc:${U.pc(i)}">${U.nm(P, i)}</span>`).join('')}</div>
 <div class="avhand"><b>✊ 모두 주먹을 쥐고 "하나, 둘, 셋!"</b><div class="avhand-r"><span>👍 엄지 위로<b>찬성</b></span><span>✊ 주먹 그대로<b>반대</b></span></div><small>찬성이 과반이면 가결 · 반대가 같거나 많으면 부결</small></div>
+${S.bv ? `<div class="avbots"><b>🤖 AI의 손</b><div>${Object.keys(S.bv).map(i => `<span class="${S.bv[i] ? 'y' : 'n'}">${U.nm(P, +i)} ${S.bv[i] ? '👍 찬성' : '✊ 반대'}</span>`).join('')}</div><small>AI의 표도 함께 세어서 가결/부결을 눌러 주세요.</small></div>` : (P.some(p => p.bot) ? '<div class="avbots"><b>🤖 AI가 생각하는 중…</b></div>' : '')}
 ${me >= 0 ? `<div class="avres2">${U.btn('<b>가결</b><small>찬성이 더 많아요</small>', 'vres', {ok: true}, 'avr-ok')}${U.btn(`<b>부결</b><small>${S.rej === 4 ? '5번째 부결 → 악 승리!' : '반대가 같거나 많아요'}</small>`, 'vres', {ok: false}, 'avr-no')}</div><p class="small muted">결과를 보고 누구든 한 명이 눌러 주세요.</p>` : ''}${rejStrip(S)}</section>`;
     } else if (S.phase === 'quest') {
       const sub = S.team.filter(i => S.cards[i] !== undefined).length, sz = S.team.length;

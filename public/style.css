@@ -687,3 +687,11 @@ g.tap polygon{stroke:var(--hi);stroke-width:.1}
 .inv-link{font-size:12px;font-weight:700;color:var(--accent);word-break:break-all}
 @media (max-width:420px){.invite{grid-template-columns:1fr;justify-items:center;text-align:center}.inv-qr{width:220px}.inv-r .row{justify-content:center}}
 .btn.avjoin{width:100%;min-height:64px;font-size:21px}
+/* AI 투표 */
+.avbots{border-radius:14px;border:2px dashed #9DB5F5;background:#F3F6FF;padding:10px;display:flex;flex-direction:column;gap:6px;text-align:center}
+.avbots>b{font-size:16px}
+.avbots div{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.avbots span{font-weight:800;font-size:15px;padding:5px 12px;border-radius:99px;background:#fff;border:2px solid}
+.avbots span.y{border-color:#2A56D6;color:#1F44B8}.avbots span.n{border-color:#C8323A;color:#A61E26}
+.avbots small{color:#5F5848;font-weight:700}
+.seat .bot,.bot-tag{font-size:11px;font-weight:800;color:#1F44B8}
