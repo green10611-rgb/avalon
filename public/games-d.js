@@ -128,7 +128,6 @@ G.avalon = {
     }
     if (t === 'vote') {   // 각자 기기: 한 사람씩 눌러서 모으기
       if (S.phase !== 'vote') throw U.err('지금은 투표할 수 없어요.');
-      if (S.votes[me] !== undefined) throw U.err('이미 투표했어요.');
       S.votes[me] = !!a.ok;
       if (ids(P).every(i => S.votes[i] !== undefined)) {
         const y = ids(P).filter(i => S.votes[i]).length;
@@ -232,7 +231,7 @@ ${bots.length ? (bots.every(i => S.votes[i] !== undefined) ? `<div class="avbots
         const done = ids(P).filter(i => S.votes[i] !== undefined).length, mine2 = me >= 0 && S.votes[me] !== undefined;
         h += `<section class="panel avteam">${head}
 <div class="avlive"><div class="avlive-n"><b>${done}</b> / ${n}</div><small>명이 투표했어요 · 모두 내면 누가 찬성·반대했는지 공개돼요</small><div class="avlive-bar"><i style="width:${(done / n * 100).toFixed(0)}%"></i></div><div class="avlive-p">${P.map((p, i) => `<span class="${S.votes[i] !== undefined ? 'on' : ''}">${S.votes[i] !== undefined ? '✔' : '…'} ${U.nm(P, i)}</span>`).join('')}</div></div>
-${me < 0 ? '' : mine2 ? `<div class="avmine ${S.votes[me] ? 'y' : 'n'}">내 선택: <b>${S.votes[me] ? '👍 찬성' : '✊ 반대'}</b><small>다른 사람을 기다리는 중…</small></div>` : `<div class="avhow">이 원정대로 출발할까요? 몰래 골라 주세요.</div><div class="avyn">${U.btn('👍 찬성', 'vote', {ok: true}, 'avy big')}${U.btn('✊ 반대', 'vote', {ok: false}, 'avn big')}</div>`}${rejStrip(S)}</section>`;
+${me < 0 ? '' : mine2 ? `<div class="avmine ${S.votes[me] ? 'y' : 'n'}">내 선택: <b>${S.votes[me] ? '👍 찬성' : '✊ 반대'}</b><small>모두 내기 전까지는 바꿀 수 있어요</small></div><div class="avyn ch">${U.btn(S.votes[me] ? '✔ 찬성 (선택됨)' : '👍 찬성으로 바꾸기', 'vote', {ok: true}, 'avy big' + (S.votes[me] ? ' cur' : ''), !!S.votes[me])}${U.btn(!S.votes[me] ? '✔ 반대 (선택됨)' : '✊ 반대로 바꾸기', 'vote', {ok: false}, 'avn big' + (!S.votes[me] ? ' cur' : ''), !S.votes[me])}</div>` : `<div class="avhow">이 원정대로 출발할까요? 몰래 골라 주세요.</div><div class="avyn">${U.btn('👍 찬성', 'vote', {ok: true}, 'avy big')}${U.btn('✊ 반대', 'vote', {ok: false}, 'avn big')}</div>`}${rejStrip(S)}</section>`;
       }
     } else if (S.phase === 'vresult') {
       const V = S.vr || {}, last5 = !V.ok && S.rej >= 5;

@@ -932,3 +932,8 @@ body.solo-kraken{background:linear-gradient(180deg,#D3E7F5,#EAF4FB 40%)}
 .khero h1{font-family:var(--display);font-weight:400;font-size:clamp(40px,12vw,60px);line-height:1.05;color:#fff}
 .khero p{margin:0;opacity:.92}
 .btn.kh-go{width:100%;min-height:68px;font-size:22px;background:linear-gradient(90deg,#1E4E79,#2E6FB0);color:#fff;border:2px solid #E6C47A}
+
+.avyn.ch .btn{min-height:60px;font-size:18px}
+.avyn.ch .btn:disabled{opacity:1;cursor:default}
+.avyn.ch .btn:not(.cur){background:#fff!important;border-width:2.5px}
+.avyn.ch .btn.avy:not(.cur){color:#2A56D6}.avyn.ch .btn.avn:not(.cur){color:var(--bad)}
