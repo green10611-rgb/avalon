@@ -398,6 +398,8 @@ function botTeam(S, me, n) {
 }
 function botVote(S, me) {
   const team = S.team;
+  // 사람처럼: 내가 대장으로 꾸린 원정대는 항상 찬성해요
+  if (me === S.lead) return true;
   if (isEvil(S.role[me])) {
     if (S.rej >= 4) return false;
     const ke = knownEvil(S, me); ke.add(me);
