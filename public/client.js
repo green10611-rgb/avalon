@@ -20,9 +20,9 @@ function connect(){
   const url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
   ws = new WebSocket(url);
   ws.onopen = () => { connected = true; retry = 0; ws.send(JSON.stringify({type: 'hello', pid, code})); render(); };
-  ws.onclose = () => { connected = false; render(); setTimeout(connect, Math.min(1000 * 2 ** retry++, 8000)); };
+  ws.onclose = () => { connected = false; busy = false; render(); setTimeout(connect, retry++ === 0 ? 300 : Math.min(1000 * 2 ** (retry - 1), 8000)); };
   ws.onmessage = e => {
-    const m = JSON.parse(e.data); busy = false;
+    const m = JSON.parse(e.data); if (m.type === 'pong') return; busy = false;
     if (m.type === 'err') { toast(m.msg); return render(); }
     if (m.type === 'closed') { toast('방장이 방을 닫았어요.'); return leaveLocal(); }
     if (m.type === 'kicked') { toast('방에서 나가게 되었어요.'); return leaveLocal(); }
@@ -48,7 +48,7 @@ function qrSVG(text){ try { const q = qrcode(0, 'M'); q.addData(text); q.make();
 function clearInvite(){ invite = ''; try { history.replaceState(null, '', location.pathname); } catch(e){} }
 
 /* ---------- 화면 ---------- */
-const conn = () => `<div class="connline ${connected ? 'ok' : 'bad'}"><i></i>${connected ? '실시간 서버 연결됨' : '서버에 연결하는 중… (서버가 잠들어 있었다면 30초~1분 걸려요)'}</div>`;
+const conn = () => `<div class="connline ${connected ? 'ok' : 'bad'}"><i></i>${connected ? '실시간 서버 연결됨' : (room ? '연결이 잠깐 끊겼어요. 다시 연결하는 중… (방은 그대로 있어요)' : '서버에 연결하는 중… (서버가 잠들어 있었다면 30초~1분 걸려요)')}</div>`;
 function render(){
   const y = window.scrollY;
   $app.innerHTML = !code ? homeHTML() : !room ? `<div class="empty">방 <b>${esc(code)}</b>에 연결하는 중…</div><button type="button" class="btn ghost" data-nav="leaveLocal">처음으로</button>` : room.status === 'lobby' ? lobbyHTML() : gameHTML();
@@ -130,4 +130,8 @@ document.addEventListener('click', e => {
 
 
 connect(); render();
+// 가만히 있어도 연결이 끊기지 않게 10초마다 신호 보내기
+setInterval(() => { try { if (ws && ws.readyState === 1) ws.send('{"type":"ping"}'); } catch(e){} }, 10000);
+// 폰 화면을 다시 켰을 때 바로 재연결
+document.addEventListener('visibilitychange', () => { if (!document.hidden && (!ws || ws.readyState > 1)) { retry = 0; connect(); } });
 })();

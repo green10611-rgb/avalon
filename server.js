@@ -53,6 +53,7 @@ const err = (ws, msg) => send(ws, { type: 'err', msg });
 
 function handle(ws, m) {
   const me = socks.get(ws); if (!me) return;
+  if (m.type === 'ping') return send(ws, { type: 'pong' });
   if (m.type === 'hello') {
     me.pid = String(m.pid || '').slice(0, 20) || Math.random().toString(36).slice(2, 12);
     const r = m.code && rooms.get(m.code);
@@ -137,6 +138,6 @@ setInterval(() => {
   for (const ws of wss.clients) { if (!ws.isAlive) { ws.terminate(); continue; } ws.isAlive = false; try { ws.ping(); } catch (e) {} }
   const now = Date.now();
   for (const [c, r] of rooms) if (now - r.touched > 6 * 3600 * 1000) rooms.delete(c);
-}, 25000);
+}, 10000);
 
 server.listen(PORT, () => console.log(`원탁의 기사단 서버 실행 중: http://localhost:${PORT}`));
