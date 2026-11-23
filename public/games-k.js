@@ -105,7 +105,7 @@ G.kraken = {
       }
     }
   },
-  view(S, me, ui, P) { return `<div class="kw">${G.kraken._view.call(this, S, me, ui, P)}</div>`; },
+  view(S, me, ui, P) { if (typeof document !== 'undefined') setTimeout(() => kFx(S, me, P), 0); return `<div class="kw">${G.kraken._view.call(this, S, me, ui, P)}</div>`; },
   _view(S, me, ui, P) {
     const n = P.length, end = S.phase === 'end' || S.winner, mine = end ? false : this.turns(S, P).includes(me);
     const shared = ui._local && ['shown', 'rend', 'pick'].includes(S.phase);
@@ -144,6 +144,97 @@ G.kraken = {
     if (name === 'kk') { ui.kk = !ui.kk; return; }
   }
 };
+/* ---------- 움직임 (화면 구성은 그대로, 효과만) ---------- */
+function kFx(S, me, P) {
+  const W = window; W.__kfx = W.__kfx || {};
+  const gid = S._g || '';
+  const cur = {ph: S.phase, n: S.last ? S.last.n : 0, round: S.round, act: S.act, dc: Object.keys(S.decl || {}).sort().join(','), found: S.found, end: !!S.winner};
+  const rec = W.__kfx[gid]; W.__kfx[gid] = cur;
+  if (!rec || !document.querySelector('.kw')) return;
+  if (W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const $ = q => document.querySelector(q), seat = i => $(`.kw [data-ks="${i}"]`);
+  const box = () => $('.kw');
+  if (cur.ph !== rec.ph) {
+    document.querySelectorAll('.kw > section, .kw > div').forEach((e, k) => e.animate && e.animate([{opacity: 0, transform: 'translateY(14px) scale(.98)'}, {opacity: 1, transform: 'none'}], {duration: 450, delay: Math.min(k, 6) * 60, easing: 'cubic-bezier(.2,.9,.3,1.2)', fill: 'backwards'}));
+    const B = cur.ph === 'decl' ? [`📣 ${S.round}라운드 선언`, '내 상자를 보고 보물·크라켄 개수를 말해요', 'b'] : cur.ph === 'pick' && rec.ph === 'decl' ? ['🧭 탐험 시작!', `선장 ${U.nm(P, S.act)}님부터 상자를 열어요`, 'g'] : cur.ph === 'rend' ? ['🌊 라운드 끝', '남은 상자를 섞어 다시 나눠요', 'b'] : null;
+    if (B) setTimeout(() => banner(B[0], B[1], B[2]), 120);
+    if (cur.ph === 'decl' && cur.round !== rec.round || cur.ph === 'decl' && rec.ph === 'look') deal();
+    if (cur.ph === 'rend') document.querySelectorAll('.ktable .kc').forEach((e, k) => e.animate && e.animate([{transform: 'none'}, {transform: `translate(${(Math.random() - .5) * 30}px,${(Math.random() - .5) * 16}px) rotate(${(Math.random() - .5) * 40}deg)`}, {transform: 'none'}], {duration: 700, delay: k * 25, easing: 'ease-in-out'}));
+  }
+  if (cur.dc !== rec.dc && cur.ph === 'decl') {
+    const before = new Set((rec.ph === 'decl' ? rec.dc : '').split(',').filter(Boolean));
+    cur.dc.split(',').filter(x => x && !before.has(x)).forEach(x => pop($(`.kw [data-ks="${x}"] .ks-d`)));
+  }
+  if (cur.n !== rec.n && S.last && cur.ph === 'shown') {
+    const L = S.last;
+    fly(`<span class="kfx-card">${ART.back}</span>`, seat(L.from), $('.kflip') || $('.kshow'), {w: 52, h: 73, dur: 600, lift: -40, rot: 10});
+    if (L.by !== L.from) fly('<span class="kfx-comp">🧭</span>', seat(L.by), seat(L.from), {w: 44, h: 44, dur: 900, delay: 300, lift: -70, rot: 360, done: () => pop(seat(L.from))});
+    setTimeout(() => {
+      const fx = $('.kflip') || $('.kshow');
+      if (L.c === 'T') { burst(fx, ['#F5C542', '#FFE38A', '#FFFFFF', '#E3A92F'], 36, 'coin'); setTimeout(() => pop($('.kb-gold')), 300); }
+      else if (L.c === 'K') { ink(); shake(box()); burst(fx, ['#3B0D3A', '#7A1E6B', '#1A0A20', '#C8323A'], 30); }
+      else burst(fx, ['#D9CDB4', '#BFB39A', '#EEE5D0'], 16, 'dust');
+    }, 1000);
+  }
+  if (cur.end && !rec.end) setTimeout(() => confetti(S.wt === 'T'), 600);
+
+  function deal() {
+    document.querySelectorAll('.ktable .ks-c .kc').forEach((e, k) => e.animate && e.animate([{transform: 'translateY(-60px) rotate(-25deg) scale(.6)', opacity: 0}, {transform: 'none', opacity: 1}], {duration: 420, delay: 200 + k * 45, easing: 'cubic-bezier(.2,1.4,.4,1)', fill: 'backwards'}));
+  }
+  function pop(e) { if (e && e.animate) e.animate([{transform: 'scale(1)'}, {transform: 'scale(1.2)', filter: 'brightness(1.25)'}, {transform: 'scale(1)'}], {duration: 420, easing: 'cubic-bezier(.3,1.6,.5,1)'}); }
+  function shake(e) { if (e && e.animate) e.animate([{transform: 'none'}, {transform: 'translate(-10px,4px) rotate(-1deg)'}, {transform: 'translate(10px,-4px) rotate(1deg)'}, {transform: 'translate(-6px,2px)'}, {transform: 'none'}], {duration: 500, iterations: 2}); }
+  function ink() {
+    const el = document.createElement('div'); el.className = 'kfx-ink'; document.body.appendChild(el);
+    el.animate([{opacity: 0, transform: 'scale(.2)'}, {opacity: .92, transform: 'scale(1.1)', offset: .3}, {opacity: .85, transform: 'scale(1.2)', offset: .7}, {opacity: 0, transform: 'scale(1.4)'}], {duration: 1800, easing: 'ease-out', fill: 'both'}).onfinish = () => el.remove();
+    for (let k = 0; k < 8; k++) {
+      const t = document.createElement('div'); t.className = 'kfx-tent'; t.textContent = '🐙';
+      t.style.cssText = `left:${10 + Math.random() * 80}vw;top:${60 + Math.random() * 30}vh;font-size:${36 + Math.random() * 40}px`;
+      document.body.appendChild(t);
+      t.animate([{transform: 'translateY(120px) rotate(-20deg)', opacity: 0}, {transform: 'translateY(-40px) rotate(10deg)', opacity: 1, offset: .5}, {transform: 'translateY(-90px) rotate(-10deg)', opacity: 0}], {duration: 1600, delay: k * 90, easing: 'ease-out', fill: 'both'}).onfinish = () => t.remove();
+    }
+  }
+  function fly(html, src, dst, o) {
+    if (!src || !dst) { if (o.done) o.done(); return; }
+    const a = src.getBoundingClientRect(), b = dst.getBoundingClientRect(); if (!a.width || !b.width) return;
+    const el = document.createElement('div'); el.className = 'kfx-fly'; el.innerHTML = html;
+    el.style.cssText = `left:${a.left + a.width / 2 - o.w / 2}px;top:${a.top + a.height / 2 - o.h / 2}px;width:${o.w}px;height:${o.h}px`;
+    document.body.appendChild(el);
+    const dx = b.left + b.width / 2 - (a.left + a.width / 2), dy = b.top + b.height / 2 - (a.top + a.height / 2);
+    el.animate([{transform: 'translate(0,0) scale(.6)', opacity: 0}, {transform: 'translate(0,-10px) scale(1.1)', opacity: 1, offset: .15},
+      {transform: `translate(${dx / 2}px,${dy / 2 + (o.lift || -60)}px) scale(1.3) rotate(${(o.rot || 0) / 2}deg)`, opacity: 1, offset: .55},
+      {transform: `translate(${dx}px,${dy}px) scale(1) rotate(${o.rot || 0}deg)`, opacity: .2}],
+    {duration: o.dur || 800, delay: o.delay || 0, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'both'}).onfinish = () => { el.remove(); if (o.done) o.done(); };
+  }
+  function banner(big, small, kind) {
+    document.querySelectorAll('.kfx-banner').forEach(e => e.remove());
+    const el = document.createElement('div'); el.className = 'kfx-banner ' + kind;
+    el.innerHTML = `<b>${U.esc(big)}</b><small>${U.esc(small)}</small>`;
+    const wr = box() && box().getBoundingClientRect(); if (wr && wr.width) el.style.left = (wr.left + wr.width / 2) + 'px';
+    document.body.appendChild(el);
+    el.animate([{transform: 'translate(-50%,-50%) scale(.5)', opacity: 0}, {transform: 'translate(-50%,-50%) scale(1.08)', opacity: 1, offset: .15}, {transform: 'translate(-50%,-50%) scale(1)', opacity: 1, offset: .7}, {transform: 'translate(-50%,-58%) scale(.95)', opacity: 0}], {duration: 1600, easing: 'ease-out', fill: 'both'}).onfinish = () => el.remove();
+  }
+  function burst(src, cols, n, kind) {
+    if (!src) return; const r = src.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    for (let k = 0; k < n; k++) {
+      const el = document.createElement('div'); el.className = 'kfx-spark' + (kind ? ' ' + kind : '');
+      const sz = kind === 'coin' ? 12 + Math.random() * 10 : 6 + Math.random() * 9;
+      el.style.cssText = `left:${cx}px;top:${cy}px;width:${sz}px;height:${sz}px;background:${cols[k % cols.length]}`;
+      document.body.appendChild(el);
+      const ang = Math.random() * Math.PI * 2, dist = (kind === 'dust' ? 40 : 90) + Math.random() * 140;
+      el.animate([{transform: 'translate(-50%,-50%) scale(1)', opacity: 1}, {transform: `translate(calc(-50% + ${Math.cos(ang) * dist}px),calc(-50% + ${Math.sin(ang) * dist + (kind === 'coin' ? 80 : 20)}px)) scale(.4) rotate(${Math.random() * 720}deg)`, opacity: 0}], {duration: 900 + Math.random() * 600, easing: 'cubic-bezier(.1,.7,.3,1)', fill: 'both'}).onfinish = () => el.remove();
+    }
+  }
+  function confetti(good) {
+    const cols = good ? ['#F5C542', '#2A9DF4', '#FFFFFF', '#7AD3FF'] : ['#3B0D3A', '#7A1E6B', '#C8323A', '#1A0A20'];
+    for (let k = 0; k < 70; k++) {
+      const el = document.createElement('div'); el.className = 'kfx-conf';
+      el.style.cssText = `left:${Math.random() * 100}vw;background:${cols[k % cols.length]};width:${6 + Math.random() * 8}px;height:${10 + Math.random() * 12}px`;
+      document.body.appendChild(el);
+      el.animate([{transform: 'translateY(-30px) rotate(0)', opacity: 1}, {transform: `translate(${(Math.random() - .5) * 200}px,${innerHeight + 40}px) rotate(${(Math.random() - .5) * 900}deg)`, opacity: .9}],
+        {duration: 2400 + Math.random() * 2000, delay: Math.random() * 1500, easing: 'cubic-bezier(.3,.1,.7,1)', fill: 'both'}).onfinish = () => el.remove();
+    }
+  }
+}
 function kCount(h) {
   const t = h.filter(c => c === 'T').length, k = h.filter(c => c === 'K').length;
   return `보물 ${t} · 크라켄 ${k} · 빈 상자 ${h.length - t - k}`;
@@ -161,7 +252,7 @@ function kTable(S, me, P, picking, ui) {
   return `<section class="ktable">${P.map((p, i) => {
     const d = S.decl[i], hand = S.hand[i] || [], isAct = S.act === i && !S.winner;
     const can = picking && i !== me;
-    return `<div class="kseat${isAct ? ' act' : ''}${i === me ? ' me' : ''}" style="--pc:${U.pc(i)}"><div class="ks-h"><span class="pdot" style="--pc:${U.pc(i)}"></span><b>${U.nm(P, i)}${i === me ? ' (나)' : ''}</b>${isAct ? '<span class="ks-cap">🧭 선장</span>' : ''}${S.winner ? `<span class="ks-role ${S.role[i] === 'X' ? 'g' : 'e'}">${S.role[i] === 'X' ? '탐험대' : '해골'}</span>` : ''}</div>
+    return `<div class="kseat${isAct ? ' act' : ''}${i === me ? ' me' : ''}" data-ks="${i}" style="--pc:${U.pc(i)}"><div class="ks-h"><span class="pdot" style="--pc:${U.pc(i)}"></span><b>${U.nm(P, i)}${i === me ? ' (나)' : ''}</b>${isAct ? '<span class="ks-cap">🧭 선장</span>' : ''}${S.winner ? `<span class="ks-role ${S.role[i] === 'X' ? 'g' : 'e'}">${S.role[i] === 'X' ? '탐험대' : '해골'}</span>` : ''}</div>
 <div class="ks-d">${d ? `<span>💰 ${d.t}</span>${d.k ? '<span class="k">🐙 크라켄</span>' : '<span class="n">🐙 없음</span>'}` : (S.phase === 'decl' ? '<span class="w">선언 중…</span>' : '<span class="w">—</span>')}</div>
 <div class="ks-c">${hand.map((c, k) => can ? `<button type="button" class="kc kc-B pick" data-act="open" data-arg="${U.attr({p: i, k})}" aria-label="${U.nm(P, i)}의 ${k + 1}번째 상자 열기">${ART.back}</button>` : (S.winner ? card(c, 'sm') : card('B', 'sm'))).join('')}</div></div>`;
   }).join('')}</section>`;

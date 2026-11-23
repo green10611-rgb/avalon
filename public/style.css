@@ -1292,3 +1292,49 @@ body.g-splendor .connline.ok{display:none}
 @keyframes avfxFloat{50%{transform:translateY(-5px) rotate(-2deg)}}
 @keyframes avfxBlink{50%{opacity:.4}}
 @media (prefers-reduced-motion:reduce){.avw *,.avw *::after{animation:none!important}}
+/* ===== 크라켄 효과 (구성은 그대로) ===== */
+.kfx-fly{position:fixed;z-index:80;pointer-events:none;display:grid;place-items:center}
+.kfx-card{display:block;width:100%;height:100%;filter:drop-shadow(0 8px 14px rgba(0,0,0,.45))}.kfx-card svg{width:100%;height:100%;display:block}
+.kfx-comp{font-size:40px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.4))}
+.kfx-banner{position:fixed;z-index:85;left:50%;top:40%;transform:translate(-50%,-50%);pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px 36px;border-radius:22px;text-align:center;color:#fff;border:2px solid #9ED0FF;box-shadow:0 20px 60px rgba(0,30,60,.45);max-width:90vw;background:radial-gradient(120% 120% at 50% 0,#3AA0E8,#0E3E6E)}
+.kfx-banner.g{background:radial-gradient(120% 120% at 50% 0,#F5C542,#8A5A00);border-color:#FFE38A;color:#2A1600}
+.kfx-banner b{font-size:clamp(28px,6vw,46px);line-height:1.1;font-weight:900}.kfx-banner small{font-size:15px;opacity:.92}
+.kfx-spark{position:fixed;z-index:84;pointer-events:none;border-radius:2px}
+.kfx-spark.coin{border-radius:50%;box-shadow:inset -2px -2px 0 rgba(0,0,0,.25),0 0 8px rgba(255,215,80,.9)}
+.kfx-spark.dust{border-radius:50%;filter:blur(1px)}
+.kfx-ink{position:fixed;inset:-20vh -20vw;z-index:83;pointer-events:none;background:radial-gradient(circle at 50% 60%,rgba(40,8,40,.95) 0,rgba(60,10,55,.85) 35%,rgba(20,5,25,.6) 60%,transparent 75%)}
+.kfx-tent{position:fixed;z-index:86;pointer-events:none;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5)) hue-rotate(-40deg) saturate(1.4)}
+.kfx-conf{position:fixed;top:0;z-index:84;pointer-events:none;border-radius:2px}
+.kw{position:relative;overflow:hidden;background:linear-gradient(180deg,#EAF4FB,#D3E7F5)}
+.kw::before{content:'';position:absolute;inset:-40%;pointer-events:none;opacity:.35;background:repeating-radial-gradient(circle at 30% 20%,rgba(255,255,255,.55) 0 2px,transparent 3px 26px),repeating-radial-gradient(circle at 70% 60%,rgba(140,200,240,.5) 0 2px,transparent 3px 34px);animation:kfxWater 18s linear infinite}
+.kw>*{position:relative}
+.kw .kbar{position:relative;overflow:hidden}
+.kw .kbar::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.5) 48%,transparent 66%);background-size:250% 100%;animation:kfxSweep 4s ease-in-out infinite}
+.kw .kb-gold span.on{animation:kfxCoin 2.4s ease-in-out infinite}
+.kw .kb-gold span.on:nth-child(2n){animation-delay:.6s}
+.kw .kseat{transition:transform .2s,box-shadow .2s}
+.kw .kseat.act{animation:kfxGlow 1.8s ease-in-out infinite}
+.kw .ks-cap{display:inline-block;animation:kfxSpin 6s linear infinite}
+.kw .kc.pick{transition:transform .18s,filter .18s;animation:kfxBob 2.2s ease-in-out infinite}
+.kw .kc.pick:nth-child(2n){animation-delay:.3s}.kw .kc.pick:nth-child(3n){animation-delay:.6s}
+.kw .kc.pick:hover{transform:translateY(-8px) rotate(-4deg) scale(1.08);filter:drop-shadow(0 0 10px rgba(242,201,76,.95))}
+.kw .ks-c .kc{transition:transform .2s}
+.kw .btn.primary,.kw .avgo,.kw .avk-go{position:relative;overflow:hidden}
+.kw .btn.primary:not(:disabled)::after,.kw .avgo:not(:disabled)::after,.kw .avk-go::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.5) 50%,transparent 65%);background-size:260% 100%;animation:kfxSweep 2.8s ease-in-out infinite}
+.kw .btn:not(:disabled){transition:transform .15s,box-shadow .15s}
+.kw .btn:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,.16)}
+.kw .btn:not(:disabled):active{transform:scale(.97)}
+.kw .kshow.k-T .kword{animation:kfxPopW .6s 1.05s cubic-bezier(.2,1.6,.4,1) both;color:#B07A00;text-shadow:0 0 18px rgba(255,213,79,.9)}
+.kw .kshow.k-K .kword{animation:kfxPopW .6s 1.05s cubic-bezier(.2,1.6,.4,1) both,kfxShakeW .4s 1.6s 3}
+.kw .kshow[data-still] .kword{animation:none}
+.kw .krc,.kw .kend .ke-art{position:relative}
+.kw .ke-art{animation:kfxBob 2.6s ease-in-out infinite}
+@keyframes kfxWater{to{transform:translate(12%,8%) rotate(6deg)}}
+@keyframes kfxSweep{0%{background-position:130% 0}60%,100%{background-position:-60% 0}}
+@keyframes kfxCoin{50%{transform:translateY(-3px) rotateY(180deg)}}
+@keyframes kfxGlow{50%{box-shadow:0 0 0 3px #F2C94C,0 0 24px rgba(242,201,76,.8)}}
+@keyframes kfxSpin{to{transform:rotate(360deg)}}
+@keyframes kfxBob{50%{transform:translateY(-4px)}}
+@keyframes kfxPopW{0%{transform:scale(.3);opacity:0}100%{transform:none;opacity:1}}
+@keyframes kfxShakeW{25%{transform:translateX(-6px) rotate(-2deg)}75%{transform:translateX(6px) rotate(2deg)}}
+@media (prefers-reduced-motion:reduce){.kw *,.kw::before,.kw *::after{animation:none!important}}
