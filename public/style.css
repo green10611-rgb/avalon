@@ -773,16 +773,16 @@ g.tap polygon{stroke:var(--hi);stroke-width:.1}
 .cd-send:disabled{opacity:.4}
 .cd-send{min-height:50px;border:none;border-radius:12px;background:#2A56D6;color:#fff;font-weight:800;padding:0 18px;font-size:16px;cursor:pointer}
 /* 넓은 화면: 오른쪽 고정 */
-@media (min-width:1000px){
-  .chatdock{top:12px;right:12px;bottom:12px;width:420px;border-radius:18px}
-  body.has-chat{padding-right:444px}
+@media (min-width:760px){
+  .chatdock{top:12px;right:12px;bottom:12px;width:clamp(320px,38vw,460px);border-radius:18px}
+  body.has-chat{padding-right:calc(clamp(320px,38vw,460px) + 24px)}
 }
 /* 폰: 아래쪽 고정 */
-@media (max-width:999px){
-  .chatdock{left:0;right:0;bottom:0;height:300px;border-radius:16px 16px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (max-width:759px){
+  .chatdock{left:0;right:0;bottom:0;height:min(600px,62vh);border-radius:16px 16px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}
   .chatdock header{padding:5px 14px}
-  body.has-chat{padding-bottom:310px}
-  body.has-chat .toast{bottom:calc(314px + env(safe-area-inset-bottom,0px))}
+  body.has-chat{padding-bottom:calc(min(600px,62vh) + 10px)}
+  body.has-chat .toast{bottom:calc(min(600px,62vh) + 14px + env(safe-area-inset-bottom,0px))}
 }
 
 .avb2 .avcols{margin-top:2px}
