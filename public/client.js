@@ -2,8 +2,8 @@
 (function(){
 const $app = document.getElementById('app');
 const esc = U.esc;
-const GAMES = ['avalon', 'kraken', 'splendor'];
-const SOLO = (location.pathname.match(/^\/(kraken|avalon|splendor)\/?$/) || [])[1] || '';
+const GAMES = ['avalon', 'kraken', 'splendor', 'cockroach'];
+const SOLO = (location.pathname.match(/^\/(kraken|avalon|splendor|cockroach)\/?$/) || [])[1] || '';
 let g = G[SOLO] || G.avalon;
 if (SOLO) document.title = G[SOLO].name;
 document.body.classList.toggle('solo-' + (SOLO || 'all'), true);
@@ -60,6 +60,7 @@ function render(){
   if (dock){ dock.show(true); if (room && myIdx() >= 0){ dock.enable(true); dock.update(room.chat || [], pid); } else dock.enable(false, '방에 들어가면 여기서 같이 채팅할 수 있어요 💬'); }
   const y = window.scrollY;
   $app.innerHTML = !code ? homeHTML() : !room ? `<div class="empty">방 <b>${esc(code)}</b>에 연결하는 중…</div><button type="button" class="btn ghost" data-nav="leaveLocal">처음으로</button>` : room.status === 'lobby' ? lobbyHTML() : gameHTML();
+  document.body.classList.toggle('g-cockroach', !!(room && room.status !== 'lobby' && room.game === 'cockroach' && state()));
   document.body.classList.toggle('g-splendor', !!(room && room.status !== 'lobby' && room.game === 'splendor' && state()));
   const st = state(), lk = st && st.last && !st.decks ? JSON.stringify(st.last) + (st.quest || 0) : '';
   if (lk && render.lk !== undefined && lk !== render.lk) window.scrollTo(0, 0); else window.scrollTo(0, y);
@@ -70,6 +71,12 @@ function homeHTML(){
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn primary big avjoin" data-nav="joinInvite">${esc(invite)} 방 들어가기</button>
 <button type="button" class="btn ghost" data-nav="noInvite">다른 방으로 가기</button>`;
+  if (SOLO === 'cockroach') { const C = G.cockroach; return `<div class="rkhero"><div class="rkh-art">${C.art('card', 1)}${C.art('card', 0)}${C.art('back')}</div><span class="kicker">각자 폰으로 · 실시간 · 2~6명</span><h1>바퀴벌레 포커</h1><p>"이건 바퀴벌레야!" 진짜일까, 거짓말일까?<br>같은 벌레 4장을 떠안으면 패배! AI와 함께 해도 돼요.</p></div>${conn()}
+<section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
+<button type="button" class="btn big rk-start" data-nav="create" data-key="cockroach">🪳 바퀴벌레 포커 방 만들기</button>
+<section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
+<details class="ref"><summary>규칙 보기</summary><ol class="rules">${C.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol>${C.rulesExtra()}</details>
+<p class="small muted" style="text-align:center"><a href="/">다른 게임도 보기 →</a></p>`; }
   if (SOLO === 'splendor') { const S = G.splendor; return `<div class="sphero"><div class="sph-art">${S.art('card', 20)}${S.art('card', 85)}${S.art('card', 61)}</div><div class="sph-chips">${['w','u','g','r','k','y'].map(x => `<span>${S.art('chip', x)}</span>`).join('')}</div><span class="kicker">각자 폰으로 · 실시간 · 2~4명</span><h1>스플렌더</h1><p>보석을 모아 광산·상선·궁전 카드를 사고, 귀족을 맞이해 먼저 15점을 노려요.<br>사람이 모자라면 AI와 함께 해도 돼요.</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn big sp-go" data-nav="create" data-key="splendor">💎 스플렌더 방 만들기</button>
