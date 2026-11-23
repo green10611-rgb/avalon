@@ -45,7 +45,7 @@ const rooms = new Map();          // code -> room
 const socks = new Map();          // ws -> {pid, code}
 const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 const newCode = () => { for (;;) { const c = Array.from({ length: 4 }, () => A[U.rint(A.length)]).join(''); if (!rooms.has(c)) return c; } };
-const pub = r => ({ code: r.code, host: r.host, status: r.status, players: r.players, state: r.state, gid: r.gid, online: r.players.map(p => p.bot ? true : isOnline(r.code, p.id)) });
+const pub = r => ({ code: r.code, host: r.host, status: r.status, players: r.players, state: r.state, gid: r.gid, chat: r.chat || [], online: r.players.map(p => p.bot ? true : isOnline(r.code, p.id)) });
 function isOnline(code, pid) { for (const v of socks.values()) if (v.code === code && v.pid === pid) return true; return false; }
 function send(ws, m) { if (ws.readyState === 1) ws.send(JSON.stringify(m)); }
 function broadcast(r) { r.touched = Date.now(); const m = JSON.stringify({ type: 'room', room: pub(r) }); for (const [ws, v] of socks) if (v.code === r.code && ws.readyState === 1) ws.send(m); scheduleBots(r); }
@@ -88,6 +88,13 @@ function handle(ws, m) {
     me.code = null; send(ws, { type: 'room', room: null });
     if (r.host === me.pid) { for (const [w, v] of socks) if (v.code === r.code) { v.code = null; send(w, { type: 'closed' }); } rooms.delete(r.code); return; }
     if (r.status === 'lobby') r.players = r.players.filter(p => p.id !== me.pid);
+    return broadcast(r);
+  }
+  if (m.type === 'chat') {
+    const t = String(m.text || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+    if (!t || idx < 0) return;
+    const now = Date.now(); if (me.lastChat && now - me.lastChat < 400) return; me.lastChat = now;
+    r.chat = (r.chat || []).concat([{ id: me.pid, n: r.players[idx].name, t, at: now }]).slice(-50);
     return broadcast(r);
   }
   if (m.type === 'addbot') {

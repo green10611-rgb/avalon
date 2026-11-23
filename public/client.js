@@ -16,6 +16,7 @@ const players = () => room ? room.players : [];
 const state = () => room ? room.state : null;
 const myIdx = () => players().findIndex(p => p.id === pid);
 
+const dock = window.ChatDock ? ChatDock({onSend: text => { if (ws && ws.readyState === 1) ws.send(JSON.stringify({type: 'chat', text})); else toast('연결되지 않았어요.'); }}) : null;
 function connect(){
   const url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
   ws = new WebSocket(url);
@@ -50,6 +51,7 @@ function clearInvite(){ invite = ''; try { history.replaceState(null, '', locati
 /* ---------- 화면 ---------- */
 const conn = () => `<div class="connline ${connected ? 'ok' : 'bad'}"><i></i>${connected ? '실시간 서버 연결됨' : (room ? '연결이 잠깐 끊겼어요. 다시 연결하는 중… (방은 그대로 있어요)' : '서버에 연결하는 중… (서버가 잠들어 있었다면 30초~1분 걸려요)')}</div>`;
 function render(){
+  if (dock){ dock.show(!!room && myIdx() >= 0); if (room) dock.update(room.chat || [], pid); }
   const y = window.scrollY;
   $app.innerHTML = !code ? homeHTML() : !room ? `<div class="empty">방 <b>${esc(code)}</b>에 연결하는 중…</div><button type="button" class="btn ghost" data-nav="leaveLocal">처음으로</button>` : room.status === 'lobby' ? lobbyHTML() : gameHTML();
   const st = state(), lk = st && st.last ? JSON.stringify(st.last) + (st.quest || 0) : '';
