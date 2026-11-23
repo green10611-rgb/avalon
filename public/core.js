@@ -19,4 +19,6 @@ U.err = m => { const e = new Error(m); e.game = true; return e; };
 U.nextOk = (i, n, ok) => { for (let k = 1; k <= n; k++) { const j = (i + k) % n; if (ok(j)) return j; } return i; };
 U.sum = a => a.reduce((x, y) => x + y, 0);
 U.clone = o => JSON.parse(JSON.stringify(o));
+// 그림 (마이크로소프트 Fluent Emoji 3D, MIT 라이선스): img/이름.webp
+U.img = (k, cls = '', alt = '') => `<img class="fe ${cls}" src="img/${k}.webp" alt="${alt}" draggable="false" loading="eager">`;
 })();

@@ -16,19 +16,20 @@ const gOf = r => G[r && GAMES.includes(r.game) ? r.game : 'avalon'];
 const PORT = process.env.PORT || 3000;
 const BOOT = Date.now().toString(36);
 const PUB = path.join(__dirname, 'public');
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.ico': 'image/x-icon' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.webp': 'image/webp', '.txt': 'text/plain; charset=utf-8', '.ico': 'image/x-icon' };
 
 const server = http.createServer((req, res) => {
   let p = decodeURIComponent((req.url || '/').split('?')[0]);
   if (p === '/health') { res.writeHead(200, { 'Content-Type': 'text/plain' }); return res.end('ok'); }
-  if (p === '/' || p === '/kraken' || p === '/kraken/' || p === '/avalon' || p === '/avalon/' || p === '/splendor' || p === '/splendor/') p = '/index.html';
+  if (p === '/' || /^\/(kraken|avalon|splendor|cockroach|halli|dixit)\/?$/.test(p)) p = '/index.html';
+  p = p.replace(/^\/(kraken|avalon|splendor|cockroach|halli|dixit)\/(img\/)/, '/$2');
   const f = path.normalize(path.join(PUB, p));
   if (!f.startsWith(PUB)) { res.writeHead(403); return res.end(); }
   fs.readFile(f, (err, buf) => {
     if (err) { res.writeHead(404); return res.end('not found'); }
     // 새 버전이 올라가면 브라우저가 예전 파일을 쓰지 않도록 파일 주소에 버전 표시
     if (path.extname(f) === '.html') buf = Buffer.from(buf.toString().replace(/(src|href)="(\/[\w.-]+\.(?:js|css))"/g, `$1="$2?v=${BOOT}"`));
-    res.writeHead(200, { 'Content-Type': TYPES[path.extname(f)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
+    res.writeHead(200, { 'Content-Type': TYPES[path.extname(f)] || 'application/octet-stream', 'Cache-Control': path.extname(f) === '.webp' ? 'public, max-age=604800' : 'no-cache' });
     res.end(buf);
   });
 });
