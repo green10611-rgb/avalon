@@ -1888,6 +1888,10 @@ body.g-cockroach .turnbar,body.g-cockroach .log,body.g-cockroach .connline.ok{di
 .rk-call .rk-f small{text-shadow:0 1px 0 #7A141B,0 0 6px rgba(110,15,25,.55)}
 .rk-call .btn{min-height:96px}
 .rk-bubble .rk-cw{font-size:clamp(34px,5cqw,50px);font-weight:900;line-height:1.1;white-space:nowrap;margin:2px 0}
+/* 패배 조건 크게 */
+.rk-strip{flex-wrap:wrap}
+.rk-goal{font-size:clamp(20px,2.6cqw,36px)!important;font-weight:900;padding:8px 20px;border-radius:16px;background:#D33C44!important;color:#fff!important;border:2px solid #fff!important;box-shadow:0 4px 0 #8A1A22,0 8px 16px rgba(0,0,0,.2);margin-left:auto;white-space:nowrap}
+@container rkbox (max-width:560px){.rk-goal{display:block!important;flex:1 1 100%!important;margin:6px 0 0;font-size:17px!important;white-space:normal!important;text-align:center;word-break:keep-all;padding:6px 10px}}
 /* ===== 바퀴벌레 포커 끝 ===== */
 /* ===== 할리갈리 ===== */
 body.g-halli .wrap{max-width:none;padding-inline:max(12px,env(safe-area-inset-left,0px));padding-block:6px 20px;gap:8px}

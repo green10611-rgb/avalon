@@ -110,7 +110,7 @@ function rBody(S, me, ui, P) {
   const act = end ? -1 : S.phase === 'give' ? S.turn : cur.to;
   const mine = act === me;
   if (end) h += rEnd(S, me, P);
-  else h += `<header class="rk-strip${mine ? ' me' : ''}" style="--pc:${U.pc(act)}"><span class="rk-av">${pic(0, 'big')}</span><div><b>${pn(P, act)}${mine ? ' (나)' : ''} ${S.phase === 'give' ? '차례' : '— 받을지 넘길지 고르는 중'}</b><small>${S.phase === 'give' ? (mine ? '떠넘길 카드와 받을 사람, 그리고 할 말을 고르세요' : '누구에게 무슨 카드를 떠넘길까…') : (mine ? '"진실"인지 "거짓"인지 대답하거나, 몰래 보고 넘겨요' : `${pn(P, cur.from)}님이 "${RN[cur.claim]}"라고 했어요`)}</small></div><span class="rk-goal">☠ 같은 벌레 4장이면 패배</span></header>`;
+  else h += `<header class="rk-strip${mine ? ' me' : ''}" style="--pc:${U.pc(act)}"><span class="rk-av">${pic(0, 'big')}</span><div><b>${pn(P, act)}${mine ? ' (나)' : ''} ${S.phase === 'give' ? '차례' : '— 받을지 넘길지 고르는 중'}</b><small>${S.phase === 'give' ? (mine ? '떠넘길 카드와 받을 사람, 그리고 할 말을 고르세요' : '누구에게 무슨 카드를 떠넘길까…') : (mine ? '"진실"인지 "거짓"인지 대답하거나, 몰래 보고 넘겨요' : `${pn(P, cur.from)}님이 "${RN[cur.claim]}"라고 했어요`)}</small></div><span class="rk-goal">☠ 같은 벌레 카드 4장이 쌓이면 패배합니다</span></header>`;
   // 가운데: 사람들 자리 (앞에 깔린 벌레)
   const L = S.last, popL = L ? rFresh(S, 'pl' + L.n, 1.6) : -1;
   h += `<section class="rk-seats n${n}">${ids(P).map(i => {
