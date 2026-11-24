@@ -1499,6 +1499,54 @@ body.g-kraken details.ref summary,body.g-kraken .kw details summary{font-size:18
 .spc.afford{box-shadow:0 0 0 calc(var(--cw) * .035) var(--fr1),0 0 0 calc(var(--cw) * .055) #1FA463,0 0 18px 3px rgba(61,220,132,.7),0 4px 10px rgba(0,0,0,.35)}
 .spc.sel{box-shadow:0 0 0 calc(var(--cw) * .035) var(--fr1),0 0 0 calc(var(--cw) * .06) #FFD86B,0 0 26px rgba(255,216,107,.95),0 6px 14px rgba(0,0,0,.4)}
 @keyframes spGlow{50%{box-shadow:0 0 0 calc(var(--cw) * .035) var(--fr1),0 0 0 calc(var(--cw) * .055) #3DDC84,0 0 30px 8px rgba(61,220,132,.8),0 4px 10px rgba(0,0,0,.35)}}
+/* 크라켄 보물상자 */
+.kchs{position:relative;display:block;width:88%;aspect-ratio:120/124;margin-top:2%}
+.kchs svg,.kchx svg{display:block;width:100%;height:auto}
+.kchs-open{position:absolute;left:3%;right:3%;top:2%}
+.kchs-body{position:absolute;left:0;right:0;bottom:0;z-index:3;filter:drop-shadow(0 4px 4px rgba(0,0,0,.3))}
+.kchs-in{position:absolute;left:0;right:0;bottom:52%;z-index:2;display:flex;justify-content:center;align-items:flex-end;height:46%}
+.kchs-in img.fe,.kchx-in img.fe{position:absolute;vertical-align:0;height:auto}
+:is(.kchs-in,.kchx-in) img.fe.kin-a{width:46%;left:27%;bottom:-6%}
+:is(.kchs-in,.kchx-in) img.fe.kin-c{width:22%}:is(.kchs-in,.kchx-in) img.fe.c1{left:8%;bottom:-4%;transform:rotate(-20deg)}:is(.kchs-in,.kchx-in) img.fe.c2{right:8%;left:auto;bottom:-2%;transform:rotate(18deg)}:is(.kchs-in,.kchx-in) img.fe.c3{left:24%;bottom:-16%}:is(.kchs-in,.kchx-in) img.fe.c4{right:24%;left:auto;bottom:-14%;width:18%}
+:is(.kchs-in,.kchx-in) img.fe.kin-k{width:70%;left:15%;bottom:-20%}
+.kin-e{position:absolute;bottom:4%;left:0;right:0;text-align:center;font-weight:900;color:#B8A27A;font-size:12cqw;letter-spacing:.06em}
+.kcard.kE{justify-content:center}
+.kcard.kE .kchs-in{opacity:1}
+.kcard .kchs + b,.kcard b{margin-top:4%}
+/* 공개: 상자 여는 연출 */
+.kchx{position:relative;width:min(240px,62vw);aspect-ratio:120/112;margin:6px 0;animation:kchShake .7s calc(.1s - var(--el,0s)) both}
+.kchx-glow{position:absolute;left:50%;top:38%;width:170%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;z-index:0;opacity:0;animation:kchGlow .5s calc(.9s - var(--el,0s)) both}
+.kchx.k-T .kchx-glow{background:repeating-conic-gradient(from 0deg,rgba(255,226,120,.55) 0 8deg,transparent 8deg 20deg);-webkit-mask:radial-gradient(circle,#000 25%,transparent 62%);mask:radial-gradient(circle,#000 25%,transparent 62%)}
+.kchx.k-K .kchx-glow{background:radial-gradient(circle,rgba(229,72,77,.65),rgba(91,15,86,.35) 40%,transparent 65%)}
+.kchx.k-E .kchx-glow{background:radial-gradient(circle,rgba(255,255,255,.18),transparent 55%)}
+.kchx-open{position:absolute;left:3%;right:3%;top:0;z-index:1;transform-origin:50% 100%;animation:kchOpen .32s calc(.82s - var(--el,0s)) cubic-bezier(.3,1.6,.5,1) both}
+.kchx-in{position:absolute;left:0;right:0;bottom:52%;height:50%;z-index:2;container-type:inline-size;animation:kchIn .65s calc(.95s - var(--el,0s)) cubic-bezier(.2,1.5,.4,1) both}
+.kchx.k-K .kchx-in{animation:kchInK .8s calc(.95s - var(--el,0s)) cubic-bezier(.2,1.6,.4,1) both}
+.kchx.k-K .kin-k{animation:kfxBob 1.4s 1.8s ease-in-out infinite}
+.kchx.k-T .kin-a{animation:kfxBob 2.2s 1.8s ease-in-out infinite}
+.kchx-body{position:absolute;left:0;right:0;bottom:0;z-index:3;filter:drop-shadow(0 10px 14px rgba(0,0,0,.45))}
+.kchx-lid{position:absolute;left:0;right:0;bottom:56%;z-index:4;transform-origin:50% 100%;animation:kchLid .35s calc(.78s - var(--el,0s)) cubic-bezier(.5,0,.6,1) both}
+.kchx-dust{position:absolute;left:50%;top:40%;z-index:5;pointer-events:none}
+.kchx-dust i{position:absolute;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle,rgba(230,220,200,.9),transparent 70%);opacity:0;animation:kchDust .9s calc(.9s - var(--el,0s)) ease-out both}
+.kchx-dust i:nth-child(1){--dx:-70px;--dy:-30px}.kchx-dust i:nth-child(2){--dx:60px;--dy:-40px}.kchx-dust i:nth-child(3){--dx:-30px;--dy:-70px}.kchx-dust i:nth-child(4){--dx:40px;--dy:-75px}
+.kchx.k-T .kchx-dust i{background:radial-gradient(circle,rgba(255,230,120,.95),transparent 70%)}
+.kchx.k-K .kchx-dust i{background:radial-gradient(circle,rgba(120,30,110,.9),transparent 70%)}
+.kchx .kin-e{font-size:16cqw;color:#E6D3A8;text-shadow:0 2px 6px rgba(0,0,0,.5)}
+.kshow[data-still] .kchx,.kshow[data-still] .kchx *{animation:none}
+.kshow[data-still] .kchx-lid{display:none}
+.kshow[data-still] .kchx-glow{opacity:.9}
+@keyframes kchShake{0%,100%{transform:none}15%{transform:rotate(-4deg) translateY(-2px)}30%{transform:rotate(4deg)}45%{transform:rotate(-3deg) translateY(-3px)}60%{transform:rotate(3deg)}75%{transform:rotate(-1.5deg)}}
+@keyframes kchLid{0%{transform:none;opacity:1}40%{transform:translateY(-14%) rotate(-3deg);opacity:1}100%{transform:translateY(-40%) scaleY(0);opacity:0}}
+@keyframes kchOpen{from{transform:scaleY(0)}to{transform:none}}
+@keyframes kchIn{0%{transform:translateY(55%) scale(.4);opacity:0}100%{transform:none;opacity:1}}
+@keyframes kchInK{0%{transform:translateY(70%) scale(.3) rotate(-10deg);opacity:0}60%{transform:translateY(-12%) scale(1.15) rotate(6deg);opacity:1}100%{transform:none;opacity:1}}
+@keyframes kchGlow{from{opacity:0;transform:translate(-50%,-50%) scale(.4)}to{opacity:.9;transform:translate(-50%,-50%) scale(1)}}
+@keyframes kchDust{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}30%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.8)}}
+.kchx.k-T .kchx-glow{animation:kchGlow .5s calc(.9s - var(--el,0s)) both,avpSpin 14s 1.4s linear infinite}
+.kchs .kin-e{display:none}
+.kchx .kin-e{bottom:20%}
+.kchx .kin-e{bottom:-2%;font-size:13cqw;color:#D9C49A}
+.kshow.k-T .kword{color:#5A3A00!important;text-shadow:0 2px 0 #FFF3C4,0 0 18px rgba(255,255,255,.9)!important}
 /* ===== 3D 그림 끝 ===== */
 /* 크라켄 카드 (3D 그림) */
 .kcard{position:relative;container-type:inline-size;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2%;width:100%;aspect-ratio:100/140;border-radius:12%/8.6%;overflow:hidden;border:3px solid #8B6A3C;box-sizing:border-box;box-shadow:inset 0 0 0 2px rgba(255,255,255,.45)}

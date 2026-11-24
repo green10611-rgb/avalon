@@ -10,12 +10,25 @@ const KROLE = {4: [3, 2], 5: [4, 2], 6: [4, 2], 7: [5, 3], 8: [6, 3]};
 const kids = P => P.map((_, i) => i);
 const KN = {E: '빈 상자', T: '보물', K: '크라켄'};
 
-/* ---------- 직접 그린 그림 (SVG) ---------- */
+/* ---------- 보물상자 (그라데이션 SVG) ---------- */
+const KDEF = `<defs><linearGradient id="kchw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C07A36"/><stop offset=".55" stop-color="#8A4F1E"/><stop offset="1" stop-color="#5A2F0E"/></linearGradient><linearGradient id="kchd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6A3A14"/><stop offset="1" stop-color="#3E1F08"/></linearGradient><linearGradient id="kchg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF3B8"/><stop offset=".45" stop-color="#E8B23A"/><stop offset="1" stop-color="#8A5800"/></linearGradient><radialGradient id="kchin" cx=".5" cy=".2" r=".9"><stop offset="0" stop-color="#2E1808"/><stop offset="1" stop-color="#0E0602"/></radialGradient></defs>`;
+const RIV = (xs, y) => xs.map(x => `<circle cx="${x}" cy="${y}" r="1.8" fill="#FFF1B0" stroke="#8A5800" stroke-width=".6"/>`).join('');
+// 몸통 (뚜껑 없음, 위가 열린 모양) — viewBox 0 0 120 70
+const CH_BODY = `<svg viewBox="0 0 120 70" class="kch-body" aria-hidden="true">${KDEF}<ellipse cx="60" cy="9" rx="51" ry="8" fill="url(#kchin)"/><path d="M9 9h102v50a9 9 0 0 1-9 9H18a9 9 0 0 1-9-9z" fill="url(#kchw)" stroke="#3A1E08" stroke-width="2"/><path d="M9 30h102M9 49h102" stroke="#3A1E08" stroke-opacity=".45" stroke-width="1.4"/><path d="M12 20h20M40 40h26M76 22h22M14 58h18" stroke="#E7A962" stroke-opacity=".35" stroke-width="1.2" stroke-linecap="round"/><rect x="19" y="9" width="11" height="59" fill="url(#kchg)" stroke="#7A4D00" stroke-width=".8"/><rect x="90" y="9" width="11" height="59" fill="url(#kchg)" stroke="#7A4D00" stroke-width=".8"/>${RIV([24.5, 95.5], 20)}${RIV([24.5, 95.5], 40)}${RIV([24.5, 95.5], 60)}<rect x="6" y="5" width="108" height="8" rx="3.5" fill="url(#kchg)" stroke="#7A4D00" stroke-width=".8"/><rect x="49" y="11" width="22" height="24" rx="4" fill="url(#kchg)" stroke="#7A4D00" stroke-width="1"/><circle cx="60" cy="21" r="3.4" fill="#3A1E08"/><path d="M60 22v7" stroke="#3A1E08" stroke-width="2.6" stroke-linecap="round"/></svg>`;
+// 닫힌 뚜껑 — viewBox 0 0 120 44
+const CH_LID = `<svg viewBox="0 0 120 44" class="kch-lid" aria-hidden="true">${KDEF}<path d="M9 42V26Q9 3 60 3t51 23v16z" fill="url(#kchw)" stroke="#3A1E08" stroke-width="2"/><path d="M14 20Q30 8 60 7" stroke="#E7A962" stroke-opacity=".45" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M19 42V16Q22 9 30 6.5V42z" fill="url(#kchg)" stroke="#7A4D00" stroke-width=".8"/><path d="M101 42V16Q98 9 90 6.5V42z" fill="url(#kchg)" stroke="#7A4D00" stroke-width=".8"/>${RIV([24.5, 95.5], 24)}<rect x="6" y="36" width="108" height="8" rx="3.5" fill="url(#kchg)" stroke="#7A4D00" stroke-width=".8"/><path d="M53 36h14v10a3 3 0 0 1-3 3h-8a3 3 0 0 1-3-3z" fill="url(#kchg)" stroke="#7A4D00"/></svg>`;
+// 열린 뚜껑 안쪽 판 — viewBox 0 0 120 44
+const CH_OPEN = `<svg viewBox="0 0 120 44" class="kch-open" aria-hidden="true">${KDEF}<path d="M8 44 16 4h88l8 40z" fill="url(#kchd)" stroke="#3A1E08" stroke-width="2"/><path d="M22 44 27 4h10l-3 40zM98 44 93 4H83l3 40z" fill="url(#kchg)" opacity=".85"/><path d="M14 26h92" stroke="#2A1404" stroke-opacity=".5"/><rect x="14" y="1" width="92" height="6" rx="3" fill="url(#kchg)" stroke="#7A4D00" stroke-width=".8"/></svg>`;
+const KIN = {T: () => `${U.img('moneybag', 'kin-a')}${U.img('coin', 'kin-c c1')}${U.img('coin', 'kin-c c2')}${U.img('coin', 'kin-c c3')}${U.img('gem', 'kin-c c4')}`, K: () => U.img('octopus', 'kin-k'), E: () => `<span class="kin-e">텅…</span>`};
+// 카드 앞면: 열린 상자 + 안에 든 것
+const openChest = c => `<span class="kchs"><span class="kchs-open">${CH_OPEN}</span><span class="kchs-in">${KIN[c]()}</span><span class="kchs-body">${CH_BODY}</span></span>`;
+
+/* ---------- 카드 그림 ---------- */
 const ART = {
   back: `<svg viewBox="0 0 100 140" aria-hidden="true"><defs><linearGradient id="kbw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1E4E79"/><stop offset="1" stop-color="#0D2338"/></linearGradient></defs><rect x="2" y="2" width="96" height="136" rx="10" fill="url(#kbw)" stroke="#E6C47A" stroke-width="3"/><rect x="9" y="9" width="82" height="122" rx="6" fill="none" stroke="#E6C47A" stroke-width="1.2" stroke-dasharray="3 3" opacity=".7"/><g fill="none" stroke="#7FB8E0" stroke-width="1.5" opacity=".5"><path d="M10 100q10-8 20 0t20 0 20 0 20 0"/><path d="M10 112q10-8 20 0t20 0 20 0 20 0"/><path d="M10 124q10-8 20 0t20 0 20 0 20 0"/></g><circle cx="50" cy="58" r="24" fill="#0B1C2D" stroke="#E6C47A" stroke-width="2"/><path d="M50 38l4 14h-8zM50 78l-4-14h8zM30 58l14-4v8zM70 58l-14 4v-8z" fill="#E6C47A"/><circle cx="50" cy="58" r="3" fill="#E6C47A"/></svg>`,
-  E: `<span class="kcard kE">${U.img('web', 'kc-main')}<b>빈 상자</b></span>`,
-  T: `<span class="kcard kT"><span class="kc-rays"></span>${U.img('moneybag', 'kc-main')}${U.img('coin', 'kc-sub a')}${U.img('coin', 'kc-sub b')}<b>보물!</b></span>`,
-  K: `<span class="kcard kK"><span class="kc-rays"></span>${U.img('octopus', 'kc-main')}<b>크라켄!</b></span>`,
+  E: `<span class="kcard kE">${openChest('E')}<b>빈 상자</b></span>`,
+  T: `<span class="kcard kT"><span class="kc-rays"></span>${openChest('T')}<b>보물!</b></span>`,
+  K: `<span class="kcard kK"><span class="kc-rays"></span>${openChest('K')}<b>크라켄!</b></span>`,
   ex: `<span class="krole-pic g">${U.img('compass')}</span>`,
   sk: `<span class="krole-pic e">${U.img('skullx')}</span>`
 };
@@ -167,10 +180,10 @@ function kFx(S, me, P) {
   }
   if (cur.n !== rec.n && S.last && cur.ph === 'shown') {
     const L = S.last;
-    fly(`<span class="kfx-card">${ART.back}</span>`, seat(L.from), $('.kflip') || $('.kshow'), {w: 52, h: 73, dur: 600, lift: -40, rot: 10});
+    fly(`<span class="kfx-card">${ART.back}</span>`, seat(L.from), $('.kchx') || $('.kshow'), {w: 52, h: 73, dur: 600, lift: -40, rot: 10});
     if (L.by !== L.from) fly('<span class="kfx-comp">🧭</span>', seat(L.by), seat(L.from), {w: 44, h: 44, dur: 900, delay: 300, lift: -70, rot: 360, done: () => pop(seat(L.from))});
     setTimeout(() => {
-      const fx = $('.kflip') || $('.kshow');
+      const fx = $('.kchx-in') || $('.kshow');
       if (L.c === 'T') { burst(fx, ['#F5C542', '#FFE38A', '#FFFFFF', '#E3A92F'], 36, 'coin'); setTimeout(() => pop($('.kb-gold')), 300); }
       else if (L.c === 'K') { ink(); shake(box()); burst(fx, ['#3B0D3A', '#7A1E6B', '#1A0A20', '#C8323A'], 30); }
       else burst(fx, ['#D9CDB4', '#BFB39A', '#EEE5D0'], 16, 'dust');
@@ -272,7 +285,7 @@ function kShown(S, me, P) {
   const word = c === 'T' ? '보물 발견!' : c === 'K' ? '크라켄이다!!' : '빈 상자…';
   const pd = S.pend;
   const btn = pd === 'K' || pd === 'T' || pd === 'R4' ? '결과 보기' : pd === 'R' ? `${S.round}라운드 끝 → 상자 다시 나누기` : `🧭 다음 선장 ${P[S.act] ? P[S.act].name : ''}님 차례로`;
-  return `<section class="kshow k-${c}"${st}><small>${U.nm(P, L.by)}님이 ${U.nm(P, L.from)}님의 상자를 열었어요</small><div class="kflip"><i class="b">${ART.back}</i><i class="f">${ART[c]}</i></div><div class="kword">${word}</div>${c === 'T' ? `<div class="kb">💰 보물 ${S.found} / ${P.length}</div>` : ''}${me >= 0 ? U.btn(btn, 'next', {}, c === 'K' ? 'avk-go' : 'primary big avgo') : ''}<small class="avnext-s">누구든 한 명이 누르면 모두 다음으로 넘어가요</small></section>`;
+  return `<section class="kshow k-${c}"${st}><small>${U.nm(P, L.by)}님이 ${U.nm(P, L.from)}님의 상자를 열었어요</small><div class="kchx k-${c}"><span class="kchx-glow"></span><span class="kchx-open">${CH_OPEN}</span><span class="kchx-in">${KIN[c]()}</span><span class="kchx-body">${CH_BODY}</span><span class="kchx-lid">${CH_LID}</span><span class="kchx-dust"><i></i><i></i><i></i><i></i></span></div><div class="kword">${word}</div>${c === 'T' ? `<div class="kb">💰 보물 ${S.found} / ${P.length}</div>` : ''}${me >= 0 ? U.btn(btn, 'next', {}, c === 'K' ? 'avk-go' : 'primary big avgo') : ''}<small class="avnext-s">누구든 한 명이 누르면 모두 다음으로 넘어가요</small></section>`;
 }
 function kEnd(S, P) {
   const el = kFresh('ke' + S._g, 5), good = S.wt === 'T';
