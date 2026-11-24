@@ -2161,3 +2161,4 @@ body.g-dixit .turnbar,body.g-dixit .log,body.g-dixit .connline.ok{display:none}
 .more-games span{display:inline-block;transition:transform .2s}
 .more-games:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(40,60,160,.22)}
 .more-games:hover span{transform:translateX(6px)}
+.swgame{margin-top:28px;display:flex;flex-direction:column;gap:8px}
