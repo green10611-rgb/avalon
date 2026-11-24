@@ -1618,6 +1618,32 @@ body.g-kraken details.ref summary,body.g-kraken .kw details summary{font-size:18
 @keyframes kbgRed{from{opacity:.55;transform:translate(-50%,-50%) scale(.9)}to{opacity:1;transform:translate(-50%,-50%) scale(1.15)}}
 .kbg-K{z-index:0}
 .kbg-K::after{z-index:2}
+/* 크라켄은 초록색 */
+.kchip{width:1.25em!important;height:1.25em!important;vertical-align:-.25em;display:inline-block}
+.ks-d span.n .kchip{filter:grayscale(.7) opacity(.75)}
+.ks-d span.k{background:#DDF5E3;border-color:#1E8A4A;color:#0D4A26}
+.kc-K,.ks-c .kc.kopd.kc-K{box-shadow:0 0 0 2px #1E8A4A,0 4px 14px rgba(40,170,90,.55)}
+.kfx-tent{filter:drop-shadow(0 6px 10px rgba(0,0,0,.5))}
+.kfx-tent img{width:1em;height:1em;display:block}
+.kfx-octo{filter:drop-shadow(0 20px 30px rgba(0,0,0,.6)) drop-shadow(0 0 30px rgba(80,255,140,.45))}
+.kfx-ink{background:radial-gradient(circle at 50% 60%,rgba(3,20,12,.95) 0,rgba(6,40,22,.85) 35%,rgba(2,15,10,.6) 60%,transparent 75%)}
+.kfx-redflash{background:radial-gradient(circle at 50% 50%,rgba(90,255,140,.35) 0,rgba(5,70,35,.88) 80%)}
+.kfx-vign{box-shadow:inset 0 0 22vmin 8vmin rgba(2,24,12,.95)}
+@keyframes kVign{to{box-shadow:inset 0 0 30vmin 12vmin rgba(10,90,40,.85)}}
+.kfx-arm{background:radial-gradient(circle at 30% 0,#C9F5B0 0 3px,transparent 4px) 0 0/22px 30px,linear-gradient(90deg,#0B3A24,#1F8A4C 45%,#4CC06E 60%,#0E4A2C);box-shadow:inset -6px 0 14px rgba(0,0,0,.45),0 0 24px rgba(20,120,60,.6)}
+.kshow.k-K{background:radial-gradient(120% 90% at 50% 0,#2FA36A,#0C4A3A 55%,#03180F 100%);border-color:#58E08A}
+.kbg-K i{background:radial-gradient(circle at 35% 30%,#0F3A28 0,#03140C 45%,#000 100%);box-shadow:0 0 0 3px rgba(60,200,120,.3),0 0 40px 14px rgba(0,0,0,.75)}
+.kbg-drip em{background:linear-gradient(#010805,#0A2A1A)}
+.kbg-K::after{background:radial-gradient(circle,rgba(110,255,150,.7) 0,rgba(30,170,90,.35) 30%,transparent 60%)}
+.kchx.k-K .kchx-glow{background:radial-gradient(circle,rgba(110,255,150,.65),rgba(15,90,50,.35) 40%,transparent 65%)}
+.kchx.k-K .kchx-dust i{background:radial-gradient(circle,rgba(30,140,70,.9),transparent 70%)}
+.kshow.k-K>.kword{color:#8CFFB0!important;text-shadow:0 3px 0 #04301A,0 0 18px rgba(90,255,150,.8)}
+@keyframes kGlitch{0%{text-shadow:4px 0 #20ff80,-4px 0 #003a1c}100%{text-shadow:-3px 1px #20ff80,3px -1px #003a1c}}
+.kcard.kK{background:radial-gradient(circle at 50% 45%,#2FA36A,#0C4A3A 60%,#03180F)!important;border-color:#58E08A!important}
+.kcard.kK b{color:#C8FFD8!important;text-shadow:0 0 8px #20C060!important}
+.kcard.kK .kc-rays{background:repeating-conic-gradient(from 0deg,rgba(120,255,160,.28) 0 8deg,transparent 8deg 22deg)!important}
+.kend.e{background:radial-gradient(120% 90% at 50% 0,#2FA36A,#0C4A3A 55%,#03180F 100%)!important;border-color:#58E08A!important}
+.kend.e>b{color:#8CFFB0!important}
 /* ===== 3D 그림 끝 ===== */
 /* 크라켄 카드 (3D 그림) */
 .kcard{position:relative;container-type:inline-size;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2%;width:100%;aspect-ratio:100/140;border-radius:12%/8.6%;overflow:hidden;border:3px solid #8B6A3C;box-sizing:border-box;box-shadow:inset 0 0 0 2px rgba(255,255,255,.45)}

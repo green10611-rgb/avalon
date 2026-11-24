@@ -19,7 +19,7 @@ const CH_BODY = `<svg viewBox="0 0 120 70" class="kch-body" aria-hidden="true">$
 const CH_LID = `<svg viewBox="0 0 120 44" class="kch-lid" aria-hidden="true">${KDEF}<path d="M9 42V26Q9 3 60 3t51 23v16z" fill="url(#kchw)" stroke="#3A1E08" stroke-width="2"/><path d="M14 20Q30 8 60 7" stroke="#E7A962" stroke-opacity=".45" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M19 42V16Q22 9 30 6.5V42z" fill="url(#kchg)" stroke="#7A4D00" stroke-width=".8"/><path d="M101 42V16Q98 9 90 6.5V42z" fill="url(#kchg)" stroke="#7A4D00" stroke-width=".8"/>${RIV([24.5, 95.5], 24)}<rect x="6" y="36" width="108" height="8" rx="3.5" fill="url(#kchg)" stroke="#7A4D00" stroke-width=".8"/><path d="M53 36h14v10a3 3 0 0 1-3 3h-8a3 3 0 0 1-3-3z" fill="url(#kchg)" stroke="#7A4D00"/></svg>`;
 // 열린 뚜껑 안쪽 판 — viewBox 0 0 120 44
 const CH_OPEN = `<svg viewBox="0 0 120 44" class="kch-open" aria-hidden="true">${KDEF}<path d="M8 44 16 4h88l8 40z" fill="url(#kchd)" stroke="#3A1E08" stroke-width="2"/><path d="M22 44 27 4h10l-3 40zM98 44 93 4H83l3 40z" fill="url(#kchg)" opacity=".85"/><path d="M14 26h92" stroke="#2A1404" stroke-opacity=".5"/><rect x="14" y="1" width="92" height="6" rx="3" fill="url(#kchg)" stroke="#7A4D00" stroke-width=".8"/></svg>`;
-const KIN = {T: () => `${U.img('moneybag', 'kin-a')}${U.img('coin', 'kin-c c1')}${U.img('coin', 'kin-c c2')}${U.img('coin', 'kin-c c3')}${U.img('gem', 'kin-c c4')}`, K: () => U.img('octopus', 'kin-k'), E: () => `<span class="kin-e">텅…</span>`};
+const KIN = {T: () => `${U.img('moneybag', 'kin-a')}${U.img('coin', 'kin-c c1')}${U.img('coin', 'kin-c c2')}${U.img('coin', 'kin-c c3')}${U.img('gem', 'kin-c c4')}`, K: () => U.img('kraken', 'kin-k'), E: () => `<span class="kin-e">텅…</span>`};
 // 카드 앞면: 열린 상자 + 안에 든 것
 const openChest = c => `<span class="kchs"><span class="kchs-open">${CH_OPEN}</span><span class="kchs-in">${KIN[c]()}</span><span class="kchs-body">${CH_BODY}</span></span>`;
 
@@ -185,7 +185,7 @@ function kFx(S, me, P) {
     setTimeout(() => {
       const fx = $('.kchx-body') || $('.kshow');
       if (L.c === 'T') { treasure(fx); burst(fx, ['#F5C542', '#FFE38A', '#FFFFFF', '#E3A92F'], 44, 'coin'); }
-      else if (L.c === 'K') { kraken(fx); burst(fx, ['#3B0D3A', '#7A1E6B', '#1A0A20', '#C8323A'], 36); }
+      else if (L.c === 'K') { kraken(fx); burst(fx, ['#0B2A1A', '#1F6B3A', '#3FBF6A', '#06140C'], 36); }
       else burst(fx, ['#D9CDB4', '#BFB39A', '#EEE5D0'], 16, 'dust');
     }, 1400);
     if (L.c === 'T' || L.c === 'K') setTimeout(() => { const c = $('.kchx'); if (c && c.animate) c.animate([{transform: 'none'}, {transform: 'translateX(-5px) rotate(-3deg)'}, {transform: 'translateX(5px) rotate(3deg)'}, {transform: 'translateX(-7px) rotate(-4deg) scale(1.03)'}, {transform: 'translateX(7px) rotate(4deg) scale(1.05)'}, {transform: 'none'}], {duration: 420, easing: 'ease-in-out'}); }, 260);
@@ -216,7 +216,7 @@ function kFx(S, me, P) {
     ink();
     const v = layer('kfx-vign'); v.animate([{opacity: 0}, {opacity: 1, offset: .15}, {opacity: .8, offset: .8}, {opacity: 0}], {duration: 2600, fill: 'both'}).onfinish = () => v.remove();
     const b = box(); if (b && b.animate) b.animate([{transform: 'none'}, {transform: 'translate(-16px,8px) rotate(-1.5deg) scale(1.02)'}, {transform: 'translate(14px,-8px) rotate(1.5deg)'}, {transform: 'translate(-12px,5px) rotate(-1deg)'}, {transform: 'translate(9px,-3px)'}, {transform: 'translate(-5px,2px)'}, {transform: 'none'}], {duration: 750, iterations: 2, easing: 'ease-in-out'});
-    const big = layer('kfx-octo', U.img('octopus', '', '')); big.animate([{transform: 'translate(-50%,60vh) scale(.6) rotate(-8deg)', opacity: 0}, {transform: 'translate(-50%,8vh) scale(1.15) rotate(4deg)', opacity: 1, offset: .35}, {transform: 'translate(-50%,12vh) scale(1.1) rotate(-3deg)', opacity: 1, offset: .7}, {transform: 'translate(-50%,70vh) scale(.9) rotate(6deg)', opacity: 0}], {duration: 2400, easing: 'cubic-bezier(.3,1.2,.5,1)', fill: 'both'}).onfinish = () => big.remove();
+    const big = layer('kfx-octo', U.img('kraken', '', '')); big.animate([{transform: 'translate(-50%,60vh) scale(.6) rotate(-8deg)', opacity: 0}, {transform: 'translate(-50%,8vh) scale(1.15) rotate(4deg)', opacity: 1, offset: .35}, {transform: 'translate(-50%,12vh) scale(1.1) rotate(-3deg)', opacity: 1, offset: .7}, {transform: 'translate(-50%,70vh) scale(.9) rotate(6deg)', opacity: 0}], {duration: 2400, easing: 'cubic-bezier(.3,1.2,.5,1)', fill: 'both'}).onfinish = () => big.remove();
     for (let k = 0; k < 6; k++) {
       const t = layer('kfx-arm'); const left = k < 3; t.style.cssText = `${left ? 'left' : 'right'}:${-4 + (k % 3) * 9}vw;bottom:-10vh;height:${48 + Math.random() * 25}vh;--r:${left ? 1 : -1}`;
       t.animate([{transform: `translateY(100%) rotate(${left ? -10 : 10}deg)`}, {transform: `translateY(8%) rotate(${left ? 14 : -14}deg)`, offset: .35}, {transform: `translateY(14%) rotate(${left ? 4 : -4}deg)`, offset: .7}, {transform: `translateY(105%) rotate(${left ? 18 : -18}deg)`}], {duration: 2300, delay: k * 70, easing: 'ease-in-out', fill: 'both'}).onfinish = () => t.remove();
@@ -231,7 +231,7 @@ function kFx(S, me, P) {
     const el = document.createElement('div'); el.className = 'kfx-ink'; document.body.appendChild(el);
     el.animate([{opacity: 0, transform: 'scale(.2)'}, {opacity: .92, transform: 'scale(1.1)', offset: .3}, {opacity: .85, transform: 'scale(1.2)', offset: .7}, {opacity: 0, transform: 'scale(1.4)'}], {duration: 1800, easing: 'ease-out', fill: 'both'}).onfinish = () => el.remove();
     for (let k = 0; k < 8; k++) {
-      const t = document.createElement('div'); t.className = 'kfx-tent'; t.textContent = '🐙';
+      const t = document.createElement('div'); t.className = 'kfx-tent'; t.innerHTML = U.img('kraken', '', '');
       t.style.cssText = `left:${10 + Math.random() * 80}vw;top:${60 + Math.random() * 30}vh;font-size:${36 + Math.random() * 40}px`;
       document.body.appendChild(t);
       t.animate([{transform: 'translateY(120px) rotate(-20deg)', opacity: 0}, {transform: 'translateY(-40px) rotate(10deg)', opacity: 1, offset: .5}, {transform: 'translateY(-90px) rotate(-10deg)', opacity: 0}], {duration: 1600, delay: k * 90, easing: 'ease-out', fill: 'both'}).onfinish = () => t.remove();
@@ -288,7 +288,7 @@ function kDeclForm(S, me, ui, P) {
   return `<section class="kdecl"><div class="avt-h"><b>📣 ${S.round}라운드 선언</b><span>내 상자 ${per}개를 몰래 보고, 보물과 크라켄 개수를 말하세요. 거짓말도 OK!</span></div>
 <div class="khand">${h.map(c => card(c, 'peek')).join('')}</div><small class="muted" style="text-align:center">진짜: ${kCount(h)} · 선언하면 상자가 섞여서 위치는 몰라요</small>
 <div class="kd-row"><span>💰 보물</span><div class="kd-num">${U.gb('−', 'kt', -1, 'kd-b', tv <= 0)}<b>${tv}</b>${U.gb('+', 'kt', 1, 'kd-b', tv + (kv ? 1 : 0) >= per)}</div></div>
-<div class="kd-row kd-k"><span>🐙 크라켄<small>${kv ? '있다고 말해요' : '없음이 기본이에요 · 있으면 눌러요'}</small></span>${U.gb(`<i class="kd-box">${kv ? '✔' : ''}</i>크라켄 있음`, 'kk', 1, 'kd-tg' + (kv ? ' on' : ''), !kv && tv >= per)}</div>
+<div class="kd-row kd-k"><span>${U.img('kraken', 'kchip')} 크라켄<small>${kv ? '있다고 말해요' : '없음이 기본이에요 · 있으면 눌러요'}</small></span>${U.gb(`<i class="kd-box">${kv ? '✔' : ''}</i>크라켄 있음`, 'kk', 1, 'kd-tg' + (kv ? ' on' : ''), !kv && tv >= per)}</div>
 ${U.btn(`이렇게 선언하기 (보물 ${tv}${kv ? ' · 크라켄 있음' : ''})`, 'decl', {t: tv, k: kv}, 'primary big avgo')}</section>`;
 }
 function kTable(S, me, P, picking, ui) {
@@ -297,7 +297,7 @@ function kTable(S, me, P, picking, ui) {
     const d = S.decl[i], hand = S.hand[i] || [], isAct = S.act === i && !S.winner;
     const can = picking && i !== me;
     return `<div class="kseat${isAct ? ' act' : ''}${i === me ? ' me' : ''}" data-ks="${i}" style="--pc:${U.pc(i)}"><div class="ks-h"><span class="pdot" style="--pc:${U.pc(i)}"></span><b>${U.nm(P, i)}${i === me ? ' (나)' : ''}</b>${isAct ? '<span class="ks-cap"><i>🧭</i> 선장</span>' : ''}${S.winner ? `<span class="ks-role ${S.role[i] === 'X' ? 'g' : 'e'}">${S.role[i] === 'X' ? '탐험대' : '해골'}</span>` : ''}</div>
-<div class="ks-d">${d ? `<span>💰 ${d.t}</span>${d.k ? '<span class="k">🐙 크라켄</span>' : '<span class="n">🐙 없음</span>'}` : (S.phase === 'decl' ? '<span class="w">선언 중…</span>' : '<span class="w">—</span>')}</div>
+<div class="ks-d">${d ? `<span>💰 ${d.t}</span>${d.k ? `<span class="k">${U.img('kraken', 'kchip')} 크라켄</span>` : `<span class="n">${U.img('kraken', 'kchip')} 없음</span>`}` : (S.phase === 'decl' ? '<span class="w">선언 중…</span>' : '<span class="w">—</span>')}</div>
 <div class="ks-c">${hand.map((c, k) => can ? `<button type="button" class="kc kc-B pick" data-act="open" data-arg="${U.attr({p: i, k})}" aria-label="${U.nm(P, i)}의 ${k + 1}번째 상자 열기">${ART.back}</button>` : (S.winner ? card(c, 'sm') : card('B', 'sm'))).join('')}${S.revealed.map((r, j) => r.from === i && r.round === S.round ? card(r.c, 'sm kopd' + (S.last && S.last.n === j + 1 ? ' knew' : '')) : '').join('')}</div></div>`;
   }).join('')}</section>`;
 }
