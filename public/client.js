@@ -89,7 +89,7 @@ function homeHTML(){
 <section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
 <details class="ref"><summary>규칙 보기</summary><ol class="rules">${H.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol>${H.rulesExtra()}</details>
 <p class="more-games-w"><a class="more-games" href="/">🎲 다른 게임도 보기 <span>→</span></a></p>`; }
-  if (SOLO === 'cockroach') { const C = G.cockroach; return `<div class="rkhero"><div class="rkh-art">${C.art('card', 1)}${C.art('card', 0)}${C.art('back')}</div><span class="kicker">각자 폰으로 · 실시간 · 2~6명</span><h1>바퀴벌레 포커</h1><p>"이건 바퀴벌레야!" 진짜일까, 거짓말일까?<br>같은 벌레 4장을 떠안으면 패배! AI와 함께 해도 돼요.</p></div>${conn()}
+  if (SOLO === 'cockroach') { const C = G.cockroach; return `<div class="rkhero"><div class="rkh-art">${C.art('card', 1)}${C.art('card', 0)}${C.art('back')}</div><span class="kicker">각자 폰으로 · 실시간 · 2~6명</span><h1>바퀴벌레 포커</h1><p>"바퀴벌레!" 진짜일까, 거짓말일까?<br>같은 벌레 4장을 떠안으면 패배! AI와 함께 해도 돼요.</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn big rk-start" data-nav="create" data-key="cockroach">🪳 바퀴벌레 포커 방 만들기</button>
 <section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>

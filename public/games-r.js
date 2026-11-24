@@ -4,7 +4,7 @@ const G = R.G, U = R.U;
 const isDOM = typeof document !== 'undefined';
 
 /* =================== 바퀴벌레 포커 =================== */
-/* 8종 벌레 카드 64장을 모두 나눠 가져요. 내 차례에는 카드 한 장을 엎어서 다른 사람에게 주며 "이건 ○○야!"라고 말해요(거짓말 OK).
+/* 8종 벌레 카드 64장을 모두 나눠 가져요. 내 차례에는 카드 한 장을 엎어서 다른 사람에게 주며 "○○!"라고 말해요(거짓말 OK).
    받은 사람은 ① "진실!/거짓!"을 맞히거나 ② 몰래 보고 아직 안 본 사람에게 다시 넘겨요.
    맞히면 건넨 사람이, 틀리면 받은 사람이 그 카드를 앞에 펼쳐 놓아요. 같은 벌레 4장이 앞에 쌓이거나, 내 차례에 손에 카드가 없으면 패배! */
 const RK = ['roach', 'bat', 'fly', 'toad', 'rat', 'scorp', 'spider', 'stink'];
@@ -34,7 +34,7 @@ function lose(S, P, i, why) {
 G.cockroach = {
   name: '바퀴벌레 포커', tag: '벌레 카드를 떠넘기는 뻔뻔한 거짓말 게임', min: 2, max: 6, mark: '🪳', hue: '#8B5A2B',
   rules: ['벌레 8종 × 8장, 모두 64장을 똑같이 나눠 가져요. 손에 든 카드는 나만 봐요.',
-    '내 차례: 카드 한 장을 골라 엎은 채로 다른 사람에게 주면서 "이건 ○○야!"라고 말해요. 거짓말해도 돼요!',
+    '내 차례: 카드 한 장을 골라 엎은 채로 다른 사람에게 주면서 "○○!"라고 말해요. 거짓말해도 돼요!',
     '받은 사람은 둘 중 하나: ① 받아들이고 "진실!" 또는 "거짓!"이라고 대답해요. ② 몰래 보고, 아직 이 카드를 안 본 사람에게 다시 넘기며 새로 말해요.',
     '①에서 맞히면 카드를 건넨 사람이, 틀리면 받은 사람이 그 카드를 자기 앞에 펼쳐 놓아요. 카드를 떠안은 사람이 다음 차례예요.',
     '모두가 이미 본 카드라 넘길 사람이 없으면 무조건 ①로 맞혀야 해요.',
@@ -62,7 +62,7 @@ G.cockroach = {
       S.hand[me].splice(S.hand[me].indexOf(c), 1);
       S.cur = {c, from: me, to, claim, seen: [me], hops: [{from: me, to, claim}]};
       S.phase = 'resp'; S.n++;
-      U.log(S, `${P[me].name} → ${P[to].name}: "이건 ${RN[claim]}야!"`);
+      U.log(S, `${P[me].name} → ${P[to].name}: "${RN[claim]}!"`);
       return;
     }
     if (S.phase !== 'resp' || !S.cur || me !== S.cur.to) throw U.err('지금은 내가 받을 차례가 아니에요.');
@@ -73,7 +73,7 @@ G.cockroach = {
       if (!okClaim(claim)) throw U.err('무슨 벌레라고 할지 골라 주세요.');
       cur.seen.push(me); cur.from = me; cur.to = to; cur.claim = claim; cur.hops.push({from: me, to, claim});
       S.n++;
-      U.log(S, `${P[me].name}님이 몰래 보고 → ${P[to].name}: "이건 ${RN[claim]}야!"`);
+      U.log(S, `${P[me].name}님이 몰래 보고 → ${P[to].name}: "${RN[claim]}!"`);
       return;
     }
     if (t === 'call') {
@@ -146,7 +146,7 @@ ${others.length ? U.gb(`👀 몰래 보고 다른 사람에게 넘기기 <small>
         ctrl = `<div class="rk-peeked"><div class="rk-real">${rcard(cur.c, 'big flipin')}<small>몰래 본 진짜 카드</small></div><div class="rk-pass">${rPick(P, others, ui, 'rto', '누구에게 넘길까요?')}${rClaim(ui)}${U.btn(ui.rto != null && ui.rcl != null ? `${pn(P, ui.rto)}님에게 "${RN[ui.rcl]}"라고 넘기기` : '받을 사람과 할 말을 고르세요', 'pass', {to: ui.rto, claim: ui.rcl}, 'primary big rk-go', ui.rto == null || ui.rcl == null)}</div></div>`;
       }
     }
-    return `<section class="rk-stage resp"${anim(el)}><div class="rk-fly">${iSaw && !iAmTo ? rcard(cur.c, 'big') : rback('big wob')}<span class="rk-bubble" style="--pc:${U.pc(cur.from)}"><small>${pn(P, cur.from)}</small>"이건 <b>${RN[cur.claim]}</b>야!"${pic(cur.claim, 'big')}</span></div>
+    return `<section class="rk-stage resp"${anim(el)}><div class="rk-fly">${iSaw && !iAmTo ? rcard(cur.c, 'big') : rback('big wob')}<span class="rk-bubble" style="--pc:${U.pc(cur.from)}"><small>${pn(P, cur.from)}</small>"<b>${RN[cur.claim]}</b>!"${pic(cur.claim, 'big')}</span></div>
 <div class="rk-chain">${chain}</div>${ctrl}${!iAmTo ? `<p class="rk-note">${pn(P, cur.to)}님이 고르는 중… 표정을 살펴보세요 👀</p>` : ''}</section>`;
   }
   // 직전 결과
@@ -160,7 +160,7 @@ function rPick(P, list, ui, key, title) {
   return `<div class="rk-lbl">${title}</div><div class="rk-people">${list.map(i => U.gb(`<span class="pdot" style="--pc:${U.pc(i)}"></span>${pn(P, i)}`, key, i, 'rk-pp' + (ui[key] === i ? ' on' : ''))).join('')}</div>`;
 }
 function rClaim(ui) {
-  return `<div class="rk-lbl">"이건 ○○야!" 무엇이라고 말할까요? <small>거짓말해도 돼요</small></div><div class="rk-claims">${RK.map((_, t) => U.gb(`${pic(t)}<b>${RN[t]}</b>`, 'rcl', t, 'rk-cl' + (ui.rcl === t ? ' on' : ''))).join('')}</div>`;
+  return `<div class="rk-lbl">"○○!" 무엇이라고 말할까요? <small>거짓말해도 돼요</small></div><div class="rk-claims">${RK.map((_, t) => U.gb(`${pic(t)}<b>${RN[t]}</b>`, 'rcl', t, 'rk-cl' + (ui.rcl === t ? ' on' : ''))).join('')}</div>`;
 }
 function rGive(S, me, ui, P) {
     const others = ids(P).filter(i => i !== me);
@@ -192,7 +192,7 @@ function rFx(S, me, P) {
       const hp = S.cur.hops[S.cur.hops.length - 1];
       fly(rback(), seat(hp.from), $('.rk-fly .rkc') || seat(hp.to), {w: 70, h: 98, dur: 750, lift: -80, rot: 18});
       setTimeout(() => pop($('.rk-bubble')), 650);
-      if (S.cur.to === me && P[me] && !P[me].bot) banner('🪳 카드가 왔어요!', `${U.nm(P, hp.from)}님: "이건 ${RN[hp.claim]}야!"`, 'b');
+      if (S.cur.to === me && P[me] && !P[me].bot) banner('🪳 카드가 왔어요!', `${U.nm(P, hp.from)}님: "${RN[hp.claim]}!"`, 'b');
     } else if (S.last) {
       const L = S.last;
       setTimeout(() => {
