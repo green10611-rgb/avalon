@@ -1883,6 +1883,10 @@ body.g-cockroach .turnbar,body.g-cockroach .log,body.g-cockroach .connline.ok{di
 .rk-stage.res .rk-ans em.t{color:#1E9E5A!important}
 .rk-nw{white-space:nowrap}
 .rk-stage.res .rk-who{white-space:nowrap;font-size:clamp(15px,2.1cqw,20px)!important}
+.rk-call .btn small{font-size:clamp(16px,2.4cqw,19px)!important;font-weight:800;opacity:1!important;color:#fff!important}
+.rk-call .rk-t small{text-shadow:0 1px 0 #0E5A31,0 0 6px rgba(10,70,35,.55)}
+.rk-call .rk-f small{text-shadow:0 1px 0 #7A141B,0 0 6px rgba(110,15,25,.55)}
+.rk-call .btn{min-height:96px}
 /* ===== 바퀴벌레 포커 끝 ===== */
 /* ===== 할리갈리 ===== */
 body.g-halli .wrap{max-width:none;padding-inline:max(12px,env(safe-area-inset-left,0px));padding-block:6px 20px;gap:8px}
