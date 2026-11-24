@@ -17,6 +17,11 @@ let code = ss.get('av_room') || '';
 let invite = (new URLSearchParams(location.search).get('room') || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
 let room = null, ui = {}, busy = false, connected = false, lastGid = null, confirmQ = null, ws = null, retry = 0;
 
+const FUNC = {avalon: ['#3D5AFE', '#1A1F4D', 'knight'], kraken: ['#13B5A6', '#0B3D5C', 'kraken'], splendor: ['#A65CFF', '#3B1D78', 'gem'], cockroach: ['#7CC242', '#1F5A1A', 'cockroach'], halli: ['#FFB300', '#F0612B', 'bell'], dixit: ['#FF5FA2', '#6A2CC9', 'crystal'], marble: ['#2FA8FF', '#155EAD', 'globe'], court: ['#E0464E', '#6A1230', 'crown'], omok: ['#5D6B7E', '#1C2330', 'die']};
+const funSty = (k, i) => { const f = FUNC[k] || ['#4A5AE8', '#20264F']; return `--g1:${f[0]};--g2:${f[1]};--i:${i}`; };
+const funImg = k => FUNC[k] ? `<img class="gfun-im" src="img/${FUNC[k][2]}.webp" alt="" draggable="false">` : '';
+const heroFloat = () => `<div class="hero-float" aria-hidden="true">${['knight', 'kraken', 'gem', 'cockroach', 'bell', 'crystal', 'coin', 'crown', 'die', 'lime'].map((n, i) => `<img src="img/${n}.webp" alt="" style="--i:${i}">`).join('')}</div>`;
+
 function toast(m){ const t = document.getElementById('toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 3200); }
 const players = () => room ? room.players : [];
 const state = () => room ? room.state : null;
@@ -112,9 +117,9 @@ function homeHTML(){
 <button type="button" class="btn primary big" data-nav="create" data-key="avalon">⚔ 아발론 방 만들기</button>
 <section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
 <p class="more-games-w"><a class="more-games" href="/">🎲 다른 게임도 보기 <span>→</span></a></p>`;
-  return `<div class="hero"><span class="kicker">각자 폰으로 · 실시간</span><h1>우리끼리 보드게임</h1><p>게임을 골라 방을 만들고, 대기실의 QR이나 링크를 친구들에게 보내세요. 로그인 필요 없어요.</p></div>${conn()}
+  return `<div class="hero fun">${heroFloat()}<span class="kicker">각자 폰으로 · 실시간</span><h1>우리끼리 보드게임</h1><p>게임을 골라 방을 만들고, 대기실의 QR이나 링크를 친구들에게 보내세요. 로그인 필요 없어요.</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
-<section class="stack"><h2>방 만들기</h2><div class="gpick">${GAMES.map(k => { const x = G[k]; return `<button type="button" class="gp gp-${k}" data-nav="create" data-key="${k}"><span class="gp-ic">${esc(x.mark)}</span><b>${esc(x.name)}</b><small>${esc(x.tag)}</small><em>${x.min}~${x.max}명</em></button>`; }).join('')}</div><p class="small muted">게임별 전용 주소: ${GAMES.map(k => `<a href="/${k}">${esc(location.host)}/${k}</a>`).join(' · ')}</p></section>
+<section class="stack"><h2>방 만들기</h2><div class="gpick">${GAMES.map((k, i) => { const x = G[k]; return `<button type="button" class="gp gp-${k} gfun" style="${funSty(k, i)}" data-nav="create" data-key="${k}"><span class="gp-ic">${funImg(k) || esc(x.mark)}</span><b>${esc(x.name)}</b><small>${esc(x.tag)}</small><em>${x.min}~${x.max}명</em></button>`; }).join('')}</div><div class="soloaddr"><span>게임별 전용 주소</span>${GAMES.map(k => `<a href="/${k}" style="${funSty(k, 0)}">${esc(G[k].name)} <i>/${k}</i></a>`).join('')}</div></section>
 <section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>`;
 }
 function lobbyHTML(){
