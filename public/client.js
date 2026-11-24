@@ -144,7 +144,7 @@ function gameHTML(){
   }
   if (S.log && S.log.length) h += `<div class="log">${S.log.slice().reverse().map(l => `<div>${esc(l)}</div>`).join('')}</div>`;
   h += `<details class="ref"><summary>규칙 보기</summary><ol class="rules">${g.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol>${g.rulesExtra ? g.rulesExtra() : ''}</details>`;
-  if (host && !S.winner) h += confirmQ === 'end' ? `<div class="panel"><div>지금 게임을 끝내고 대기실로 갈까요?</div><div class="row"><button type="button" class="btn danger" data-nav="lobby">끝내기</button><button type="button" class="btn ghost" data-nav="cancel">취소</button></div></div>` : `<div class="row"><button type="button" class="btn ghost" data-nav="askEnd">게임 끝내기(방장)</button></div>`;
+  if (host && !S.winner) h += confirmQ === 'end' ? `<div class="panel"><div>지금 게임을 끝내고 대기실로 갈까요?</div><div class="row"><button type="button" class="btn danger" data-nav="lobby">끝내기</button><button type="button" class="btn ghost" data-nav="cancel">취소</button></div></div>` : `<div class="row"><button type="button" class="btn ghost endbtn" data-nav="askEnd">게임 끝내기(방장)</button></div>`;
   return h;
 }
 
