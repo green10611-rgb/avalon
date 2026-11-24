@@ -1490,6 +1490,15 @@ body.g-kraken .kmy{padding:16px 20px;gap:16px}body.g-kraken .kmy>.kc,body.g-krak
 body.g-kraken .kmy b{font-size:clamp(20px,2.4vw,26px)}body.g-kraken .kmy small{font-size:clamp(14px,1.6vw,17px)}
 body.g-kraken .kmy .btn{min-height:56px;font-size:19px}
 body.g-kraken details.ref summary,body.g-kraken .kw details summary{font-size:18px}
+/* 스플렌더 카드: 보석 색 테두리 */
+.spc.sp-w{--fr1:#FFFFFF;--fr2:#AEB8CC}.spc.sp-u{--fr1:#7FB0FF;--fr2:#1E4FB8}.spc.sp-g{--fr1:#6FE0A6;--fr2:#0F7A44}.spc.sp-r{--fr1:#FF8A96;--fr2:#B01E30}.spc.sp-k{--fr1:#8A93A6;--fr2:#14161C}
+.spc:not(.sp-back):not(.sp-empty):not(.sp-rslot){box-shadow:0 0 0 calc(var(--cw) * .035) var(--fr1,#E6C47A),0 0 0 calc(var(--cw) * .055) var(--fr2,#B8955A),0 5px 12px rgba(0,0,0,.38)}
+.spc:not(.sp-back)::after{border-color:color-mix(in srgb,var(--fr1,#fff) 70%,#fff)}
+.spc .spc-band{background:linear-gradient(180deg,rgba(255,255,255,.96),color-mix(in srgb,var(--fr1,#fff) 35%,rgba(255,255,255,.75)));border-bottom:2px solid var(--fr2,#B8955A)}
+.spc.sp-k .spc-band{background:linear-gradient(180deg,#F4F5F8,#C9CEDA)}
+.spc.afford{box-shadow:0 0 0 calc(var(--cw) * .035) var(--fr1),0 0 0 calc(var(--cw) * .055) #1FA463,0 0 18px 3px rgba(61,220,132,.7),0 4px 10px rgba(0,0,0,.35)}
+.spc.sel{box-shadow:0 0 0 calc(var(--cw) * .035) var(--fr1),0 0 0 calc(var(--cw) * .06) #FFD86B,0 0 26px rgba(255,216,107,.95),0 6px 14px rgba(0,0,0,.4)}
+@keyframes spGlow{50%{box-shadow:0 0 0 calc(var(--cw) * .035) var(--fr1),0 0 0 calc(var(--cw) * .055) #3DDC84,0 0 30px 8px rgba(61,220,132,.8),0 4px 10px rgba(0,0,0,.35)}}
 /* ===== 3D 그림 끝 ===== */
 /* 크라켄 카드 (3D 그림) */
 .kcard{position:relative;container-type:inline-size;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2%;width:100%;aspect-ratio:100/140;border-radius:12%/8.6%;overflow:hidden;border:3px solid #8B6A3C;box-sizing:border-box;box-shadow:inset 0 0 0 2px rgba(255,255,255,.45)}
