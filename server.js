@@ -59,7 +59,7 @@ function scheduleBots(r) {
   if (r.botTimer || !r.players.some(p => p.bot)) return;
   const st = r.state;
   const wait = st && st.phase === 'kill' ? 4500 : st && st.phase === 'team' ? 2200 : 1300;
-  r.botTimer = setTimeout(() => { r.botTimer = null; if (!rooms.has(r.code)) return; if (botStep(r)) broadcast(r); }, wait + U.rint(600));
+  r.botTimer = setTimeout(() => { r.botTimer = null; if (!rooms.has(r.code)) return; if (botStep(r)) broadcast(r); }, wait + U.rint(600) + (gOf(r).botDelay && st ? gOf(r).botDelay(st) : 0));
 }
 
 /* ---------- 방 ---------- */

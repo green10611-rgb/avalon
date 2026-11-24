@@ -146,7 +146,7 @@ ${others.length ? U.gb(`👀 몰래 보고 다른 사람에게 넘기기 <small>
         ctrl = `<div class="rk-peeked"><div class="rk-real">${rcard(cur.c, 'big flipin')}<small>몰래 본 진짜 카드</small></div><div class="rk-pass">${rPick(P, others, ui, 'rto', '누구에게 넘길까요?')}${rClaim(ui)}${U.btn(ui.rto != null && ui.rcl != null ? `${pn(P, ui.rto)}님에게 "${RN[ui.rcl]}"라고 넘기기` : '받을 사람과 할 말을 고르세요', 'pass', {to: ui.rto, claim: ui.rcl}, 'primary big rk-go', ui.rto == null || ui.rcl == null)}</div></div>`;
       }
     }
-    return `<section class="rk-stage resp"${anim(el)}><div class="rk-fly">${iSaw && !iAmTo ? rcard(cur.c, 'big') : rback('big wob')}<span class="rk-bubble" style="--pc:${U.pc(cur.from)}"><small>${pn(P, cur.from)}</small>"<b>${RN[cur.claim]}</b>!"${pic(cur.claim, 'big')}</span></div>
+    return `<section class="rk-stage resp"${anim(el)}><div class="rk-fly">${iSaw && !iAmTo ? rcard(cur.c, 'big') : rback('big wob')}<span class="rk-bubble" style="--pc:${U.pc(cur.from)}"><small>${pn(P, cur.from)}</small><b class="rk-cw">${RN[cur.claim]}</b>${pic(cur.claim, 'big')}</span></div>
 <div class="rk-chain">${chain}</div>${ctrl}${!iAmTo ? `<p class="rk-note">${pn(P, cur.to)}님이 고르는 중… 표정을 살펴보세요 👀</p>` : ''}</section>`;
   }
   // 직전 결과
@@ -285,6 +285,8 @@ function rBot(S, P) {
   return false;
 }
 G.cockroach.botStep = rBot;
+// 정답 화면은 AI가 바로 넘기지 않고 2초쯤 더 보여 줘요
+G.cockroach.botDelay = S => S && S.phase === 'give' && S.last && S.last.right && S.last.n === S.n ? 2000 : 0;
 G.cockroach.BOTNAMES = ['꼬마벌레', '박쥐대장', '파리왕', '두꺼비', '생쥐', '전갈'];
 G.cockroach.art = (k, x) => k === 'card' ? rcard(x, 'big') : k === 'back' ? rback('big') : '';
 })();
