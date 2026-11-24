@@ -183,14 +183,45 @@ function kFx(S, me, P) {
     fly(`<span class="kfx-card">${ART.back}</span>`, seat(L.from), $('.kchx') || $('.kshow'), {w: 52, h: 73, dur: 600, lift: -40, rot: 10});
     if (L.by !== L.from) fly('<span class="kfx-comp">🧭</span>', seat(L.by), seat(L.from), {w: 44, h: 44, dur: 900, delay: 300, lift: -70, rot: 360, done: () => pop(seat(L.from))});
     setTimeout(() => {
-      const fx = $('.kchx-in') || $('.kshow');
-      if (L.c === 'T') { burst(fx, ['#F5C542', '#FFE38A', '#FFFFFF', '#E3A92F'], 36, 'coin'); setTimeout(() => pop($('.kb-gold')), 300); }
-      else if (L.c === 'K') { ink(); shake(box()); burst(fx, ['#3B0D3A', '#7A1E6B', '#1A0A20', '#C8323A'], 30); }
+      const fx = $('.kchx-body') || $('.kshow');
+      if (L.c === 'T') { treasure(fx); burst(fx, ['#F5C542', '#FFE38A', '#FFFFFF', '#E3A92F'], 44, 'coin'); }
+      else if (L.c === 'K') { kraken(fx); burst(fx, ['#3B0D3A', '#7A1E6B', '#1A0A20', '#C8323A'], 36); }
       else burst(fx, ['#D9CDB4', '#BFB39A', '#EEE5D0'], 16, 'dust');
-    }, 1000);
+    }, 1400);
+    if (L.c === 'T' || L.c === 'K') setTimeout(() => { const c = $('.kchx'); if (c && c.animate) c.animate([{transform: 'none'}, {transform: 'translateX(-5px) rotate(-3deg)'}, {transform: 'translateX(5px) rotate(3deg)'}, {transform: 'translateX(-7px) rotate(-4deg) scale(1.03)'}, {transform: 'translateX(7px) rotate(4deg) scale(1.05)'}, {transform: 'none'}], {duration: 420, easing: 'ease-in-out'}); }, 260);
   }
   if (cur.end && !rec.end) setTimeout(() => confetti(S.wt === 'T'), 600);
 
+  function layer(cls, html) { const el = document.createElement('div'); el.className = cls; if (html) el.innerHTML = html; document.body.appendChild(el); return el; }
+  function treasure(src) {
+    const f = layer('kfx-goldflash'); f.animate([{opacity: 0}, {opacity: .95, offset: .12}, {opacity: 0}], {duration: 900, easing: 'ease-out', fill: 'both'}).onfinish = () => f.remove();
+    const r = layer('kfx-rays'); r.animate([{opacity: 0, transform: 'translate(-50%,-50%) rotate(0) scale(.4)'}, {opacity: .9, transform: 'translate(-50%,-50%) rotate(40deg) scale(1.1)', offset: .25}, {opacity: 0, transform: 'translate(-50%,-50%) rotate(140deg) scale(1.4)'}], {duration: 2600, easing: 'ease-out', fill: 'both'}).onfinish = () => r.remove();
+    const sh = box(); if (sh && sh.animate) sh.animate([{transform: 'scale(1)'}, {transform: 'scale(1.025)', filter: 'brightness(1.18) saturate(1.2)'}, {transform: 'scale(1)'}], {duration: 600, easing: 'cubic-bezier(.3,1.6,.5,1)'});
+    const a = src && src.getBoundingClientRect(); if (!a) return;
+    const cx = a.left + a.width / 2, cy = a.top + a.height * .3, gold = $('.kb-gold'), g = gold && gold.getBoundingClientRect();
+    for (let k = 0; k < 26; k++) {
+      const c = layer('kfx-coin', U.img('coin', '', '')), vx = (Math.random() - .5) * 520, up = 180 + Math.random() * 260, sz = 26 + Math.random() * 26;
+      c.style.cssText = `left:${cx - sz / 2}px;top:${cy - sz / 2}px;width:${sz}px;height:${sz}px`;
+      const toGold = g && k < 8, ex = toGold ? g.left + g.width * (k + .5) / 8 - cx : vx * 1.3, ey = toGold ? g.top + g.height / 2 - cy : innerHeight - cy + 80;
+      c.animate([{transform: 'translate(0,0) scale(.3) rotateY(0)', opacity: 0}, {transform: `translate(${vx * .6}px,${-up}px) scale(1.15) rotateY(540deg)`, opacity: 1, offset: .4}, {transform: `translate(${ex}px,${ey}px) scale(${toGold ? .5 : .9}) rotateY(1080deg)`, opacity: toGold ? .2 : 0}], {duration: 1300 + Math.random() * 600, delay: k * 28, easing: 'cubic-bezier(.25,.6,.4,1)', fill: 'both'}).onfinish = () => c.remove();
+    }
+    setTimeout(() => { pop($('.kb-gold')); const s = $('.kb-gold span.on:last-of-type') || $('.kb-gold'); pop(s); }, 1100);
+    for (let k = 0; k < 14; k++) {
+      const s = layer('kfx-spark'); s.style.cssText = `left:${cx + (Math.random() - .5) * 260}px;top:${cy + (Math.random() - .5) * 160}px`;
+      s.animate([{transform: 'scale(0) rotate(0)', opacity: 0}, {transform: 'scale(1.3) rotate(90deg)', opacity: 1, offset: .4}, {transform: 'scale(0) rotate(180deg)', opacity: 0}], {duration: 900, delay: 200 + Math.random() * 900, fill: 'both'}).onfinish = () => s.remove();
+    }
+  }
+  function kraken(src) {
+    const f = layer('kfx-redflash'); f.animate([{opacity: 0}, {opacity: .9, offset: .08}, {opacity: .15, offset: .3}, {opacity: .7, offset: .42}, {opacity: 0}], {duration: 1300, fill: 'both'}).onfinish = () => f.remove();
+    ink();
+    const v = layer('kfx-vign'); v.animate([{opacity: 0}, {opacity: 1, offset: .15}, {opacity: .8, offset: .8}, {opacity: 0}], {duration: 2600, fill: 'both'}).onfinish = () => v.remove();
+    const b = box(); if (b && b.animate) b.animate([{transform: 'none'}, {transform: 'translate(-16px,8px) rotate(-1.5deg) scale(1.02)'}, {transform: 'translate(14px,-8px) rotate(1.5deg)'}, {transform: 'translate(-12px,5px) rotate(-1deg)'}, {transform: 'translate(9px,-3px)'}, {transform: 'translate(-5px,2px)'}, {transform: 'none'}], {duration: 750, iterations: 2, easing: 'ease-in-out'});
+    const big = layer('kfx-octo', U.img('octopus', '', '')); big.animate([{transform: 'translate(-50%,60vh) scale(.6) rotate(-8deg)', opacity: 0}, {transform: 'translate(-50%,8vh) scale(1.15) rotate(4deg)', opacity: 1, offset: .35}, {transform: 'translate(-50%,12vh) scale(1.1) rotate(-3deg)', opacity: 1, offset: .7}, {transform: 'translate(-50%,70vh) scale(.9) rotate(6deg)', opacity: 0}], {duration: 2400, easing: 'cubic-bezier(.3,1.2,.5,1)', fill: 'both'}).onfinish = () => big.remove();
+    for (let k = 0; k < 6; k++) {
+      const t = layer('kfx-arm'); const left = k < 3; t.style.cssText = `${left ? 'left' : 'right'}:${-4 + (k % 3) * 9}vw;bottom:-10vh;height:${48 + Math.random() * 25}vh;--r:${left ? 1 : -1}`;
+      t.animate([{transform: `translateY(100%) rotate(${left ? -10 : 10}deg)`}, {transform: `translateY(8%) rotate(${left ? 14 : -14}deg)`, offset: .35}, {transform: `translateY(14%) rotate(${left ? 4 : -4}deg)`, offset: .7}, {transform: `translateY(105%) rotate(${left ? 18 : -18}deg)`}], {duration: 2300, delay: k * 70, easing: 'ease-in-out', fill: 'both'}).onfinish = () => t.remove();
+    }
+  }
   function deal() {
     document.querySelectorAll('.ktable .ks-c .kc').forEach((e, k) => e.animate && e.animate([{transform: 'translateY(-60px) rotate(-25deg) scale(.6)', opacity: 0}, {transform: 'none', opacity: 1}], {duration: 420, delay: 200 + k * 45, easing: 'cubic-bezier(.2,1.4,.4,1)', fill: 'backwards'}));
   }
@@ -267,7 +298,7 @@ function kTable(S, me, P, picking, ui) {
     const can = picking && i !== me;
     return `<div class="kseat${isAct ? ' act' : ''}${i === me ? ' me' : ''}" data-ks="${i}" style="--pc:${U.pc(i)}"><div class="ks-h"><span class="pdot" style="--pc:${U.pc(i)}"></span><b>${U.nm(P, i)}${i === me ? ' (나)' : ''}</b>${isAct ? '<span class="ks-cap"><i>🧭</i> 선장</span>' : ''}${S.winner ? `<span class="ks-role ${S.role[i] === 'X' ? 'g' : 'e'}">${S.role[i] === 'X' ? '탐험대' : '해골'}</span>` : ''}</div>
 <div class="ks-d">${d ? `<span>💰 ${d.t}</span>${d.k ? '<span class="k">🐙 크라켄</span>' : '<span class="n">🐙 없음</span>'}` : (S.phase === 'decl' ? '<span class="w">선언 중…</span>' : '<span class="w">—</span>')}</div>
-<div class="ks-c">${hand.map((c, k) => can ? `<button type="button" class="kc kc-B pick" data-act="open" data-arg="${U.attr({p: i, k})}" aria-label="${U.nm(P, i)}의 ${k + 1}번째 상자 열기">${ART.back}</button>` : (S.winner ? card(c, 'sm') : card('B', 'sm'))).join('')}</div></div>`;
+<div class="ks-c">${hand.map((c, k) => can ? `<button type="button" class="kc kc-B pick" data-act="open" data-arg="${U.attr({p: i, k})}" aria-label="${U.nm(P, i)}의 ${k + 1}번째 상자 열기">${ART.back}</button>` : (S.winner ? card(c, 'sm') : card('B', 'sm'))).join('')}${S.revealed.map((r, j) => r.from === i && r.round === S.round ? card(r.c, 'sm kopd' + (S.last && S.last.n === j + 1 ? ' knew' : '')) : '').join('')}</div></div>`;
   }).join('')}</section>`;
 }
 function kRevealed(S, P) {
@@ -279,13 +310,17 @@ function kFresh(key, dur) {
   const now = Date.now(); if (!R0.__kSeen[key]) R0.__kSeen[key] = now;
   const el = (now - R0.__kSeen[key]) / 1000; return el < dur ? el : -1;
 }
+const KBG = {
+  T: () => `<span class="kbg kbg-T"><span class="kbg-glow"></span><span class="kbg-rays"></span>${Array.from({length: 16}, (_, k) => `<i style="--x:${(k * 61 + 7) % 96}%;--d:${(k * 0.37) % 2.4}s;--s:${0.7 + (k % 4) * 0.18};--t:${1.6 + (k % 3) * 0.45}s">${U.img('coin', '', '')}</i>`).join('')}${Array.from({length: 10}, (_, k) => `<b style="--x:${(k * 37 + 11) % 94}%;--y:${(k * 53 + 9) % 80}%;--d:${(k * 0.29) % 1.8}s"></b>`).join('')}</span>`,
+  K: () => `<span class="kbg kbg-K">${Array.from({length: 7}, (_, k) => `<i style="--x:${[8, 88, 30, 70, 50, 15, 85][k]}%;--y:${[20, 25, 75, 70, 45, 85, 88][k]}%;--d:${k * 0.09}s;--s:${[1.1, 1, 1.3, 1.2, 1.6, .9, 1][k]}"></i>`).join('')}<span class="kbg-drip">${Array.from({length: 9}, (_, k) => `<em style="--x:${k * 11 + 4}%;--h:${30 + (k * 23) % 45}%;--d:${(k * 0.13) % .8}s"></em>`).join('')}</span></span>`
+};
 function kShown(S, me, P) {
   const L = S.last, c = L.c, el = kFresh('k' + S._g + L.n, 3);
   const st = el < 0 ? ' data-still' : ` style="--el:${el.toFixed(2)}s"`;
   const word = c === 'T' ? '보물 발견!' : c === 'K' ? '크라켄이다!!' : '빈 상자…';
   const pd = S.pend;
   const btn = pd === 'K' || pd === 'T' || pd === 'R4' ? '결과 보기' : pd === 'R' ? `${S.round}라운드 끝 → 상자 다시 나누기` : `🧭 다음 선장 ${P[S.act] ? P[S.act].name : ''}님 차례로`;
-  return `<section class="kshow k-${c}"${st}><small>${U.nm(P, L.by)}님이 ${U.nm(P, L.from)}님의 상자를 열었어요</small><div class="kchx k-${c}"><span class="kchx-glow"></span><span class="kchx-open">${CH_OPEN}</span><span class="kchx-in">${KIN[c]()}</span><span class="kchx-body">${CH_BODY}</span><span class="kchx-lid">${CH_LID}</span><span class="kchx-dust"><i></i><i></i><i></i><i></i></span></div><div class="kword">${word}</div>${c === 'T' ? `<div class="kb">💰 보물 ${S.found} / ${P.length}</div>` : ''}${me >= 0 ? U.btn(btn, 'next', {}, c === 'K' ? 'avk-go' : 'primary big avgo') : ''}<small class="avnext-s">누구든 한 명이 누르면 모두 다음으로 넘어가요</small></section>`;
+  return `<section class="kshow k-${c}"${st}>${KBG[c] ? KBG[c]() : ''}<small>${U.nm(P, L.by)}님이 ${U.nm(P, L.from)}님의 상자를 열었어요</small><div class="kchx k-${c}"><span class="kchx-glow"></span><span class="kchx-open">${CH_OPEN}</span><span class="kchx-in">${KIN[c]()}</span><span class="kchx-body">${CH_BODY}</span><span class="kchx-lid">${CH_LID}</span><span class="kchx-dust"><i></i><i></i><i></i><i></i></span></div><div class="kword">${word}</div>${c === 'T' ? `<div class="kb">💰 보물 ${S.found} / ${P.length}</div>` : ''}${me >= 0 ? U.btn(btn, 'next', {}, c === 'K' ? 'avk-go' : 'primary big avgo') : ''}<small class="avnext-s">누구든 한 명이 누르면 모두 다음으로 넘어가요</small></section>`;
 }
 function kEnd(S, P) {
   const el = kFresh('ke' + S._g, 5), good = S.wt === 'T';

@@ -1547,6 +1547,77 @@ body.g-kraken details.ref summary,body.g-kraken .kw details summary{font-size:18
 .kchx .kin-e{bottom:20%}
 .kchx .kin-e{bottom:-2%;font-size:13cqw;color:#D9C49A}
 .kshow.k-T .kword{color:#5A3A00!important;text-shadow:0 2px 0 #FFF3C4,0 0 18px rgba(255,255,255,.9)!important}
+/* 상자 3D로 열기 */
+.kchx{perspective:650px;perspective-origin:50% 20%}
+.kchx-lid{transform-style:preserve-3d;backface-visibility:hidden;-webkit-backface-visibility:hidden;animation:kchLid3d .5s calc(.72s - var(--el,0s)) cubic-bezier(.45,0,.7,.5) both}
+.kchx-open{left:3%;right:3%;top:auto;bottom:57%;backface-visibility:hidden;-webkit-backface-visibility:hidden;animation:kchOpen3d .45s calc(1.18s - var(--el,0s)) cubic-bezier(.2,.9,.3,1.25) both;filter:drop-shadow(0 -4px 10px rgba(0,0,0,.35))}
+.kchx-in{animation-delay:calc(1.35s - var(--el,0s))!important}
+.kchx-glow{animation-delay:calc(1.2s - var(--el,0s))!important}
+.kchx-dust i{animation-delay:calc(1.25s - var(--el,0s))!important}
+.kshow .kchx{margin-top:clamp(30px,9vw,54px)}
+.kchx.k-E .kchx-in{z-index:6;bottom:auto;top:-17%;height:auto}
+.kchx .kin-e{position:static;display:block;font-size:clamp(28px,10vw,44px);color:#F4E6C4;text-shadow:0 3px 0 #5A3A10,0 0 16px rgba(0,0,0,.6);animation:kchTeng 1.6s calc(1.45s - var(--el,0s)) ease-in-out both}
+.kshow:not([data-still]) .kword{animation-delay:1.55s!important}
+.kshow[data-still] .kchx-open{transform:rotateX(-16deg)}
+.kshow[data-still] .kin-e{animation:none}
+@keyframes kchLid3d{0%{transform:rotateX(0)}25%{transform:translateY(-6%) rotateX(10deg)}100%{transform:translateY(-2%) rotateX(-92deg);opacity:1}}
+@keyframes kchOpen3d{0%{transform:rotateX(-90deg)}100%{transform:rotateX(-16deg)}}
+@keyframes kchTeng{0%{opacity:0;transform:translateY(20px) scale(.6)}35%{opacity:1;transform:translateY(-6px) scale(1.08)}100%{opacity:1;transform:translateY(-10px) scale(1)}}
+/* 열린 상자는 자리에 그대로 */
+.ks-c .kc.kopd{position:relative;border-radius:10px;background:radial-gradient(circle at 50% 40%,rgba(255,236,170,.55),rgba(255,255,255,0) 70%);transform:translateY(-2px)}
+.ks-c .kc.kopd.kc-T{box-shadow:0 0 0 2px #E9B949,0 4px 14px rgba(233,185,73,.55)}
+.ks-c .kc.kopd.kc-E{box-shadow:0 0 0 2px #B7C3D3;filter:saturate(.85)}
+.ks-c .kc.kopd.kc-K{box-shadow:0 0 0 2px #B0418A,0 4px 14px rgba(176,65,138,.5)}
+.ks-c .kc.kopd::after{content:'열림';position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);font-size:11px;font-weight:800;padding:1px 7px;border-radius:99px;background:#0E2640;color:#F4E6C4;white-space:nowrap}
+.ks-c .kc.kopd.knew{animation:kOpdIn .7s 2.2s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes kOpdIn{0%{transform:rotateY(90deg) scale(.7)}100%{transform:translateY(-2px) rotateY(0) scale(1)}}
+/* 보물·크라켄 극적 연출 */
+.kfx-goldflash{position:fixed;inset:0;z-index:84;pointer-events:none;background:radial-gradient(circle at 50% 45%,rgba(255,250,220,1) 0,rgba(255,215,90,.75) 35%,rgba(255,180,40,0) 75%);mix-blend-mode:screen}
+.kfx-rays{position:fixed;left:50%;top:45%;width:170vmax;height:170vmax;z-index:84;pointer-events:none;background:repeating-conic-gradient(from 0deg,rgba(255,226,120,.55) 0 7deg,rgba(255,226,120,0) 7deg 18deg);-webkit-mask:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 25%,transparent 55%);mask:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 25%,transparent 55%);mix-blend-mode:screen}
+.kfx-coin{position:fixed;z-index:88;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(120,70,0,.5))}
+.kfx-coin img{width:100%;height:100%;display:block}
+.kfx-spark{position:fixed;z-index:89;width:22px;height:22px;pointer-events:none;background:radial-gradient(circle,#fff 0,#FFE38A 30%,transparent 65%);clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%)}
+.kfx-redflash{position:fixed;inset:0;z-index:84;pointer-events:none;background:radial-gradient(circle at 50% 50%,rgba(220,30,50,.3) 0,rgba(140,0,30,.85) 80%)}
+.kfx-vign{position:fixed;inset:0;z-index:82;pointer-events:none;box-shadow:inset 0 0 22vmin 8vmin rgba(40,0,30,.95);animation:kVign .5s ease-in-out infinite alternate}
+@keyframes kVign{to{box-shadow:inset 0 0 30vmin 12vmin rgba(120,0,40,.9)}}
+.kfx-octo{position:fixed;left:50%;top:0;width:min(62vw,420px);z-index:87;pointer-events:none;filter:drop-shadow(0 20px 30px rgba(0,0,0,.6)) hue-rotate(-40deg) saturate(1.5) brightness(.9)}
+.kfx-octo img{width:100%;height:auto;display:block}
+.kfx-arm{position:fixed;width:clamp(50px,9vw,110px);z-index:86;pointer-events:none;transform-origin:50% 100%;border-radius:50% 50% 30% 30%/90% 90% 10% 10%;background:radial-gradient(circle at 30% 0,#E8B4D8 0 3px,transparent 4px) 0 0/22px 30px,linear-gradient(90deg,#4A0F3E,#9B2F7D 45%,#C552A0 60%,#5A1449);box-shadow:inset -6px 0 14px rgba(0,0,0,.45),0 0 24px rgba(80,0,60,.6)}
+.kshow.k-K:not([data-still]) .kword{animation:kfxPopW .6s 1.5s cubic-bezier(.2,1.6,.4,1) both,kfxShakeW .4s 2.1s 3,kGlitch .18s 2.1s 8 steps(2)!important}
+@keyframes kGlitch{0%{text-shadow:4px 0 #ff2050,-4px 0 #20e0ff}100%{text-shadow:-3px 1px #ff2050,3px -1px #20e0ff}}
+.kshow.k-T:not([data-still]) .kword{animation:kfxPopW .7s 1.5s cubic-bezier(.2,1.8,.4,1) both,kGoldShine 1.4s 2.1s ease-in-out 2!important;background:linear-gradient(100deg,#7A4300 30%,#FFF6C8 50%,#7A4300 70%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent!important;text-shadow:none!important;filter:drop-shadow(0 0 2px #FFF4C0) drop-shadow(0 3px 0 #FFE9A0) drop-shadow(0 0 16px rgba(255,240,180,.9))}
+@keyframes kGoldShine{from{background-position:100% 0}to{background-position:-50% 0}}
+/* 상자 주변 배경 연출 */
+.kshow{position:relative;overflow:hidden;isolation:isolate}
+.kshow>*:not(.kbg){position:relative;z-index:1}
+.kbg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;border-radius:inherit}
+.kbg-T .kbg-glow{position:absolute;left:50%;top:42%;width:120%;aspect-ratio:1;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,250,210,.95) 0,rgba(255,215,90,.55) 22%,rgba(255,190,40,0) 55%);animation:kbgGlow 1.8s calc(1.35s - var(--el,0s)) ease-in-out both,kbgPulse 1.6s calc(3.15s - var(--el,0s)) ease-in-out infinite alternate}
+.kbg-T .kbg-rays{position:absolute;left:50%;top:42%;width:180%;aspect-ratio:1;transform:translate(-50%,-50%);background:repeating-conic-gradient(rgba(255,240,170,.42) 0 8deg,transparent 8deg 20deg);-webkit-mask:radial-gradient(circle,#000 0,transparent 60%);mask:radial-gradient(circle,#000 0,transparent 60%);animation:kbgRays 14s linear infinite,kbgIn .8s calc(1.35s - var(--el,0s)) both}
+.kbg-T i{position:absolute;left:var(--x);top:-14%;width:calc(30px * var(--s));animation:kbgFall var(--t) calc(1.4s + var(--d) - var(--el,0s)) cubic-bezier(.4,0,.8,.6) infinite backwards;filter:drop-shadow(0 3px 4px rgba(110,60,0,.45))}
+.kbg-T i img{width:100%;height:auto;display:block}
+.kbg-T b{position:absolute;left:var(--x);top:var(--y);width:18px;height:18px;background:radial-gradient(circle,#fff 0,#FFF0A8 30%,transparent 65%);clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);animation:kbgTw 1.3s calc(1.5s + var(--d) - var(--el,0s)) ease-in-out infinite backwards}
+@keyframes kbgGlow{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}35%{opacity:1;transform:translate(-50%,-50%) scale(1.25)}100%{opacity:.85;transform:translate(-50%,-50%) scale(1)}}
+@keyframes kbgPulse{to{opacity:1;transform:translate(-50%,-50%) scale(1.12)}}
+@keyframes kbgRays{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes kbgIn{from{opacity:0}}
+@keyframes kbgFall{0%{transform:translateY(0) rotate(0) rotateY(0);opacity:0}10%{opacity:1}100%{transform:translateY(calc(var(--h,560px))) rotate(200deg) rotateY(720deg);opacity:1}}
+.kbg-T i{--h:640px}
+@keyframes kbgTw{0%,100%{transform:scale(0) rotate(0);opacity:0}50%{transform:scale(1.4) rotate(90deg);opacity:1}}
+.kbg-K{background:radial-gradient(circle at 50% 45%,transparent 0,rgba(10,0,14,.0) 30%,rgba(10,0,14,.0) 100%)}
+.kbg-K i{position:absolute;left:var(--x);top:var(--y);width:60%;aspect-ratio:1;border-radius:46% 54% 42% 58%/55% 45% 55% 45%;background:radial-gradient(circle at 40% 40%,#2A0A30 0,#12021A 55%,#050008 100%);box-shadow:0 0 30px 10px rgba(5,0,8,.7);transform:translate(-50%,-50%) scale(0);animation:kbgInk 1.1s calc(1.35s + var(--d) - var(--el,0s)) cubic-bezier(.2,.9,.3,1.1) both,kbgBlob 3s calc(2.5s - var(--el,0s)) ease-in-out infinite alternate}
+@keyframes kbgInk{0%{transform:translate(-50%,-50%) scale(0) rotate(0)}70%{transform:translate(-50%,-50%) scale(calc(var(--s) * 1.15)) rotate(30deg)}100%{transform:translate(-50%,-50%) scale(var(--s)) rotate(20deg)}}
+@keyframes kbgBlob{to{border-radius:58% 42% 55% 45%/45% 58% 42% 55%}}
+.kbg-drip{position:absolute;inset:0 0 auto 0;height:100%}
+.kbg-drip em{position:absolute;left:var(--x);top:-4px;width:clamp(14px,4vw,26px);height:var(--h);border-radius:0 0 50% 50%/0 0 30px 30px;background:linear-gradient(#050008,#1E0624);transform-origin:top;transform:scaleY(0);animation:kbgDrip 1.4s calc(1.5s + var(--d) - var(--el,0s)) cubic-bezier(.3,.8,.4,1) both}
+@keyframes kbgDrip{to{transform:scaleY(1)}}
+.kshow.k-K>.kword{color:#FF5A6E!important}
+.kshow[data-still] .kbg *{animation-delay:-5s!important}
+.kshow.k-K{background:radial-gradient(120% 90% at 50% 0,#B0388F,#4A0F4C 60%,#1A0522 100%)}
+.kbg-K i{background:radial-gradient(circle at 35% 30%,#3A1440 0,#0B0210 45%,#000 100%);box-shadow:0 0 0 3px rgba(160,60,150,.35),0 0 40px 14px rgba(0,0,0,.75)}
+.kbg-K::after{content:'';position:absolute;left:50%;top:42%;width:90%;aspect-ratio:1;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,40,80,.75) 0,rgba(200,20,70,.35) 30%,transparent 60%);animation:kbgIn .4s calc(1.5s - var(--el,0s)) both,kbgRed .7s calc(1.9s - var(--el,0s)) ease-in-out infinite alternate}
+@keyframes kbgRed{from{opacity:.55;transform:translate(-50%,-50%) scale(.9)}to{opacity:1;transform:translate(-50%,-50%) scale(1.15)}}
+.kbg-K{z-index:0}
+.kbg-K::after{z-index:2}
 /* ===== 3D 그림 끝 ===== */
 /* 크라켄 카드 (3D 그림) */
 .kcard{position:relative;container-type:inline-size;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2%;width:100%;aspect-ratio:100/140;border-radius:12%/8.6%;overflow:hidden;border:3px solid #8B6A3C;box-sizing:border-box;box-shadow:inset 0 0 0 2px rgba(255,255,255,.45)}
