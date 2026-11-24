@@ -5,7 +5,7 @@ const isDOM = typeof document !== 'undefined';
 
 /* =================== 바퀴벌레 포커 =================== */
 /* 8종 벌레 카드 64장을 모두 나눠 가져요. 내 차례에는 카드 한 장을 엎어서 다른 사람에게 주며 "이건 ○○야!"라고 말해요(거짓말 OK).
-   받은 사람은 ① "진짜!/거짓말!"을 맞히거나 ② 몰래 보고 아직 안 본 사람에게 다시 넘겨요.
+   받은 사람은 ① "진실!/거짓!"을 맞히거나 ② 몰래 보고 아직 안 본 사람에게 다시 넘겨요.
    맞히면 건넨 사람이, 틀리면 받은 사람이 그 카드를 앞에 펼쳐 놓아요. 같은 벌레 4장이 앞에 쌓이거나, 내 차례에 손에 카드가 없으면 패배! */
 const RK = ['roach', 'bat', 'fly', 'toad', 'rat', 'scorp', 'spider', 'stink'];
 const RN = ['바퀴벌레', '박쥐', '파리', '두꺼비', '쥐', '전갈', '거미', '노린재'];
@@ -35,7 +35,7 @@ G.cockroach = {
   name: '바퀴벌레 포커', tag: '벌레 카드를 떠넘기는 뻔뻔한 거짓말 게임', min: 2, max: 6, mark: '🪳', hue: '#8B5A2B',
   rules: ['벌레 8종 × 8장, 모두 64장을 똑같이 나눠 가져요. 손에 든 카드는 나만 봐요.',
     '내 차례: 카드 한 장을 골라 엎은 채로 다른 사람에게 주면서 "이건 ○○야!"라고 말해요. 거짓말해도 돼요!',
-    '받은 사람은 둘 중 하나: ① 받아들이고 "진짜!" 또는 "거짓말!"을 외쳐요. ② 몰래 보고, 아직 이 카드를 안 본 사람에게 다시 넘기며 새로 말해요.',
+    '받은 사람은 둘 중 하나: ① 받아들이고 "진실!" 또는 "거짓!"이라고 대답해요. ② 몰래 보고, 아직 이 카드를 안 본 사람에게 다시 넘기며 새로 말해요.',
     '①에서 맞히면 카드를 건넨 사람이, 틀리면 받은 사람이 그 카드를 자기 앞에 펼쳐 놓아요. 카드를 떠안은 사람이 다음 차례예요.',
     '모두가 이미 본 카드라 넘길 사람이 없으면 무조건 ①로 맞혀야 해요.',
     '내 앞에 같은 벌레가 4장 모이거나, 내 차례인데 손에 카드가 없으면 패배! 나머지 모두가 이겨요.'],
@@ -82,7 +82,7 @@ G.cockroach = {
       S.pile[loser][cur.c]++;
       S.last = {c: cur.c, claim: cur.claim, from: cur.from, by: me, guess, truth, right, loser, n: S.n + 1, hops: cur.hops.length};
       S.n++;
-      U.log(S, `${P[me].name}: "${guess ? '진짜!' : '거짓말!'}" → 실제는 ${RN[cur.c]}. ${right ? '맞혔어요' : '틀렸어요'}! ${P[loser].name}님이 가져가요.`);
+      U.log(S, `${P[me].name}님이 "${guess ? '진실' : '거짓'}"이라고 대답했습니다 → 실제는 ${RN[cur.c]}. ${right ? '정답입니다' : '틀렸습니다'}! ${P[loser].name}님이 가져가요.`);
       S.cur = null; S.phase = 'give'; S.turn = loser;
       if (S.pile[loser][S.last.c] >= 4) return lose(S, P, loser, `${RN[S.last.c]} 4장이 모여서`);
       if (!S.hand[loser].length) return lose(S, P, loser, '손에 카드가 없어서');
@@ -110,7 +110,7 @@ function rBody(S, me, ui, P) {
   const act = end ? -1 : S.phase === 'give' ? S.turn : cur.to;
   const mine = act === me;
   if (end) h += rEnd(S, me, P);
-  else h += `<header class="rk-strip${mine ? ' me' : ''}" style="--pc:${U.pc(act)}"><span class="rk-av">${pic(0, 'big')}</span><div><b>${pn(P, act)}${mine ? ' (나)' : ''} ${S.phase === 'give' ? '차례' : '— 받을지 넘길지 고르는 중'}</b><small>${S.phase === 'give' ? (mine ? '떠넘길 카드와 받을 사람, 그리고 할 말을 고르세요' : '누구에게 무슨 카드를 떠넘길까…') : (mine ? '"진짜!"인지 "거짓말!"인지 맞히거나, 몰래 보고 넘겨요' : `${pn(P, cur.from)}님이 "${RN[cur.claim]}"라고 했어요`)}</small></div><span class="rk-goal">☠ 같은 벌레 4장이면 패배</span></header>`;
+  else h += `<header class="rk-strip${mine ? ' me' : ''}" style="--pc:${U.pc(act)}"><span class="rk-av">${pic(0, 'big')}</span><div><b>${pn(P, act)}${mine ? ' (나)' : ''} ${S.phase === 'give' ? '차례' : '— 받을지 넘길지 고르는 중'}</b><small>${S.phase === 'give' ? (mine ? '떠넘길 카드와 받을 사람, 그리고 할 말을 고르세요' : '누구에게 무슨 카드를 떠넘길까…') : (mine ? '"진실"인지 "거짓"인지 대답하거나, 몰래 보고 넘겨요' : `${pn(P, cur.from)}님이 "${RN[cur.claim]}"라고 했어요`)}</small></div><span class="rk-goal">☠ 같은 벌레 4장이면 패배</span></header>`;
   // 가운데: 사람들 자리 (앞에 깔린 벌레)
   const L = S.last, popL = L ? rFresh(S, 'pl' + L.n, 1.6) : -1;
   h += `<section class="rk-seats n${n}">${ids(P).map(i => {
@@ -121,7 +121,8 @@ function rBody(S, me, ui, P) {
 <div class="rk-pile">${pile.map((v, t) => v ? `<span class="rk-pc${v >= 3 ? ' hot' : ''}${L && L.loser === i && L.c === t && popL >= 0 ? ' new' : ''}" style="--c1:${RC[t][0]};--c2:${RC[t][1]}" title="${RN[t]} ${v}장">${pic(t)}<em>${v}</em></span>` : '').join('') || '<span class="rk-none">아직 깔린 벌레가 없어요</span>'}</div></div>`;
   }).join('')}</section>`;
   // 무대: 오가는 카드
-  h += rStage(S, me, ui, P);
+  const give = me >= 0 && !end && S.phase === 'give' && S.turn === me;
+  h += `<div class="rk-lcol">${rStage(S, me, ui, P)}${give ? rGive(S, me, ui, P) : ''}</div>`;
   // 내 손
   if (me >= 0 && !end) h += rHand(S, me, ui, P);
   return h;
@@ -137,7 +138,7 @@ function rStage(S, me, ui, P) {
     if (iAmTo) {
       const others = ids(P).filter(i => i !== me && !cur.seen.includes(i));
       if (!ui.rpeek) {
-        ctrl = `<div class="rk-call">${U.btn(`<b>진짜!</b><small>정말 ${RN[cur.claim]}일 거야</small>`, 'call', {truth: true}, 'rk-t')}${U.btn(`<b>거짓말!</b><small>${RN[cur.claim]} 아닐걸?</small>`, 'call', {truth: false}, 'rk-f')}</div>
+        ctrl = `<div class="rk-call">${U.btn(`<b>진실!</b><small>정말 ${RN[cur.claim]}일 거야</small>`, 'call', {truth: true}, 'rk-t')}${U.btn(`<b>거짓!</b><small>${RN[cur.claim]} 아닐걸?</small>`, 'call', {truth: false}, 'rk-f')}</div>
 ${others.length ? U.gb(`👀 몰래 보고 다른 사람에게 넘기기 <small>(${others.length}명에게 넘길 수 있어요)</small>`, 'rpeek', 1, 'rk-peek') : '<p class="rk-note">모두 이미 본 카드라 넘길 수 없어요. 맞혀야 해요!</p>'}`;
       } else {
         ctrl = `<div class="rk-peeked"><div class="rk-real">${rcard(cur.c, 'big flipin')}<small>몰래 본 진짜 카드</small></div><div class="rk-pass">${rPick(P, others, ui, 'rto', '누구에게 넘길까요?')}${rClaim(ui)}${U.btn(ui.rto != null && ui.rcl != null ? `${pn(P, ui.rto)}님에게 "${RN[ui.rcl]}"라고 넘기기` : '받을 사람과 할 말을 고르세요', 'pass', {to: ui.rto, claim: ui.rcl}, 'primary big rk-go', ui.rto == null || ui.rcl == null)}</div></div>`;
@@ -149,7 +150,7 @@ ${others.length ? U.gb(`👀 몰래 보고 다른 사람에게 넘기기 <small>
   // 직전 결과
   if (L) {
     const el = rFresh(S, 'res' + L.n, 3);
-    return `<section class="rk-stage res ${L.right ? 'ok' : 'no'}"${anim(el)}><div class="rk-flip"><i class="b">${rback('big')}</i><i class="f">${rcard(L.c, 'big')}</i></div><div class="rk-rtxt"><small>${pn(P, L.from)}님은 "${RN[L.claim]}"라고 했고, ${pn(P, L.by)}님은 "${L.guess ? '진짜!' : '거짓말!'}"</small><b class="rk-stamp">${L.right ? '맞혔다!' : '틀렸다!'}</b><span>진짜는 <b>${RN[L.c]}</b> · ${L.truth ? '말이 맞았어요' : '거짓말이었어요'}</span><span class="rk-who"><span class="pdot" style="--pc:${U.pc(L.loser)}"></span><b>${pn(P, L.loser)}</b>님이 떠안았어요!</span></div></section>`;
+    return `<section class="rk-stage res ${L.right ? 'ok' : 'no'}"${anim(el)}><div class="rk-flip"><i class="b">${rback('big')}</i><i class="f">${rcard(L.c, 'big')}</i></div><div class="rk-rtxt"><small>${pn(P, L.from)}님이 "이건 ${RN[L.claim]}야!"라고 했어요</small><p class="rk-ans"><b>${pn(P, L.by)}</b>님이 <em class="${L.guess ? 't' : 'f'}">${L.guess ? '진실' : '거짓'}</em>이라고 대답했습니다.</p><b class="rk-stamp">${L.right ? '정답입니다.' : '틀렸습니다.'}</b><span class="rk-real">진짜는 <b>${RN[L.c]}</b> · ${L.truth ? '말이 맞았어요' : '거짓말이었어요'}</span><span class="rk-who"><span class="pdot" style="--pc:${U.pc(L.loser)}"></span><b>${pn(P, L.loser)}</b>님이 떠안았어요!</span></div></section>`;
   }
   return `<section class="rk-stage idle"><div class="rk-fly">${rback('big wob')}</div><p class="rk-note">첫 카드를 기다리는 중… 누가 처음으로 벌레를 떠넘길까요?</p></section>`;
 }
@@ -159,14 +160,15 @@ function rPick(P, list, ui, key, title) {
 function rClaim(ui) {
   return `<div class="rk-lbl">"이건 ○○야!" 무엇이라고 말할까요? <small>거짓말해도 돼요</small></div><div class="rk-claims">${RK.map((_, t) => U.gb(`${pic(t)}<b>${RN[t]}</b>`, 'rcl', t, 'rk-cl' + (ui.rcl === t ? ' on' : ''))).join('')}</div>`;
 }
+function rGive(S, me, ui, P) {
+    const others = ids(P).filter(i => i !== me);
+    return `<section class="rk-give-w"><div class="rk-give">${rPick(P, others, ui, 'rto', '누구에게 떠넘길까요?')}${rClaim(ui)}${U.btn(ui.rc != null && ui.rto != null && ui.rcl != null ? `${RN[ui.rc]} 카드를 ${pn(P, ui.rto)}님에게 "${RN[ui.rcl]}"라고 주기${ui.rc === ui.rcl ? ' (진실)' : ' (거짓말)'}` : '카드 · 받을 사람 · 할 말을 고르세요', 'give', {c: ui.rc, to: ui.rto, claim: ui.rcl}, 'primary big rk-go', ui.rc == null || ui.rto == null || ui.rcl == null)}</div></section>`;
+}
 function rHand(S, me, ui, P) {
   const hand = S.hand[me], cnt = Array(8).fill(0); hand.forEach(c => cnt[c]++);
   const give = S.phase === 'give' && S.turn === me;
   let h = `<section class="rk-hand-w${give ? ' go' : ''}"><div class="rk-lbl">🂠 내 손 (${hand.length}장) <small>${give ? '떠넘길 카드를 고르세요' : '내 차례가 되면 골라요'}</small></div><div class="rk-fan">${cnt.map((v, t) => v ? U.gb(`${rcard(t)}<em>${v}</em>`, 'rc', t, 'rk-hc' + (ui.rc === t ? ' on' : ''), !give) : '').join('')}</div>`;
-  if (give) {
-    const others = ids(P).filter(i => i !== me);
-    h += `<div class="rk-give">${rPick(P, others, ui, 'rto', '누구에게 떠넘길까요?')}${rClaim(ui)}${U.btn(ui.rc != null && ui.rto != null && ui.rcl != null ? `${RN[ui.rc]} 카드를 ${pn(P, ui.rto)}님에게 "${RN[ui.rcl]}"라고 주기${ui.rc === ui.rcl ? ' (진실)' : ' (거짓말)'}` : '카드 · 받을 사람 · 할 말을 고르세요', 'give', {c: ui.rc, to: ui.rto, claim: ui.rcl}, 'primary big rk-go', ui.rc == null || ui.rto == null || ui.rcl == null)}</div>`;
-  }
+
   return h + `</section>`;
 }
 function rEnd(S, me, P) {

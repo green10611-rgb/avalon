@@ -82,36 +82,36 @@ function homeHTML(){
 <button type="button" class="btn big dx-start" data-nav="create" data-key="dixit">🔮 딕싯 방 만들기</button>
 <section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
 <details class="ref"><summary>규칙 보기</summary><ol class="rules">${X.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol>${X.rulesExtra()}</details>
-<p class="small muted" style="text-align:center"><a href="/">다른 게임도 보기 →</a></p>`; }
+<p class="more-games-w"><a class="more-games" href="/">🎲 다른 게임도 보기 <span>→</span></a></p>`; }
   if (SOLO === 'halli') { const H = G.halli; return `<div class="hghero"><div class="hgh-art">${H.art('card', 2)}${H.art('card', 9)}${H.art('back')}</div><span class="kicker">각자 폰으로 · 실시간 · 2~6명</span><h1>할리갈리</h1><p>같은 과일이 딱 5개! 먼저 종을 치는 사람이 카드를 다 가져가요.<br>AI와 함께 해도 돼요. 스페이스바로도 종을 칠 수 있어요.</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn big hg-start" data-nav="create" data-key="halli">🔔 할리갈리 방 만들기</button>
 <section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
 <details class="ref"><summary>규칙 보기</summary><ol class="rules">${H.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol>${H.rulesExtra()}</details>
-<p class="small muted" style="text-align:center"><a href="/">다른 게임도 보기 →</a></p>`; }
+<p class="more-games-w"><a class="more-games" href="/">🎲 다른 게임도 보기 <span>→</span></a></p>`; }
   if (SOLO === 'cockroach') { const C = G.cockroach; return `<div class="rkhero"><div class="rkh-art">${C.art('card', 1)}${C.art('card', 0)}${C.art('back')}</div><span class="kicker">각자 폰으로 · 실시간 · 2~6명</span><h1>바퀴벌레 포커</h1><p>"이건 바퀴벌레야!" 진짜일까, 거짓말일까?<br>같은 벌레 4장을 떠안으면 패배! AI와 함께 해도 돼요.</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn big rk-start" data-nav="create" data-key="cockroach">🪳 바퀴벌레 포커 방 만들기</button>
 <section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
 <details class="ref"><summary>규칙 보기</summary><ol class="rules">${C.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol>${C.rulesExtra()}</details>
-<p class="small muted" style="text-align:center"><a href="/">다른 게임도 보기 →</a></p>`; }
+<p class="more-games-w"><a class="more-games" href="/">🎲 다른 게임도 보기 <span>→</span></a></p>`; }
   if (SOLO === 'splendor') { const S = G.splendor; return `<div class="sphero"><div class="sph-art">${S.art('card', 20)}${S.art('card', 85)}${S.art('card', 61)}</div><div class="sph-chips">${['w','u','g','r','k','y'].map(x => `<span>${S.art('chip', x)}</span>`).join('')}</div><span class="kicker">각자 폰으로 · 실시간 · 2~4명</span><h1>스플렌더</h1><p>보석을 모아 광산·상선·궁전 카드를 사고, 귀족을 맞이해 먼저 15점을 노려요.<br>사람이 모자라면 AI와 함께 해도 돼요.</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn big sp-go" data-nav="create" data-key="splendor">💎 스플렌더 방 만들기</button>
 <section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
 <details class="ref"><summary>규칙 보기</summary><ol class="rules">${S.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol>${S.rulesExtra()}</details>
-<p class="small muted" style="text-align:center"><a href="/">다른 게임도 보기 →</a></p>`; }
+<p class="more-games-w"><a class="more-games" href="/">🎲 다른 게임도 보기 <span>→</span></a></p>`; }
   if (SOLO === 'kraken') return `<div class="khero"><div class="kh-art">${G.kraken.art('K')}${G.kraken.art('T')}${G.kraken.art('back')}</div><span class="kicker">각자 폰으로 · 실시간 · 4~8명</span><h1>노 터치 크라켄</h1><p>보물 상자를 열어라! 단, 크라켄은 절대 건드리지 마.<br>탐험대와 해골 해적단의 정체 숨김 게임이에요.</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn big kh-go" data-nav="create" data-key="kraken">🐙 크라켄 방 만들기</button>
 <section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
 <details class="ref"><summary>규칙 보기</summary><ol class="rules">${G.kraken.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol>${G.kraken.rulesExtra()}</details>
-<p class="small muted" style="text-align:center"><a href="/">다른 게임도 보기 →</a></p>`;
+<p class="more-games-w"><a class="more-games" href="/">🎲 다른 게임도 보기 <span>→</span></a></p>`;
   if (SOLO === 'avalon') return `<div class="hero"><span class="kicker">각자 폰으로 · 실시간 · 4~10명</span><h1>아발론: 레지스탕스</h1><p>원정대를 꾸리고 숨은 배신자를 찾아요. 방을 만들고 대기실의 QR이나 링크를 친구들에게 보내세요.</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn primary big" data-nav="create" data-key="avalon">⚔ 아발론 방 만들기</button>
 <section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
-<p class="small muted" style="text-align:center"><a href="/">다른 게임도 보기 →</a></p>`;
+<p class="more-games-w"><a class="more-games" href="/">🎲 다른 게임도 보기 <span>→</span></a></p>`;
   return `<div class="hero"><span class="kicker">각자 폰으로 · 실시간</span><h1>우리끼리 보드게임</h1><p>게임을 골라 방을 만들고, 대기실의 QR이나 링크를 친구들에게 보내세요. 로그인 필요 없어요.</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <section class="stack"><h2>방 만들기</h2><div class="gpick">${GAMES.map(k => { const x = G[k]; return `<button type="button" class="gp gp-${k}" data-nav="create" data-key="${k}"><span class="gp-ic">${esc(x.mark)}</span><b>${esc(x.name)}</b><small>${esc(x.tag)}</small><em>${x.min}~${x.max}명</em></button>`; }).join('')}</div><p class="small muted">게임별 전용 주소: ${GAMES.map(k => `<a href="/${k}">${esc(location.host)}/${k}</a>`).join(' · ')}</p></section>
