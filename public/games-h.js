@@ -16,7 +16,9 @@ function hcard(c, cls = '', sty = '') {
   const f = fOf(c), k = kOf(c);
   return `<span class="hgc ${cls}" style="--c1:${FC[f][0]};--c2:${FC[f][1]}${sty}" aria-label="${FN[f]} ${k}개">${POS[k].map(([x, y]) => `<span class="hgf" style="left:${x}%;top:${y}%">${U.img(FIMG[f])}</span>`).join('')}<b class="hgc-n">${k}</b></span>`;
 }
-const hback = (cls = '') => `<span class="hgc back ${cls}"><span class="hgb-in">${U.img('bell')}</span></span>`;
+// 남은 장수는 숫자 대신 더미 두께로만 보여요
+const hthick = n => { const k = Math.max(1, Math.min(16, Math.ceil(n / 3))), sh = []; for (let j = 1; j <= k; j++) sh.push(`0 ${j * 1.6}px 0 0 ${j % 2 ? '#FFF6E8' : '#B8262E'}`); sh.push(`0 ${k * 1.6 + 6}px 14px rgba(60,20,0,.32)`); return `box-shadow:${sh.join(',')};transform:translateY(${-k * .8}px)`; };
+const hback = (cls = '', n = 0) => `<span class="hgc back ${cls}"${n ? ` style="${hthick(n)}"` : ''}><span class="hgb-in">${U.img('bell')}</span></span>`;
 const ids = P => P.map((_, i) => i);
 const pn = (P, i) => U.nm(P, i);
 function visible(S) { const t = [0, 0, 0, 0]; S.pile.forEach(p => { if (p.length) { const c = p[p.length - 1]; t[fOf(c)] += kOf(c); } }); return t; }
@@ -115,7 +117,7 @@ function hSeat(S, i, me, P, big) {
   const mine = i === me, myTurn = S.turn === i && !S.winner;
   return `<div class="hg-seat${big ? ' me' : ''}${myTurn ? ' on' : ''}${S.out[i] ? ' out' : ''}" data-hs="${i}" style="--pc:${U.pc(i)}">
 <div class="hg-sh"><span class="pdot"></span><b>${pn(P, i)}${mine ? ' (나)' : ''}</b>${S.out[i] ? '<span class="hg-tag out">탈락</span>' : myTurn ? '<span class="hg-tag">차례</span>' : ''}</div>
-<div class="hg-cards"><div class="hg-deck" data-hd="${i}">${S.deck[i].length ? hback() : '<span class="hgc empty"></span>'}<em>${S.deck[i].length}</em></div>
+<div class="hg-cards"><div class="hg-deck" data-hd="${i}" aria-label="남은 카드 더미">${S.deck[i].length ? hback('', S.deck[i].length) : '<span class="hgc empty"></span>'}</div>
 <div class="hg-pile" data-hp="${i}">${pile.length > 1 ? `<span class="hg-under">${hcard(pile[pile.length - 2])}</span>` : ''}${top != null ? hcard(top, fl >= 0 ? 'flip' : '', fl >= 0 ? `;--el:${fl.toFixed(2)}s` : '') : '<span class="hgc empty"><small>펼친 카드</small></span>'}</div></div></div>`;
 }
 function hBody(S, me, ui, P) {
@@ -123,8 +125,11 @@ function hBody(S, me, ui, P) {
   let h = '';
   if (S.winner) h += `<section class="hg-end"${hFresh(S, 'end', 4) < 0 ? ' data-still' : ''}><div class="hg-end-f">${FIMG.map(f => U.img(f, 'big')).join('')}</div><small>게임 끝</small><b>${U.esc(S.winner)}</b><p>카드 ${S.deck[S.win].length}장을 지켜냈어요</p></section>`;
   else h += `<header class="hg-strip${S.turn === me ? ' me' : ''}" style="--pc:${U.pc(S.turn)}"><span class="hg-ic">${U.img('bell')}</span><div><b>${pn(P, S.turn)}${S.turn === me ? ' (나)' : ''} 차례 · 카드 뒤집기</b><small>같은 과일이 <b>정확히 5개</b>면 누구든 종을 쳐요!</small></div></header>`;
-  const others = ids(P).filter(i => i !== me);
-  h += `<section class="hg-opps n${others.length}">${others.map(i => hSeat(S, i, me, P, false)).join('')}</section>`;
+  const all = ids(P), at = all.indexOf(me), others = at < 0 ? all : all.slice(at + 1).concat(all.slice(0, at)).filter(i => i !== me);
+  // 내 자리(아래)에서 시계 방향: 왼쪽 → 위 → 오른쪽, 종은 한가운데
+  const no = others.length, side = no >= 2, L0 = side ? [others[0]] : [], R0 = side ? [others[no - 1]] : [], T0 = side ? others.slice(1, no - 1) : others;
+  const seats = (arr, cls) => arr.length ? `<section class="hg-opps ${cls} n${arr.length}">${arr.map(i => hSeat(S, i, me, P, false)).join('')}</section>` : '';
+  h += `<div class="hg-table${side ? ' side' : ''}${T0.length ? ' top' : ''}">${seats(T0, 'hg-top')}${seats(L0, 'hg-l')}${seats(R0, 'hg-r')}`;
   // 가운데 종
   const res = L && (L.k === 'win' || L.k === 'miss') ? hFresh(S, 'r' + L.n, 2.2) : -1;
   const lockEl = L && L.k === 'win' ? hFresh(S, 'lk' + L.n, 1) : -1;
@@ -133,7 +138,8 @@ function hBody(S, me, ui, P) {
   if (res >= 0) msg = L.k === 'win' ? `<div class="hg-msg ok" style="--el:${res.toFixed(2)}s">🔔 딩동! <b>${pn(P, L.p)}</b>님이 ${L.got}장 획득!</div>` : `<div class="hg-msg no" style="--el:${res.toFixed(2)}s">❌ 땡! <b>${pn(P, L.p)}</b>님 잘못 쳤어요 · 1장씩 벌금</div>`;
   h += `<section class="hg-mid"><div class="hg-bellwrap">${canRing && !ui._local ? `<button type="button" class="hg-bell${lockEl >= 0 ? ' locked' : ''}" ${lockEl >= 0 ? `style="--el:${lockEl.toFixed(2)}s" ` : ''}data-act="ring" data-arg="${U.attr({n: S.n})}" aria-label="종 치기">${U.img('bell', 'bell')}<span>땡!</span></button>` : `<div class="hg-bell still">${U.img('bell', 'bell')}</div>`}</div>${msg}
 ${ui._local && !S.winner ? `<div class="hg-lring"><small>한 폰으로 할 때: 내 이름 종을 눌러요</small><div>${alive(S, P).filter(i => !P[i].bot).map(i => U.btn(`🔔 ${pn(P, i)}`, 'ring', {n: S.n, as: i}, 'hg-lb' + (lockEl >= 0 ? ' locked' : '')).replace('<button ', lockEl >= 0 ? `<button style="--el:${lockEl.toFixed(2)}s" ` : '<button ')).join('')}</div></div>` : ''}</section>`;
-  if (me >= 0) h += `<section class="hg-mine">${hSeat(S, me, me, P, true)}${!S.winner && S.turn === me && S.deck[me].length ? U.btn(`🂠 카드 뒤집기 <small>(${S.deck[me].length}장 남음)</small>`, 'flip', {}, 'primary big hg-flip') : !S.winner && !S.out[me] ? `<div class="hg-wait">${pn(P, S.turn)}님이 뒤집을 차례 · 눈은 과일에!</div>` : ''}</section>`;
+  if (me >= 0) h += `<section class="hg-mine">${hSeat(S, me, me, P, true)}${!S.winner && S.turn === me && S.deck[me].length ? U.btn('🂠 카드 뒤집기', 'flip', {}, 'primary big hg-flip') : !S.winner && !S.out[me] ? `<div class="hg-wait">${pn(P, S.turn)}님이 뒤집을 차례 · 눈은 과일에!</div>` : ''}</section>`;
+  h += '</div>';
   return h;
 }
 
