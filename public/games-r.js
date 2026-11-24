@@ -152,7 +152,7 @@ ${others.length ? U.gb(`👀 몰래 보고 다른 사람에게 넘기기 <small>
   // 직전 결과
   if (L) {
     const el = rFresh(S, 'res' + L.n, 3);
-    return `<section class="rk-stage res ${L.right ? 'ok' : 'no'}"${anim(el)}><div class="rk-flip"><i class="b">${rback('big')}</i><i class="f">${rcard(L.c, 'big')}</i></div><div class="rk-rtxt"><p class="rk-ans"><b>${pn(P, L.by)}</b>님이 <span class="rk-nw"><em class="${L.guess ? 't' : 'f'}">${L.guess ? '진실' : '거짓'}</em>이라고</span> 대답했습니다.</p><b class="rk-stamp">${L.right ? '정답입니다.' : '틀렸습니다.'}</b><span class="rk-real">사실은 <b>${RN[L.c]}</b>${jo(RN[L.c])}</span></div></section>`;
+    return `<section class="rk-stage res ${L.right ? 'ok' : 'no'}"${anim(el)}><div class="rk-flip"><i class="b">${rback('big')}</i><i class="f">${rcard(L.c, 'big')}</i></div><div class="rk-rtxt"><p class="rk-ans"><b>${pn(P, L.by)}</b>님이 <span class="rk-nw"><em class="${L.guess ? 't' : 'f'}">${L.guess ? '진실' : '거짓'}</em>이라고</span> 대답했습니다.</p><b class="rk-stamp">${L.right ? '정답입니다.' : '틀렸습니다.'}</b><span class="rk-real">사실은 <b>${RN[L.c]}</b>${jo(RN[L.c])}.</span>${S.phase === 'give' && S.turn === me && !S.winner ? '<span class="rk-mynext">👉 내 차례예요! 아래에서 카드를 골라 누군가에게 제시하세요.</span>' : ''}</div></section>`;
   }
   return `<section class="rk-stage idle"><div class="rk-fly">${rback('big wob')}</div><p class="rk-note">첫 카드를 기다리는 중… 누가 처음으로 벌레를 떠넘길까요?</p></section>`;
 }
