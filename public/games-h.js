@@ -82,12 +82,14 @@ G.halli = {
       if (a.as != null && P[+a.as] && String(P[+a.as].id || '').startsWith('L')) who = +a.as;
       if (S.out[who]) throw U.err('탈락해서 종을 칠 수 없어요.');
       if (a.n != null && +a.n !== S.n) throw U.err('아쉽게 한발 늦었어요!');
+      // 올바르게 친 직후 1초는 종이 잠겨요 (실수로 한 번 더 치는 것 방지)
+      if (S.lock && Date.now() < S.lock) throw U.err('🔔 방금 종이 울렸어요! 잠깐만요');
       S.n++;
       if (isFive(S)) {
         const won = [].concat(...S.pile); S.pile = P.map(() => []);
         S.deck[who] = S.deck[who].concat(U.shuffle(won));
         S.last = {k: 'win', p: who, got: won.length, n: S.n};
-        S.turn = who;
+        S.turn = who; S.lock = Date.now() + 1000;
         U.log(S, `🔔 ${P[who].name}님이 먼저 쳤어요! 카드 ${won.length}장 획득`);
       } else {
         const to = alive(S, P).filter(i => i !== who), gave = [];
@@ -125,11 +127,12 @@ function hBody(S, me, ui, P) {
   h += `<section class="hg-opps n${others.length}">${others.map(i => hSeat(S, i, me, P, false)).join('')}</section>`;
   // 가운데 종
   const res = L && (L.k === 'win' || L.k === 'miss') ? hFresh(S, 'r' + L.n, 2.2) : -1;
+  const lockEl = L && L.k === 'win' ? hFresh(S, 'lk' + L.n, 1) : -1;
   const canRing = !S.winner && (ui._local ? true : me >= 0 && !S.out[me]);
   let msg = '';
   if (res >= 0) msg = L.k === 'win' ? `<div class="hg-msg ok" style="--el:${res.toFixed(2)}s">🔔 딩동! <b>${pn(P, L.p)}</b>님이 ${L.got}장 획득!</div>` : `<div class="hg-msg no" style="--el:${res.toFixed(2)}s">❌ 땡! <b>${pn(P, L.p)}</b>님 잘못 쳤어요 · 1장씩 벌금</div>`;
-  h += `<section class="hg-mid"><div class="hg-bellwrap">${canRing && !ui._local ? `<button type="button" class="hg-bell" data-act="ring" data-arg="${U.attr({n: S.n})}" aria-label="종 치기">${U.img('bell', 'bell')}<span>땡!</span></button>` : `<div class="hg-bell still">${U.img('bell', 'bell')}</div>`}</div>${msg}
-${ui._local && !S.winner ? `<div class="hg-lring"><small>한 폰으로 할 때: 내 이름 종을 눌러요</small><div>${alive(S, P).filter(i => !P[i].bot).map(i => U.btn(`🔔 ${pn(P, i)}`, 'ring', {n: S.n, as: i}, 'hg-lb')).join('')}</div></div>` : ''}</section>`;
+  h += `<section class="hg-mid"><div class="hg-bellwrap">${canRing && !ui._local ? `<button type="button" class="hg-bell${lockEl >= 0 ? ' locked' : ''}" ${lockEl >= 0 ? `style="--el:${lockEl.toFixed(2)}s" ` : ''}data-act="ring" data-arg="${U.attr({n: S.n})}" aria-label="종 치기">${U.img('bell', 'bell')}<span>땡!</span></button>` : `<div class="hg-bell still">${U.img('bell', 'bell')}</div>`}</div>${msg}
+${ui._local && !S.winner ? `<div class="hg-lring"><small>한 폰으로 할 때: 내 이름 종을 눌러요</small><div>${alive(S, P).filter(i => !P[i].bot).map(i => U.btn(`🔔 ${pn(P, i)}`, 'ring', {n: S.n, as: i}, 'hg-lb' + (lockEl >= 0 ? ' locked' : '')).replace('<button ', lockEl >= 0 ? `<button style="--el:${lockEl.toFixed(2)}s" ` : '<button ')).join('')}</div></div>` : ''}</section>`;
   if (me >= 0) h += `<section class="hg-mine">${hSeat(S, me, me, P, true)}${!S.winner && S.turn === me && S.deck[me].length ? U.btn(`🂠 카드 뒤집기 <small>(${S.deck[me].length}장 남음)</small>`, 'flip', {}, 'primary big hg-flip') : !S.winner && !S.out[me] ? `<div class="hg-wait">${pn(P, S.turn)}님이 뒤집을 차례 · 눈은 과일에!</div>` : ''}</section>`;
   return h;
 }
@@ -200,7 +203,7 @@ function hBot(S, P) {
   const run = (i, t, a) => { try { G.halli.act(S, i, t, a, P); return true; } catch (e) { return false; } };
   const bots = ids(P).filter(i => P[i].bot && !S.out[i]);
   // 사람에게도 기회를 주려고 가끔은 한 박자 늦게(놓치기도 해요)
-  if (isFive(S) && bots.length && Math.random() < 0.7) return run(bots[U.rint(bots.length)], 'ring', {n: S.n});
+  if (isFive(S) && !(S.lock && Date.now() < S.lock) && bots.length && Math.random() < 0.7) return run(bots[U.rint(bots.length)], 'ring', {n: S.n});
   if (P[S.turn] && P[S.turn].bot) return run(S.turn, 'flip', {});
   return false;
 }

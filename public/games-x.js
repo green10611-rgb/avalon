@@ -62,7 +62,7 @@ function xFresh(S, key, dur) {
   const el = (now - W.__xT[k]) / 1000; return el < dur ? el : -1;
 }
 const anim = el => el < 0 ? ' data-still' : ` style="--el:${el.toFixed(2)}s"`;
-const need = (S, P) => P.length === 3 ? 2 : 1;
+const need = () => 1;
 function refill(S, P) {
   const hs = P.length === 3 ? 7 : 6;
   for (const i of ids(P)) while (S.hand[i].length < hs) { if (!S.deck.length) return false; S.hand[i].push(S.deck.pop()); }
@@ -82,7 +82,7 @@ function score(S, P) {
 G.dixit = {
   name: '딕싯', tag: '그림 한 장에 담은 이야기 맞히기', min: 3, max: 8, mark: '🔮', hue: '#7A3E9D',
   rules: ['돌아가며 한 명이 이야기꾼이 돼요. 이야기꾼은 손에 든 그림 하나를 골라 제시어를 말해요(단어·문장·노래·소리 무엇이든!).',
-    '다른 사람들은 그 제시어에 가장 어울리는 자기 그림을 몰래 한 장 내요. (3명이면 2장씩)',
+    '다른 사람들은 그 제시어에 가장 어울리는 자기 그림을 몰래 한 장 내고, 그 그림에 대한 설명을 직접 적어요(공개 때 함께 보여요).',
     '모인 그림을 섞어 펼치면, 이야기꾼이 아닌 사람들은 이야기꾼의 그림이 무엇인지 몰래 투표해요(내 그림엔 투표 못 해요).',
     '모두 찾거나 아무도 못 찾으면: 이야기꾼 0점, 나머지 모두 2점. 그 밖에는: 이야기꾼과 찾은 사람이 3점.',
     '이야기꾼이 아닌 사람은 자기 그림이 받은 표 하나마다 1점 더!',
@@ -113,7 +113,7 @@ G.dixit = {
       if (!S.hand[me].includes(c)) throw U.err('그림을 골라 주세요.');
       if (!txt) throw U.err('제시어를 적어 주세요.');
       S.hand[me].splice(S.hand[me].indexOf(c), 1);
-      S.clue = txt; S.sub = {[me]: [c]}; S.phase = 'submit'; S.n++;
+      S.clue = txt; S.sub = {[me]: [c]}; S.desc = {[me]: txt}; S.phase = 'submit'; S.n++;
       U.log(S, `📖 ${P[me].name}님의 제시어: "${txt}"`);
       return;
     }
@@ -122,7 +122,9 @@ G.dixit = {
       const c = +a.c, mine = S.sub[me] || [];
       if (mine.length >= need(S, P)) throw U.err('이미 냈어요.');
       if (!S.hand[me].includes(c)) throw U.err('그 그림이 없어요.');
-      S.hand[me].splice(S.hand[me].indexOf(c), 1); S.sub[me] = mine.concat(c); S.n++;
+      const txt = String(a.text || '').trim().slice(0, 40);
+      if (!txt) throw U.err('내 그림에 대한 설명을 적어 주세요.');
+      S.hand[me].splice(S.hand[me].indexOf(c), 1); S.sub[me] = mine.concat(c); S.desc = S.desc || {}; S.desc[me] = txt; S.n++;
       if (ids(P).every(i => i === S.st || (S.sub[i] || []).length >= need(S, P))) {
         const all = []; for (const i in S.sub) S.sub[i].forEach(c2 => all.push({c: c2, by: +i}));
         S.table = U.shuffle(all); S.votes = {}; S.phase = 'vote';
@@ -153,7 +155,7 @@ G.dixit = {
         S.winner = `${best.map(i => P[i].name).join(', ')}님 ${S.score[order[0]]}점으로 승리!`; U.log(S, S.winner);
         return;
       }
-      S.st = (S.st + 1) % P.length; S.round++; S.phase = 'clue'; S.clue = ''; S.sub = {}; S.table = []; S.votes = {}; S.gain = null; S.found = null; S.n++;
+      S.st = (S.st + 1) % P.length; S.round++; S.phase = 'clue'; S.clue = ''; S.sub = {}; S.table = []; S.votes = {}; S.desc = {}; S.gain = null; S.found = null; S.n++;
       return;
     }
     throw U.err('알 수 없는 행동이에요.');
@@ -194,7 +196,7 @@ function xBody(S, me, ui, P) {
   } else if (S.phase === 'submit') {
     const mine = S.sub[me] || [], left = me >= 0 && !isSt ? need(S, P) - mine.length : 0;
     const waiting = ids(P).filter(i => i !== st && (S.sub[i] || []).length < need(S, P));
-    if (left > 0) h += `<section class="dx-panel"><div class="dx-h"><b>🎴 “${U.esc(S.clue)}”에 어울리는 내 그림을 내요${need(S, P) > 1 ? ` (${left}장 더)` : ''}</b><small>이야기꾼의 그림인 척 다른 사람을 헷갈리게 하면 보너스!</small></div>${hand(ui.dsel, true)}${U.btn(ui.dsel != null ? '이 그림 내기' : '그림을 고르세요', 'sub', {c: ui.dsel}, 'primary big dx-go', ui.dsel == null)}</section>`;
+    if (left > 0) h += `<section class="dx-panel"><div class="dx-h"><b>🎴 “${U.esc(S.clue)}”에 어울리는 내 그림을 내요${need(S, P) > 1 ? ` (${left}장 더)` : ''}</b><small>그림을 고르고, 내 그림에 대한 설명을 직접 적어요. 설명은 공개 때 보여요!</small></div>${hand(ui.dsel, true)}<div class="dx-input"><input id="dx-desc" data-field="text" maxlength="40" placeholder="내 그림 설명 (예: 혼자 달을 올려다보는 여우)" autocomplete="off">${U.btn(ui.dsel != null ? '이 그림과 설명 내기' : '먼저 그림을 고르세요', 'sub', {c: ui.dsel}, 'primary big dx-go', ui.dsel == null).replace('<button ', '<button data-fields ')}</div></section>`;
     else h += `<section class="dx-panel wait"><div class="dx-pile">${Array.from({length: Object.values(S.sub).reduce((s, a) => s + a.length, 0)}, (_, k) => dback(`sm k${k}`)).join('')}</div><b>그림을 모으는 중…</b>${status(waiting)}</section>`;
   } else if (S.phase === 'vote' || S.phase === 'reveal') {
     const rv = S.phase === 'reveal', stIdx = S.table.findIndex(t => t.by === st);
@@ -205,7 +207,7 @@ function xBody(S, me, ui, P) {
       const own = t.by === me, voters = ids(P).filter(i => S.votes[i] === k);
       const cls = (rv && k === stIdx ? 'st ' : '') + (myVote === k ? 'my ' : '') + (own && !rv ? 'own ' : '');
       const attrs = canVote && !own ? `role="button" tabindex="0" data-act="vote" data-arg="${U.attr({k})}"` : '';
-      return `<div class="dx-tc ${cls}" style="--k:${k}"><span class="dx-num">${k + 1}</span>${dcard(t.c, '', attrs)}<button type="button" class="dx-zoom" data-g="dzoom" data-val="${U.attr(t.c)}" aria-label="크게 보기">🔍</button>${own && !rv ? '<span class="dx-own">내 그림</span>' : ''}${rv ? `<div class="dx-rv"><span class="dx-by" style="--pc:${U.pc(t.by)}">${t.by === st ? '📖 ' : ''}${pn(P, t.by)}</span><span class="dx-vs">${voters.map(i => `<i style="--pc:${U.pc(i)}">${pn(P, i)}</i>`).join('') || '<em>표 없음</em>'}</span></div>` : ''}</div>`;
+      return `<div class="dx-tc ${cls}" style="--k:${k}"><span class="dx-num">${k + 1}</span>${dcard(t.c, '', attrs)}<button type="button" class="dx-zoom" data-g="dzoom" data-val="${U.attr(t.c)}" aria-label="크게 보기">🔍</button>${own && !rv ? '<span class="dx-own">내 그림</span>' : ''}${rv ? `<div class="dx-rv"><span class="dx-by" style="--pc:${U.pc(t.by)}">${t.by === st ? '📖 ' : ''}${pn(P, t.by)}</span>${S.desc && S.desc[t.by] ? `<span class="dx-desc">“${U.esc(S.desc[t.by])}”</span>` : ''}<span class="dx-vs">${voters.map(i => `<i style="--pc:${U.pc(i)}">${pn(P, i)}</i>`).join('') || '<em>표 없음</em>'}</span></div>` : ''}</div>`;
     }).join('')}</div>${!rv ? status(ids(P).filter(i => i !== st && S.votes[i] == null)) : ''}
 ${rv ? `<div class="dx-gain">${ids(P).map(i => `<span style="--pc:${U.pc(i)}"><i class="dx-dot"></i>${pn(P, i)} <b>${S.gain[i] ? '+' + S.gain[i] : '0'}</b></span>`).join('')}</div><p class="dx-sum">${S.found.length === 0 ? '아무도 못 찾았어요 — 이야기꾼 0점, 나머지 2점' : S.found.length === n - 1 ? '모두 찾았어요 — 너무 쉬웠나 봐요! 이야기꾼 0점, 나머지 2점' : `${S.found.map(i => pn(P, i)).join(', ')}님이 찾았어요 — 이야기꾼과 함께 3점!`}</p>${me >= 0 ? U.btn('다음 라운드 ▶', 'next', {}, 'primary big dx-go') : ''}` : ''}</section>`;
   }
@@ -269,7 +271,8 @@ function xBot(S, P) {
   if (S.phase === 'submit') {
     const i = ids(P).find(k => P[k].bot && k !== S.st && (S.sub[k] || []).length < need(S, P)); if (i == null) return false;
     const best = S.hand[i].map(c => ({c, s: match(c, S.clue) + Math.random() * 1.5})).sort((a, b) => b.s - a.s)[0];
-    return run(i, 'sub', {c: best.c});
+    const tg = tagsOf(best.c), w = tg[U.rint(tg.length)], w2 = tg[U.rint(tg.length)];
+    return run(i, 'sub', {c: best.c, text: w === w2 ? `${w}의 순간` : `${w}과 ${w2}`});
   }
   if (S.phase === 'vote') {
     const i = ids(P).find(k => P[k].bot && k !== S.st && S.votes[k] == null); if (i == null) return false;

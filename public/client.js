@@ -61,6 +61,7 @@ function render(){
   const y = window.scrollY;
   const keep = {}; document.querySelectorAll('#game [data-field]').forEach(f => { if (f.id) keep[f.id] = f.value; }); const focus = document.activeElement && document.activeElement.id;
   $app.innerHTML = !code ? homeHTML() : !room ? `<div class="empty">방 <b>${esc(code)}</b>에 연결하는 중…</div><button type="button" class="btn ghost" data-nav="leaveLocal">처음으로</button>` : room.status === 'lobby' ? lobbyHTML() : gameHTML();
+  document.body.classList.toggle('g-kraken', !!(room && room.status !== 'lobby' && room.game === 'kraken' && state()));
   document.body.classList.toggle('g-dixit', !!(room && room.status !== 'lobby' && room.game === 'dixit' && state()));
   document.body.classList.toggle('g-halli', !!(room && room.status !== 'lobby' && room.game === 'halli' && state()));
   document.body.classList.toggle('g-cockroach', !!(room && room.status !== 'lobby' && room.game === 'cockroach' && state()));
