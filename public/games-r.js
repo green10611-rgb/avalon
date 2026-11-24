@@ -9,11 +9,11 @@ const isDOM = typeof document !== 'undefined';
    맞히면 건넨 사람이, 틀리면 받은 사람이 그 카드를 앞에 펼쳐 놓아요. 같은 벌레 4장이 앞에 쌓이거나, 내 차례에 손에 카드가 없으면 패배! */
 const RK = ['roach', 'bat', 'fly', 'toad', 'rat', 'scorp', 'spider', 'stink'];
 const RN = ['바퀴벌레', '박쥐', '파리', '두꺼비', '쥐', '전갈', '거미', '노린재'];
-const RIMG = ['cockroach', 'bat', 'fly', 'toad', 'rat', 'scorpion', 'spider', 'stinkbug'];
+const RIMG = ['rk_roach', 'rk_bat', 'rk_fly', 'rk_toad', 'rk_rat', 'rk_scorp', 'rk_spider', 'rk_stink'];
 const RC = [['#B9814A', '#6B3F17'], ['#9C7BE0', '#3E2A7A'], ['#5CC8C0', '#17636B'], ['#7DCB5A', '#2E6B1E'], ['#A9B2C3', '#4B5468'], ['#F3A04A', '#8A4A10'], ['#6B6F86', '#1E2030'], ['#B8C64A', '#5A6418']];
 const pic = (t, cls = '') => U.img(RIMG[t], cls, RN[t]);
 const rcard = (t, cls = '') => `<span class="rkc rk-${RK[t]} ${cls}" style="--c1:${RC[t][0]};--c2:${RC[t][1]}"><span class="rkc-in">${pic(t, 'rkc-pic')}<b>${RN[t]}</b></span></span>`;
-const rback = (cls = '') => `<span class="rkc rk-back ${cls}"><span class="rkc-in">${U.img('cockroach', 'rkc-bk')}<i>?</i></span></span>`;
+const rback = (cls = '') => `<span class="rkc rk-back ${cls}"><span class="rkc-in">${U.img('rk_roach', 'rkc-bk')}<i>?</i></span></span>`;
 const pn = (P, i) => U.nm(P, i);
 const ids = P => P.map((_, i) => i);
 function rFresh(S, key, dur) {

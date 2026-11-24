@@ -1434,6 +1434,24 @@ img.fe.big{width:1.7em;height:1.7em;vertical-align:-.45em}
 .spn-pic{display:block;width:100%;height:100%;border-radius:9px;overflow:hidden;background:radial-gradient(circle at 50% 35%,#FFF9EA,#EED9AE 70%,color-mix(in srgb,var(--rb) 35%,#EED9AE));box-shadow:inset 0 0 0 3px #C9A86A,inset 0 0 0 5px rgba(255,255,255,.6)}
 .spn-pic img.fe{display:block;width:84%;height:auto;margin:14% auto 0;vertical-align:0;filter:drop-shadow(0 4px 6px rgba(0,0,0,.3))}
 @media (prefers-reduced-motion:reduce){img.fe{animation:none!important}}
+/* 크라켄 자리 크게 · 잘 보이게 */
+.ktable{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.kseat{padding:14px 16px;gap:10px;border-width:2.5px;border-left-width:8px}
+.ks-h{gap:8px}.ks-h b{font-size:clamp(19px,2.2vw,23px);font-weight:900;color:#14213A}
+.ks-h .pdot{width:14px;height:14px}
+.kw .ks-cap{animation:none;font-size:15px;padding:4px 12px;box-shadow:0 2px 6px rgba(140,100,0,.3)}
+.kw .ks-cap i{display:inline-block;font-style:normal;animation:kfxSpin 6s linear infinite}
+.ks-role{font-size:15px;padding:4px 12px}
+.ks-d{gap:8px}.ks-d span{font-size:16px;padding:5px 14px;border-width:1.5px}
+.ks-d span.w{font-size:15px}
+.ks-c{gap:8px;min-height:60px}
+.kw .kseat .ks-c .kc,.kw .kseat .ks-c button.kc{width:clamp(62px,7.5vw,86px)}
+.kw .kseat .ks-c .kc svg{width:100%;height:auto;display:block}
+.kseat.me .ks-h b::after{content:''}
+@media (max-width:520px){.ktable{grid-template-columns:1fr}.kw .kseat .ks-c .kc,.kw .kseat .ks-c button.kc{width:clamp(54px,15vw,72px)}}
+.kw .kseat{container-type:inline-size}
+.kw .kseat .ks-c .kc,.kw .kseat .ks-c button.kc{width:min(calc((100cqw - 33px) / 5),92px)}
+@media (max-width:520px){.kw .kseat .ks-c .kc,.kw .kseat .ks-c button.kc{width:min(calc((100cqw - 33px) / 5),72px)}}
 /* ===== 3D 그림 끝 ===== */
 /* 크라켄 카드 (3D 그림) */
 .kcard{position:relative;container-type:inline-size;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2%;width:100%;aspect-ratio:100/140;border-radius:12%/8.6%;overflow:hidden;border:3px solid #8B6A3C;box-sizing:border-box;box-shadow:inset 0 0 0 2px rgba(255,255,255,.45)}
