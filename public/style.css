@@ -1877,6 +1877,12 @@ body.g-cockroach .turnbar,body.g-cockroach .log,body.g-cockroach .connline.ok{di
 /* 손패 장수: 카드 오른쪽 위 네모칸 */
 .rk-hc em{right:7%!important;top:5%!important;min-width:0!important;width:calc(var(--hw) * .3);height:calc(var(--hw) * .3)!important;max-width:46px;max-height:46px;min-height:26px;font-size:clamp(17px,calc(var(--hw) * .2),30px)!important;line-height:1;border-radius:9px!important;background:#fff!important;color:#1F2A14!important;border:2.5px solid #1F2A14!important;box-shadow:0 3px 0 #1F2A14,0 6px 10px rgba(0,0,0,.25);font-variant-numeric:tabular-nums}
 .rk-hc.on em{background:#FFD54F!important}
+/* 진실/거짓 글자도 도장 형식 */
+.rk-stage.res .rk-ans em{display:inline-block;background:none!important;padding:0 .3em;margin:0 .12em;border:3px solid currentColor;border-radius:10px;line-height:1.15}
+.rk-stage.res .rk-ans em.f{color:#D33C44!important}
+.rk-stage.res .rk-ans em.t{color:#1E9E5A!important}
+.rk-nw{white-space:nowrap}
+.rk-stage.res .rk-who{white-space:nowrap;font-size:clamp(15px,2.1cqw,20px)!important}
 /* ===== 바퀴벌레 포커 끝 ===== */
 /* ===== 할리갈리 ===== */
 body.g-halli .wrap{max-width:none;padding-inline:max(12px,env(safe-area-inset-left,0px));padding-block:6px 20px;gap:8px}

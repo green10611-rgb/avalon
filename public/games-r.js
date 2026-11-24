@@ -128,6 +128,7 @@ function rBody(S, me, ui, P) {
   return h;
 }
 
+const jo = w => { const c = w.charCodeAt(w.length - 1) - 0xAC00; return c >= 0 && c < 11172 && c % 28 ? '이었어요' : '였어요'; };
 function rStage(S, me, ui, P) {
   const cur = S.cur, L = S.last;
   if (S.winner) return '';
@@ -151,7 +152,7 @@ ${others.length ? U.gb(`👀 몰래 보고 다른 사람에게 넘기기 <small>
   // 직전 결과
   if (L) {
     const el = rFresh(S, 'res' + L.n, 3);
-    return `<section class="rk-stage res ${L.right ? 'ok' : 'no'}"${anim(el)}><div class="rk-flip"><i class="b">${rback('big')}</i><i class="f">${rcard(L.c, 'big')}</i></div><div class="rk-rtxt"><p class="rk-ans"><b>${pn(P, L.by)}</b>님이 <em class="${L.guess ? 't' : 'f'}">${L.guess ? '진실' : '거짓'}</em>이라고 대답했습니다.</p><b class="rk-stamp">${L.right ? '정답입니다.' : '틀렸습니다.'}</b><span class="rk-real">진짜는 <b>${RN[L.c]}</b> · ${L.truth ? '말이 맞았어요' : '거짓말이었어요'}</span><span class="rk-who"><span class="pdot" style="--pc:${U.pc(L.loser)}"></span><b>${pn(P, L.loser)}</b>님이 떠안았어요!</span></div></section>`;
+    return `<section class="rk-stage res ${L.right ? 'ok' : 'no'}"${anim(el)}><div class="rk-flip"><i class="b">${rback('big')}</i><i class="f">${rcard(L.c, 'big')}</i></div><div class="rk-rtxt"><p class="rk-ans"><b>${pn(P, L.by)}</b>님이 <span class="rk-nw"><em class="${L.guess ? 't' : 'f'}">${L.guess ? '진실' : '거짓'}</em>이라고</span> 대답했습니다.</p><b class="rk-stamp">${L.right ? '정답입니다.' : '틀렸습니다.'}</b><span class="rk-real">사실은 <b>${RN[L.c]}</b>${jo(RN[L.c])}</span><span class="rk-who"><span class="pdot" style="--pc:${U.pc(L.loser)}"></span><b>${pn(P, L.loser)}</b>님이 한 번 더 카드를 줍니다.</span></div></section>`;
   }
   return `<section class="rk-stage idle"><div class="rk-fly">${rback('big wob')}</div><p class="rk-note">첫 카드를 기다리는 중… 누가 처음으로 벌레를 떠넘길까요?</p></section>`;
 }
