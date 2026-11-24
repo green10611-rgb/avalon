@@ -1452,6 +1452,16 @@ img.fe.big{width:1.7em;height:1.7em;vertical-align:-.45em}
 .kw .kseat{container-type:inline-size}
 .kw .kseat .ks-c .kc,.kw .kseat .ks-c button.kc{width:min(calc((100cqw - 33px) / 5),92px)}
 @media (max-width:520px){.kw .kseat .ks-c .kc,.kw .kseat .ks-c button.kc{width:min(calc((100cqw - 33px) / 5),72px)}}
+/* 크라켄 선언: 내 상자 크게, 크라켄 있음 체크 */
+.kdecl .khand{container-type:inline-size;display:flex;justify-content:center;gap:10px;flex-wrap:nowrap;padding:6px 0}
+.kdecl .khand .kc{width:min(calc((100cqw - 40px) / 5),150px);flex:none}
+.kdecl .khand .kc svg,.kdecl .khand .kcard{width:100%}
+.kdecl .khand .kcard b{font-size:14cqw}
+.kd-row span small{display:block;font-size:13px;font-weight:600;color:#5D6579;margin-top:2px}
+.kd-k .kd-tg{display:inline-flex;align-items:center;gap:10px;min-width:170px;min-height:54px;font-size:17px;font-weight:900;border-radius:14px;background:#fff;border:2px solid #C7DCEC;color:#5D6579}
+.kd-box{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:7px;border:2.5px solid #9AA6BA;background:#fff;font-style:normal;font-size:17px;line-height:1;color:#fff}
+.kd-k .kd-tg.on{background:linear-gradient(90deg,#7E1418,#B8323A);border-color:#7E1418;color:#fff;box-shadow:0 4px 12px rgba(126,20,24,.35)}
+.kd-k .kd-tg.on .kd-box{background:#fff;border-color:#fff;color:#B8323A}
 /* ===== 3D 그림 끝 ===== */
 /* 크라켄 카드 (3D 그림) */
 .kcard{position:relative;container-type:inline-size;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2%;width:100%;aspect-ratio:100/140;border-radius:12%/8.6%;overflow:hidden;border:3px solid #8B6A3C;box-sizing:border-box;box-shadow:inset 0 0 0 2px rgba(255,255,255,.45)}

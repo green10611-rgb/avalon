@@ -244,7 +244,7 @@ function kDeclForm(S, me, ui, P) {
   return `<section class="kdecl"><div class="avt-h"><b>📣 ${S.round}라운드 선언</b><span>내 상자 ${per}개를 몰래 보고, 보물과 크라켄 개수를 말하세요. 거짓말도 OK!</span></div>
 <div class="khand">${h.map(c => card(c, 'peek')).join('')}</div><small class="muted" style="text-align:center">진짜: ${kCount(h)} · 선언하면 상자가 섞여서 위치는 몰라요</small>
 <div class="kd-row"><span>💰 보물</span><div class="kd-num">${U.gb('−', 'kt', -1, 'kd-b', tv <= 0)}<b>${tv}</b>${U.gb('+', 'kt', 1, 'kd-b', tv + (kv ? 1 : 0) >= per)}</div></div>
-<div class="kd-row"><span>🐙 크라켄</span>${U.gb(kv ? '있어요' : '없어요', 'kk', 1, 'kd-tg' + (kv ? ' on' : ''), !kv && tv >= per)}</div>
+<div class="kd-row kd-k"><span>🐙 크라켄<small>${kv ? '있다고 말해요' : '없음이 기본이에요 · 있으면 눌러요'}</small></span>${U.gb(`<i class="kd-box">${kv ? '✔' : ''}</i>크라켄 있음`, 'kk', 1, 'kd-tg' + (kv ? ' on' : ''), !kv && tv >= per)}</div>
 ${U.btn(`이렇게 선언하기 (보물 ${tv}${kv ? ' · 크라켄 있음' : ''})`, 'decl', {t: tv, k: kv}, 'primary big avgo')}</section>`;
 }
 function kTable(S, me, P, picking, ui) {
