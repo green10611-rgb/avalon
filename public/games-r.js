@@ -96,7 +96,7 @@ G.cockroach = {
   },
   uiAct(ui, S, me, name, val) {
     if (name === 'rc') { ui.rc = ui.rc === val ? null : val; return; }
-    if (name === 'rto') { ui.rto = ui.rto === val ? null : val; return; }
+    if (name === 'rto') { ui.rto = val; return; }
     if (name === 'rcl') { ui.rcl = ui.rcl === val ? null : val; return; }
     if (name === 'rpeek') { ui.rpeek = true; ui.rto = null; ui.rcl = null; return; }
   },
@@ -141,6 +141,7 @@ function rStage(S, me, ui, P) {
         ctrl = `<div class="rk-call">${U.btn(`<b>진실!</b><small>정말 ${RN[cur.claim]}일 거야</small>`, 'call', {truth: true}, 'rk-t')}${U.btn(`<b>거짓!</b><small>${RN[cur.claim]} 아닐걸?</small>`, 'call', {truth: false}, 'rk-f')}</div>
 ${others.length ? U.gb(`👀 몰래 보고 다른 사람에게 넘기기 <small>(${others.length}명에게 넘길 수 있어요)</small>`, 'rpeek', 1, 'rk-peek') : '<p class="rk-note">모두 이미 본 카드라 넘길 수 없어요. 맞혀야 해요!</p>'}`;
       } else {
+        if (others.length === 1 && ui.rto == null) ui.rto = others[0];   // 넘길 사람이 한 명뿐이면 자동으로
         ctrl = `<div class="rk-peeked"><div class="rk-real">${rcard(cur.c, 'big flipin')}<small>몰래 본 진짜 카드</small></div><div class="rk-pass">${rPick(P, others, ui, 'rto', '누구에게 넘길까요?')}${rClaim(ui)}${U.btn(ui.rto != null && ui.rcl != null ? `${pn(P, ui.rto)}님에게 "${RN[ui.rcl]}"라고 넘기기` : '받을 사람과 할 말을 고르세요', 'pass', {to: ui.rto, claim: ui.rcl}, 'primary big rk-go', ui.rto == null || ui.rcl == null)}</div></div>`;
       }
     }
@@ -150,7 +151,7 @@ ${others.length ? U.gb(`👀 몰래 보고 다른 사람에게 넘기기 <small>
   // 직전 결과
   if (L) {
     const el = rFresh(S, 'res' + L.n, 3);
-    return `<section class="rk-stage res ${L.right ? 'ok' : 'no'}"${anim(el)}><div class="rk-flip"><i class="b">${rback('big')}</i><i class="f">${rcard(L.c, 'big')}</i></div><div class="rk-rtxt"><small>${pn(P, L.from)}님이 "이건 ${RN[L.claim]}야!"라고 했어요</small><p class="rk-ans"><b>${pn(P, L.by)}</b>님이 <em class="${L.guess ? 't' : 'f'}">${L.guess ? '진실' : '거짓'}</em>이라고 대답했습니다.</p><b class="rk-stamp">${L.right ? '정답입니다.' : '틀렸습니다.'}</b><span class="rk-real">진짜는 <b>${RN[L.c]}</b> · ${L.truth ? '말이 맞았어요' : '거짓말이었어요'}</span><span class="rk-who"><span class="pdot" style="--pc:${U.pc(L.loser)}"></span><b>${pn(P, L.loser)}</b>님이 떠안았어요!</span></div></section>`;
+    return `<section class="rk-stage res ${L.right ? 'ok' : 'no'}"${anim(el)}><div class="rk-flip"><i class="b">${rback('big')}</i><i class="f">${rcard(L.c, 'big')}</i></div><div class="rk-rtxt"><p class="rk-ans"><b>${pn(P, L.by)}</b>님이 <em class="${L.guess ? 't' : 'f'}">${L.guess ? '진실' : '거짓'}</em>이라고 대답했습니다.</p><b class="rk-stamp">${L.right ? '정답입니다.' : '틀렸습니다.'}</b><span class="rk-real">진짜는 <b>${RN[L.c]}</b> · ${L.truth ? '말이 맞았어요' : '거짓말이었어요'}</span><span class="rk-who"><span class="pdot" style="--pc:${U.pc(L.loser)}"></span><b>${pn(P, L.loser)}</b>님이 떠안았어요!</span></div></section>`;
   }
   return `<section class="rk-stage idle"><div class="rk-fly">${rback('big wob')}</div><p class="rk-note">첫 카드를 기다리는 중… 누가 처음으로 벌레를 떠넘길까요?</p></section>`;
 }
@@ -162,6 +163,7 @@ function rClaim(ui) {
 }
 function rGive(S, me, ui, P) {
     const others = ids(P).filter(i => i !== me);
+    if (others.length === 1 && ui.rto == null) ui.rto = others[0];   // 둘이서 할 땐 상대가 자동으로 정해져요
     return `<section class="rk-give-w"><div class="rk-give">${rPick(P, others, ui, 'rto', '누구에게 떠넘길까요?')}${rClaim(ui)}${U.btn(ui.rc != null && ui.rto != null && ui.rcl != null ? `${RN[ui.rc]} 카드를 ${pn(P, ui.rto)}님에게 "${RN[ui.rcl]}"라고 주기${ui.rc === ui.rcl ? ' (진실)' : ' (거짓말)'}` : '카드 · 받을 사람 · 할 말을 고르세요', 'give', {c: ui.rc, to: ui.rto, claim: ui.rcl}, 'primary big rk-go', ui.rc == null || ui.rto == null || ui.rcl == null)}</div></section>`;
 }
 function rHand(S, me, ui, P) {
