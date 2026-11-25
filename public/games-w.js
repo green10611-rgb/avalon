@@ -9,8 +9,8 @@ const isDOM = typeof document !== 'undefined';
      시장 카드를 받은 사람은 시장임을 공개하고, 남은 한 장을 몰래 봐요 → 그게 시장의 비밀 역할(예언자·늑대인간·마을 사람 중 하나).
    - 밤: 시장이 비밀 역할을 확인하고 단어를 골라요 → 예언자가 단어를 봐요 → 늑대인간이 단어를 봐요(늑대가 둘이면 서로를 알아요).
    - 낮 4분: 모두 예/아니오 질문, 시장은 토큰으로만 답해요(예/아니오 36 · 애매해요 10 · 아주 가까워요 1 · 정답 1).
-   - 맞히면: 늑대인간이 정체를 드러내고 15초 안에 예언자를 지목 → 맞히면 늑대 승, 틀리면 마을 승.
-   - 못 맞히면(시간 끝·예/아니오 토큰 바닥): 1분 토론 후 모두 늑대인간을 지목. 최다 득표자(동점이면 모두) 중 늑대가 있으면 마을 승.
+   - 맞히면: 늑대인간이 정체를 드러내고 30초 안에(원작 15초) 예언자를 지목 → 맞히면 늑대 승, 틀리면 마을 승.
+   - 못 맞히면(시간 끝·예/아니오 토큰 바닥): 3분 토론 후 모두 늑대인간을 지목(원작 1분). 최다 득표자(동점이면 모두) 중 늑대가 있으면 마을 승.
      단, 모두가 정확히 1표씩 받았으면 늑대 승.
    온라인 규칙: 질문은 '질문 채팅'으로, 한 사람당 3초에 한 번. 질문은 먼저 온 순서대로 시장에게 가고,
    시장이 5초 안에 답하지 않으면 그 질문은 사라져요. 다음 질문의 5초는 앞 질문이 끝난 뒤부터 시작돼요. */
@@ -30,7 +30,7 @@ const ROLE = {
   W: ['늑대인간', 'ww_wolf', '단어를 알아요. 마을이 못 맞히게 슬쩍 헷갈리게 해요. 단어가 맞혀지면 예언자를 찾아내면 이겨요.'],
   S: ['예언자', 'crystal', '단어를 알아요. 마을이 맞히도록 몰래 도와요. 너무 티 나면 늑대에게 들켜요!'],
   V: ['마을 사람', 'ww_farmer', '단어를 몰라요. 질문으로 단어를 찾아내고, 늑대인간을 가려내요.']};
-const DAY = 240, HUNT = 15, VOTE = 60, ANS = 5, ASKGAP = 3;
+const DAY = 240, HUNT = 30, VOTE = 180, ANS = 5, ASKGAP = 3;
 const ids = P => P.map((_, i) => i);
 const pn = (P, i) => U.nm(P, i);
 const wolves = S => S.role.map((r, i) => r === 'W' ? i : -1).filter(i => i >= 0);
@@ -44,7 +44,8 @@ function finish(S, P, wt, why) {
   S.winner = wt === 'V' ? `🏡 마을 승리! ${why}` : `🐺 늑대인간 승리! ${why}`;
   lg(S, S.winner);
 }
-function toVote(S, P, why) { S.queue = []; toPhase(S, 'vote', VOTE); S.votes = {}; lg(S, `${why} 1분 동안 이야기하고 늑대인간을 지목해요!`); }
+function gateTo(S, next, title, msg) { S.queue = []; S.phase = 'gate'; S.gnext = next; S.gtitle = title; S.gmsg = msg; S.len = 0; S.ts = now(); S.n++; lg(S, `${title} ${msg}`); }
+function toVote(S, P, why) { gateTo(S, 'vote', why, '단어를 못 찾았어요. 3분 동안 이야기하고 늑대인간을 투표로 찾아내요!'); }
 function tally(S, P) {
   const cnt = P.map(() => 0); Object.values(S.votes).forEach(v => { if (v >= 0) cnt[v]++; });
   const mx = Math.max(...cnt); const top = mx > 0 ? ids(P).filter(i => cnt[i] === mx) : [];
@@ -74,8 +75,8 @@ G.werewords = {
     '낮 4분: "질문 채팅"으로 예/아니오로 답할 수 있는 질문을 하거나 단어를 맞혀 봐요(한 사람당 3초에 한 번).',
     '질문은 먼저 온 순서대로 시장에게 가요. 시장은 말없이 토큰(예·아니오·애매해요·아주 가까워요·정답)으로만, 5초 안에 답해요. 5초가 지나면 그 질문은 사라지고, 다음 질문의 5초가 시작돼요.',
     '토큰은 예/아니오 36개, 애매해요 10개, 아주 가까워요 1개뿐! 예/아니오 토큰이 바닥나거나 시간이 끝나면 단어 찾기는 실패예요.',
-    '단어를 맞히면: 늑대인간이 정체를 드러내고 15초 안에 예언자를 지목해요. 맞히면 늑대 승리, 틀리면 마을 승리.',
-    '못 맞히면: 1분 동안 이야기하고 모두 늑대인간을 지목해요. 가장 많이 지목된 사람(동점이면 모두) 중에 늑대인간이 있으면 마을 승리. 모두가 한 표씩 받으면 늑대 승리.',
+    '단어를 맞히면: 늑대인간이 정체를 드러내고 30초 안에 예언자를 지목해요. 맞히면 늑대 승리, 틀리면 마을 승리.',
+    '못 맞히면: 3분 동안 이야기하고 모두 늑대인간이라고 생각하는 사람에게 투표해요. 가장 많이 지목된 사람(동점이면 모두) 중에 늑대인간이 있으면 마을 승리. 모두가 한 표씩 받으면 늑대 승리.',
     '시장이 늑대인간이면 토큰으로 거짓말을 해도 돼요!'],
   rulesExtra() { return `<section class="ww-legend">${TKS.map(k => tkimg(k)).join('')}</section>`; },
   setup(P) {
@@ -103,10 +104,11 @@ G.werewords = {
     if (S.phase === 'day') return [S.mayor];
     if (S.phase === 'hunt') return wolves(S);
     if (S.phase === 'vote') return ids(P).filter(i => S.votes[i] == null);
+    if (S.phase === 'gate') return [S.mayor];
     return [];
   },
-  allTurn(S) { return S.phase === 'day' ? '🌞 낮: 질문하고 맞혀요!' : S.phase === 'look' ? '🌙 모두 몰래 역할 확인' : S.phase === 'vote' ? '🗳 모두 늑대인간 지목하기' : S.phase === 'hunt' ? '🐺 늑대인간이 예언자를 찾는 중…' : S.phase === 'word' ? '🤫 시장이 단어를 고르는 중' : ''; },
-  open(S) { return S.phase === 'day' || S.phase === 'hunt'; },
+  allTurn(S) { return S.phase === 'day' ? '🌞 낮: 질문하고 맞혀요!' : S.phase === 'look' ? '🌙 모두 몰래 역할 확인' : S.phase === 'vote' ? '🗳 모두 늑대인간 지목하기' : S.phase === 'hunt' ? '🐺 늑대인간이 예언자를 찾는 중…' : S.phase === 'word' ? '🤫 시장이 단어를 고르는 중' : S.phase === 'gate' ? '▶ 버튼을 눌러 다음으로' : ''; },
+  open(S) { return S.phase === 'day' || S.phase === 'hunt' || S.phase === 'gate'; },
   due(S) {
     if (S.winner || !S.len || !['day', 'hunt', 'vote'].includes(S.phase)) return null;
     const end = S.ts + S.len * 1000;
@@ -120,7 +122,7 @@ G.werewords = {
       return expire(S, P);
     }
     if (!late) return false;
-    if (S.phase === 'hunt') { finish(S, P, 'V', `늑대인간이 15초 안에 예언자를 지목하지 못했어요. (단어: "${S.word}")`); return true; }
+    if (S.phase === 'hunt') { finish(S, P, 'V', `늑대인간이 30초 안에 예언자를 지목하지 못했어요. (단어: "${S.word}")`); return true; }
     if (S.phase === 'vote') { tally(S, P); return true; }
     return false;
   },
@@ -141,10 +143,18 @@ G.werewords = {
       lg(S, '🤫 시장이 비밀 단어를 골랐어요. 예언자와 늑대인간은 단어를 확인해요.');
       return;
     }
+    if (t === 'go') {
+      if (S.phase !== 'gate') throw U.err('지금은 넘어갈 수 없어요.');
+      const nx = S.gnext;
+      if (nx === 'day') { toPhase(S, 'day', DAY); S.queue = []; lg(S, '🌞 낮이 밝았어요! 4분 안에 단어를 맞혀요.'); }
+      else if (nx === 'hunt') { toPhase(S, 'hunt', HUNT); lg(S, '🐺 늑대인간이 정체를 드러냈어요! 30초 안에 예언자를 지목해요.'); }
+      else if (nx === 'vote') { S.votes = {}; toPhase(S, 'vote', VOTE); lg(S, '🗳 3분 동안 이야기하고 늑대인간에게 투표해요!'); }
+      return;
+    }
     if (t === 'seen') {
       if (S.phase !== 'look') throw U.err('지금은 확인할 때가 아니에요.');
       S.seen[me] = 1; S.n++;
-      if (ids(P).every(i => S.seen[i])) { toPhase(S, 'day', DAY); S.queue = []; lg(S, '🌞 낮이 밝았어요! 4분 안에 단어를 맞혀요.'); }
+      if (ids(P).every(i => S.seen[i])) gateTo(S, 'day', '🌙 모두 확인했어요!', '준비되면 낮을 시작해요. 4분 안에 단어를 맞혀요.');
       return;
     }
     if (t === 'ask') {
@@ -174,8 +184,8 @@ G.werewords = {
       if (k === 'yes' || k === 'no') S.tok.yn--; else if (k === 'maybe') S.tok.maybe--; else if (k === 'close') S.tok.close--;
       S.lastAns = {id: q.id, t: k, n: S.n};
       if (k === 'hit') {
-        S.found = q.by; S.queue = []; toPhase(S, 'hunt', HUNT);
-        lg(S, `🎯 정답! 단어는 "${S.word}"${q.by >= 0 ? ` · ${P[q.by].name}님이 맞혔어요` : ''}. 늑대인간이 정체를 드러내고 예언자를 찾아요!`);
+        S.found = q.by;
+        gateTo(S, 'hunt', `🎯 정답! 단어는 "${S.word}"`, `${q.by >= 0 ? `${P[q.by].name}님이 맞혔어요. ` : ''}이제 늑대인간이 정체를 드러내고 30초 안에 예언자를 찾아요!`);
         return;
       }
       if (S.tok.yn <= 0) toVote(S, P, '예/아니오 토큰이 바닥났어요!');
@@ -299,8 +309,8 @@ function lastAnswer(S, P) {
 function wBody(S, me, ui, P) {
   const isMayor = me === S.mayor, ph = S.phase;
   let h = '';
-  const title = ph === 'word' ? '🤫 시장이 비밀 단어를 고르는 중' : ph === 'look' ? '🌙 밤: 몰래 역할을 확인해요' : ph === 'day' ? '🌞 낮: 질문하고 단어를 맞혀요!' : ph === 'hunt' ? '🐺 늑대인간이 예언자를 노려요!' : ph === 'vote' ? '🗳 늑대인간은 누구?' : S.wt === 'V' ? '🏡 마을 승리!' : '🐺 늑대인간 승리!';
-  const sub = ph === 'day' ? '시장은 말없이 토큰으로만 답해요' : ph === 'hunt' ? `정답 "${U.esc(S.word)}"! 늑대인간이 15초 안에 예언자를 지목해요` : ph === 'vote' ? '단어를 못 찾았어요. 1분 동안 이야기하고 늑대인간을 지목해요' : ph === 'word' ? `시장: ${pn(P, S.mayor)}님` : ph === 'look' ? `확인 ${Object.keys(S.seen).length}/${P.length}명` : '';
+  const title = ph === 'gate' ? (S.gnext === 'day' ? '🌙 밤이 끝나 가요' : S.gnext === 'hunt' ? '🎯 정답!' : '⏰ 낮이 끝났어요') : ph === 'word' ? '🤫 시장이 비밀 단어를 고르는 중' : ph === 'look' ? '🌙 밤: 몰래 역할을 확인해요' : ph === 'day' ? '🌞 낮: 질문하고 단어를 맞혀요!' : ph === 'hunt' ? '🐺 늑대인간이 예언자를 노려요!' : ph === 'vote' ? '🗳 늑대인간은 누구?' : S.wt === 'V' ? '🏡 마을 승리!' : '🐺 늑대인간 승리!';
+  const sub = ph === 'day' ? '시장은 말없이 토큰으로만 답해요' : ph === 'hunt' ? `정답 "${U.esc(S.word)}"! 늑대인간이 30초 안에 예언자를 지목해요` : ph === 'vote' ? '단어를 못 찾았어요. 3분 동안 이야기하고 늑대인간에게 투표해요' : ph === 'word' ? `시장: ${pn(P, S.mayor)}님` : ph === 'look' ? `확인 ${Object.keys(S.seen).length}/${P.length}명` : '';
   const tm = ['day', 'hunt', 'vote'].includes(ph) && S.len ? ring(S.len, S._g + ':' + ph + ':' + S.ts, 'r-main', 'mm') : '';
   h += `<header class="ww-strip"><span class="ww-moon">${U.img(ph === 'day' ? 'sun' : ph === 'end' && S.wt === 'V' ? 'house' : ph === 'end' || ph === 'hunt' ? 'ww_wolf' : 'ww_moon')}</span><div class="ww-tt"><b>${title}</b>${sub ? `<small>${sub}</small>` : ''}</div>${tm}</header>`;
   if (ph === 'end') {
@@ -311,6 +321,12 @@ function wBody(S, me, ui, P) {
   if (ph === 'word') {
     if (isMayor) h += roleCard(S, me, ui, P) + `<section class="ww-panel ww-pick"><div class="ww-h"><b>👑 시장님, 비밀 단어를 골라 주세요</b><small>위에서 내 비밀 역할을 먼저 확인하세요! 늑대인간이면 조금 어려운 단어, 예언자면 조금 쉬운 단어가 좋아요. 고르면 예언자와 늑대인간이 이 단어를 알게 돼요.</small></div><div class="ww-words">${S.words.map((w, i) => U.btn(`<small>${i + 1}</small><b>${U.esc(w)}</b>`, 'pick', {w}, 'ww-wbtn')).join('')}</div>${S.reroll ? U.btn('🎲 다른 단어 2개 뽑기 (1번)', 'reroll', {}, 'ww-reroll') : ''}</section>`;
     else h += `<section class="ww-panel ww-waitp"><span class="ww-big">${U.img('ww_mayor')}</span><b>${pn(P, S.mayor)}님이 시장이에요</b><p>시장이 비밀 역할을 확인하고 단어를 고르는 동안 기다려요… 🌙</p></section>`;
+    return h + seats(S, me, P);
+  }
+  if (ph === 'gate') {
+    const nx = S.gnext, lbl = nx === 'day' ? '🌞 낮 시작하기' : nx === 'hunt' ? '🐺 늑대인간 지목 시작' : '🗳 투표 시작하기';
+    const art = nx === 'day' ? 'sun' : nx === 'hunt' ? 'ww_hit' : 'ww_wolf';
+    h += `<section class="ww-panel ww-gate g-${nx}"><span class="ww-big">${U.img(art)}</span><b class="ww-gt">${U.esc(S.gtitle || '')}</b><p>${U.esc(S.gmsg || '')}</p>${me >= 0 ? U.btn(lbl, 'go', {}, 'primary big ww-go ww-gobtn') : ''}<small class="ww-note">누구든 버튼을 누르면 모두 함께 넘어가요</small></section>`;
     return h + seats(S, me, P);
   }
   if (ph === 'look') {
@@ -356,11 +372,12 @@ function wFx(S, me, P) {
   if (!rec || !$('.www')) return;
   if (W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   if (cur.ph !== rec.ph) {
-    const B = cur.ph === 'look' ? ['🌙 밤이 되었어요', '시장이 단어를 골랐어요. 몰래 역할을 확인하세요', 'n'] : cur.ph === 'day' ? ['🌞 낮이 밝았어요!', '4분 안에 비밀 단어를 찾아요', 'd'] : cur.ph === 'hunt' ? ['🎯 정답!', `"${S.word}" · 늑대인간이 정체를 드러내요!`, 'g'] : cur.ph === 'vote' ? ['⏰ 단어 찾기 실패', '늑대인간을 지목해요', 'r'] : cur.ph === 'end' ? [S.wt === 'V' ? '🏡 마을 승리!' : '🐺 늑대인간 승리!', S.why || '', S.wt === 'V' ? 'g' : 'r'] : null;
+    const B = cur.ph === 'gate' ? (S.gnext === 'hunt' ? ['🎯 정답!', `"${S.word}"`, 'g'] : S.gnext === 'vote' ? ['⏰ 단어 찾기 실패', '버튼을 눌러 투표를 시작해요', 'r'] : null) : cur.ph === 'look' ? ['🌙 밤이 되었어요', '시장이 단어를 골랐어요. 몰래 역할을 확인하세요', 'n'] : cur.ph === 'day' ? ['🌞 낮이 밝았어요!', '4분 안에 비밀 단어를 찾아요', 'd'] : cur.ph === 'hunt' ? ['🐺 늑대인간 등장!', '30초 안에 예언자를 지목해요', 'r'] : cur.ph === 'vote' ? ['🗳 투표 시작!', '3분 안에 늑대인간을 찾아내요', 'n'] : cur.ph === 'end' ? [S.wt === 'V' ? '🏡 마을 승리!' : '🐺 늑대인간 승리!', S.why || '', S.wt === 'V' ? 'g' : 'r'] : null;
     if (B) banner(B[0], B[1], B[2]);
     if (cur.ph === 'day') sunrise();
     if (cur.ph === 'look') nightfall();
-    if (cur.ph === 'hunt') { goldRain(); setTimeout(howl, 900); }
+    if (cur.ph === 'gate' && S.gnext === 'hunt') goldRain();
+    if (cur.ph === 'hunt') howl();
     if (cur.ph === 'end') setTimeout(() => S.wt === 'V' ? confetti() : howl(), 500);
     document.querySelectorAll('.ww-panel,.ww-pad,.ww-spot,.ww-chat,.ww-my').forEach((e, k) => e.animate && e.animate([{opacity: 0, transform: 'translateY(18px) scale(.97)'}, {opacity: 1, transform: 'none'}], {duration: 500, delay: k * 70, easing: 'cubic-bezier(.2,.9,.3,1.2)', fill: 'backwards'}));
     document.querySelectorAll('.ww-seat').forEach((e, k) => e.animate && e.animate([{opacity: 0, transform: 'translateY(14px) rotateX(60deg)'}, {opacity: 1, transform: 'none'}], {duration: 520, delay: 200 + k * 60, easing: 'cubic-bezier(.2,1.2,.4,1)', fill: 'backwards'}));
@@ -419,6 +436,7 @@ function wBot(S, P) {
   if (!bots.length) return false;
   if (S.phase === 'word' && P[S.mayor].bot) return run(S.mayor, 'pick', {w: S.words[0]});
   if (S.phase === 'look') { const b = bots.find(i => !S.seen[i]); return b != null ? run(b, 'seen', {}) : false; }
+  if (S.phase === 'gate') return bots.length === P.length ? run(bots[0], 'go', {}) : false;
   if (S.phase === 'day') {
     if (P[S.mayor].bot) { const q = head(S); if (q) { const w = q.q.replace(/[?\s!.]/g, ''); return run(S.mayor, 'ans', {i: q.id, t: w === S.word ? 'hit' : (S.tok.maybe && Math.random() < .3 ? 'maybe' : Math.random() < .5 ? 'yes' : 'no')}); } }
     if (S.queue.length < 2 && Math.random() < 0.3) {

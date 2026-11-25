@@ -1922,6 +1922,13 @@ body.g-werewords .turnbar,body.g-werewords .connline.ok{display:none}
 @media (max-width:759px){body.g-werewords .chatdock{height:min(200px,24vh)}body.g-werewords.has-chat{padding-bottom:calc(min(200px,24vh) + 10px)}}
 @container wwbox (max-width:560px){.ww-words{grid-template-columns:1fr}.ww-seats{grid-template-columns:1fr 1fr}}
 @media (prefers-reduced-motion:reduce){.www *,.www::before{animation:none!important}}
+.ww-gate{align-items:center;text-align:center;padding:26px 16px;background:linear-gradient(160deg,rgba(255,255,255,.14),rgba(255,255,255,.04))}
+.ww-gate.g-hunt{background:linear-gradient(160deg,rgba(255,213,79,.3),rgba(120,20,60,.35));border-color:var(--gold)}
+.ww-gate.g-vote{background:linear-gradient(160deg,rgba(255,92,126,.25),rgba(40,10,60,.4));border-color:#FF7A98}
+.ww-gt{font-size:clamp(28px,5.5cqw,46px);font-weight:900;line-height:1.15;text-shadow:0 4px 0 rgba(0,0,0,.25);animation:wwPop .6s cubic-bezier(.2,1.6,.4,1) both}
+.ww-gate p{margin:0;font-size:clamp(16px,2.5cqw,20px);font-weight:700;opacity:.95;max-width:34em}
+.ww-gobtn{min-width:min(100%,320px);min-height:66px;font-size:clamp(19px,3cqw,24px);animation:wwGo 1.3s ease-in-out infinite}
+@keyframes wwGo{0%,100%{transform:none;box-shadow:0 6px 0 rgba(0,0,0,.25),0 0 0 0 rgba(255,213,79,.7)}50%{transform:translateY(-3px) scale(1.03);box-shadow:0 9px 0 rgba(0,0,0,.25),0 0 0 14px rgba(255,213,79,0)}}
 /* ===== 한밤의 수수께끼 끝 ===== */
 /* ===== 3D 그림 끝 ===== */
 /* 크라켄 카드 (3D 그림) */
