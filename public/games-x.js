@@ -46,10 +46,96 @@ const SPEC = `0 3 fox fullmoon|2 1 house balloon|3 0 whale moon|6 0 door ladder|
 const NCARD = SPEC.length;
 const tagsOf = id => { const s = SPEC[id]; return (TAG[s.a] + ' ' + TAG[s.c] + ' ' + BGT[s.b]).split(' '); };
 const hsh = id => { let h = id * 2654435761 % 4294967296; return k => ((h >>> (k * 5)) & 31) / 31; };
+
+/* ---------- 그림 배경: 카드마다 다른 '그림책 풍경'을 SVG로 정교하게 그려요 ---------- */
+function rng(seed) { let x = (seed * 2654435761 + 1013904223) >>> 0; return () => { x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; }; }
+const PAL = [
+  {sky: ['#0B0A2E', '#26206A', '#5B3FA0'], hill: ['#3A2E7A', '#241C55', '#120E33'], glow: '#FFF3B0', orb: 'moon', stars: 60},
+  {sky: ['#3B2F8F', '#E0609A', '#FFB07A'], hill: ['#8A4A9A', '#5A2E73', '#2E1747'], glow: '#FFE3A0', orb: 'sunlow', stars: 8},
+  {sky: ['#5FB4FF', '#9ED6FF', '#E8F6FF'], hill: ['#9AD27A', '#5FAE5A', '#2F7A45'], glow: '#FFFFFF', orb: 'sun', stars: 0, isle: 1},
+  {sky: ['#05263F', '#0B5A7A', '#3FB6C9'], hill: ['#0A4A63', '#073348', '#03182A'], glow: '#B8F4FF', orb: 'rays', stars: 0, sea: 1},
+  {sky: ['#1E4A3A', '#3F8A5E', '#BFE3A0'], hill: ['#2F6B48', '#1C4A33', '#0D2A1C'], glow: '#F4FFD0', orb: 'rays', stars: 0, forest: 1},
+  {sky: ['#FF9A4A', '#FFC76A', '#FFF0C0'], hill: ['#E8A25A', '#C97B3A', '#8A4A1E'], glow: '#FFF6C8', orb: 'bigsun', stars: 0, dune: 1},
+  {sky: ['#8E9BB0', '#C3CCD8', '#EEF1F5'], hill: ['#9AA6B5', '#77828F', '#4E5763'], glow: '#FFFFFF', orb: 'pale', stars: 0, fog: 1},
+  {sky: ['#2A0606', '#7A1A0A', '#FF6A1A'], hill: ['#4A0E08', '#2A0704', '#120202'], glow: '#FFB04A', orb: 'ember', stars: 0, lava: 1},
+  {sky: ['#FFB3D9', '#C9B3FF', '#B3E8FF'], hill: ['#FF8FC4', '#B48BFF', '#7FC8F0'], glow: '#FFFFFF', orb: 'rainbow', stars: 20, candy: 1},
+  {sky: ['#020204', '#0E0E1E', '#22223A'], hill: ['#151526', '#0B0B16', '#040408'], glow: '#FFE6A0', orb: 'lamp', stars: 30}
+];
+function ridge(r, y0, amp, n, smooth) {
+  let d = `M0 140 L0 ${y0.toFixed(1)}`, x = 0, step = 100 / n;
+  for (let i = 1; i <= n; i++) {
+    x = i * step; const y = y0 - (smooth ? Math.sin(i * 1.3 + r() * 3) * amp : (r() * amp * 2 - amp * .6));
+    if (smooth) d += ` Q${(x - step / 2).toFixed(1)} ${(y - amp * (r() - .2)).toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)}`;
+    else d += ` L${x.toFixed(1)} ${y.toFixed(1)}`;
+  }
+  return d + ' L100 140 Z';
+}
+function trees(r, y, n, col, h) { let d = ''; for (let i = 0; i < n; i++) { const x = r() * 104 - 2, hh = h * (.6 + r() * .7), w = hh * .38; d += `M${(x - w).toFixed(1)} ${y.toFixed(1)} L${x.toFixed(1)} ${(y - hh).toFixed(1)} L${(x + w).toFixed(1)} ${y.toFixed(1)}Z`; } return `<path d="${d}" fill="${col}"/>`; }
+function dsDefs() {
+  if (typeof document === 'undefined' || document.getElementById('dx-defs')) return;
+  const d = document.createElement('div'); d.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
+  d.innerHTML = `<svg id="dx-defs" width="0" height="0"><defs>
+<filter id="dxBlur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2"/></filter>
+<filter id="dxSoft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter>
+<filter id="dxPaint"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/></filter>
+<filter id="dxGrain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="3" seed="3"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .45  0 0 0 0 .4  0 0 0 .55 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+<radialGradient id="dxVig" cx="50%" cy="45%" r="75%"><stop offset="55%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity=".55"/></radialGradient>
+</defs></svg>`;
+  document.body.appendChild(d);
+}
+const SCN = {};
+// 배경마다 멀리 흩어 놓는 작은 소품들 (그림을 더 풍성하게)
+const PROP = [['star', 'shooting', 'comet', 'owl', 'feather'], ['bird', 'balloon', 'kite', 'blossom', 'dove'], ['bird', 'kite', 'balloon', 'parachute', 'cloud'], ['fish', 'shell', 'jelly', 'bubbles', 'octopus'], ['leaf', 'mushroom', 'butterfly', 'seedling', 'bird'], ['cactus', 'steps', 'scroll', 'compass', 'feather'], ['lantern', 'ghost', 'feather', 'leaf', 'key'], ['fire', 'comet', 'skull', 'crown', 'drop'], ['star', 'balloon', 'gift', 'heart', 'butterfly'], ['candle', 'star', 'key', 'drop', 'feather']];
+const SPOT = [[16, 30], [84, 26], [14, 70], [86, 64], [24, 50], [78, 46]];
+function dscene(id) {
+  if (SCN[id]) return SCN[id];
+  const s = SPEC[id], P = PAL[s.b], r = rng(id + 17), u = 'dx' + id;
+  let g = `<svg class="dx-scene" viewBox="0 0 100 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="${u}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${P.sky[0]}"/><stop offset=".55" stop-color="${P.sky[1]}"/><stop offset="1" stop-color="${P.sky[2]}"/></linearGradient><radialGradient id="${u}g"><stop offset="0" stop-color="${P.glow}" stop-opacity=".95"/><stop offset=".35" stop-color="${P.glow}" stop-opacity=".35"/><stop offset="1" stop-color="${P.glow}" stop-opacity="0"/></radialGradient>
+<linearGradient id="${u}h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".25"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+<rect width="100" height="140" fill="url(#${u}s)"/>`;
+  // 별
+  for (let i = 0; i < P.stars; i++) { const x = r() * 100, y = r() * 80, z = r(); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(.15 + z * .55).toFixed(2)}" fill="#fff" opacity="${(.35 + z * .6).toFixed(2)}"/>`; }
+  if (P.stars > 30 && r() < .6) g += `<path d="M${(10 + r() * 30).toFixed(0)} 20 q 40 ${(-10 + r() * 20).toFixed(0)} 80 ${(r() * 20).toFixed(0)}" stroke="#9FFFE0" stroke-width="7" fill="none" opacity=".18" filter="url(#dxSoft)"/>`;
+  // 해·달·빛
+  const ox = 18 + r() * 64, oy = 16 + r() * 22;
+  if (P.orb === 'moon') g += `<circle cx="${ox}" cy="${oy}" r="22" fill="url(#${u}g)"/><circle cx="${ox}" cy="${oy}" r="8" fill="#FFF6D0"/><circle cx="${ox + 3}" cy="${oy - 2}" r="7" fill="${P.sky[0]}" opacity="${r() < .5 ? .95 : 0}"/><circle cx="${ox - 2}" cy="${oy + 1}" r="1.2" fill="#E8DDB0" opacity=".7"/>`;
+  else if (P.orb === 'sun' || P.orb === 'bigsun' || P.orb === 'pale') { const R0 = P.orb === 'bigsun' ? 16 : 10; g += `<circle cx="${ox}" cy="${oy + (P.orb === 'bigsun' ? 30 : 0)}" r="${R0 * 3}" fill="url(#${u}g)"/><circle cx="${ox}" cy="${oy + (P.orb === 'bigsun' ? 30 : 0)}" r="${R0}" fill="${P.glow}" opacity="${P.orb === 'pale' ? .6 : 1}"/>`; }
+  else if (P.orb === 'sunlow') g += `<circle cx="${ox}" cy="78" r="40" fill="url(#${u}g)"/><circle cx="${ox}" cy="80" r="13" fill="#FFD27A"/>${[0, 1, 2, 3].map(k => `<rect x="${ox - 14}" y="${74 + k * 3.2}" width="28" height="1.1" fill="${P.sky[1]}" opacity=".7"/>`).join('')}`;
+  else if (P.orb === 'rays') { for (let k = 0; k < 6; k++) { const x = 10 + r() * 80; g += `<path d="M${x.toFixed(0)} 0 L${(x - 14 + r() * 8).toFixed(0)} 140 L${(x + 6 + r() * 10).toFixed(0)} 140 Z" fill="${P.glow}" opacity="${(.06 + r() * .08).toFixed(2)}"/>`; } }
+  else if (P.orb === 'ember') g += `<circle cx="${ox}" cy="96" r="50" fill="url(#${u}g)"/>`;
+  else if (P.orb === 'rainbow') { ['#FF6B6B', '#FFB86B', '#FFE66B', '#7BE07B', '#6BC5FF', '#B48BFF'].forEach((c, k) => { g += `<path d="M-10 ${100 - k * 0} A 60 60 0 0 1 110 100" stroke="${c}" stroke-width="3.2" fill="none" opacity=".55" transform="translate(0 ${-k * 3.1}) scale(1 ${1 - k * .02})"/>`; }); }
+  else if (P.orb === 'lamp') g += `<circle cx="${ox}" cy="96" r="26" fill="url(#${u}g)"/><rect x="${ox - .6}" y="96" width="1.2" height="30" fill="#2A2A3A"/><circle cx="${ox}" cy="96" r="2.4" fill="#FFE6A0"/>`;
+  // 구름
+  const nc = P.sea || P.lava ? 0 : 2 + Math.floor(r() * 3);
+  for (let i = 0; i < nc; i++) { const cx = r() * 100, cy = 12 + r() * 50, w = 14 + r() * 18; g += `<g opacity="${P.stars > 30 ? .22 : .75}" filter="url(#dxBlur)"><ellipse cx="${cx.toFixed(0)}" cy="${cy.toFixed(0)}" rx="${w.toFixed(0)}" ry="${(w * .28).toFixed(1)}" fill="#fff"/><ellipse cx="${(cx - w * .35).toFixed(0)}" cy="${(cy - 3).toFixed(0)}" rx="${(w * .5).toFixed(0)}" ry="${(w * .3).toFixed(1)}" fill="#fff"/><ellipse cx="${(cx + w * .3).toFixed(0)}" cy="${(cy - 4).toFixed(0)}" rx="${(w * .45).toFixed(0)}" ry="${(w * .32).toFixed(1)}" fill="#fff"/></g>`; }
+  // 떠 있는 섬
+  if (P.isle) { const ix = 15 + r() * 60, iy = 60 + r() * 15; g += `<g><ellipse cx="${ix + 10}" cy="${iy}" rx="14" ry="3.5" fill="#7BC46A"/><path d="M${ix - 4} ${iy} Q${ix + 10} ${iy + 22} ${ix + 24} ${iy} Z" fill="#8A6A4A"/><path d="M${ix + 2} ${iy - 1} l3 -9 l3 9z M${ix + 14} ${iy - 1} l3 -12 l3 12z" fill="#2F7A45"/></g>`; }
+  // 땅·바다·숲 (세 겹, 멀수록 흐리게)
+  const base = [92, 106, 120];
+  for (let k = 0; k < 3; k++) {
+    const op = [.55, .8, 1][k], smooth = P.dune || P.candy || P.sea || P.fog;
+    g += `<path d="${ridge(r, base[k] + (r() - .5) * 6, P.dune ? 4 : P.candy ? 5 : P.sea ? 2 : 8 - k * 2, P.sea ? 10 : 6 + Math.floor(r() * 5), smooth)}" fill="${P.hill[k]}" opacity="${op}"${k === 0 ? ' filter="url(#dxPaint)"' : ''}/>`;
+    if (P.forest) g += trees(r, base[k] + 4, 9 - k * 2, P.hill[k], 14 + k * 6);
+    if (P.fog && k < 2) g += `<rect x="0" y="${base[k] - 6}" width="100" height="14" fill="#fff" opacity=".35" filter="url(#dxSoft)"/>`;
+    if (P.lava && k === 1) g += `<path d="M0 ${base[k] + 6} Q30 ${base[k] - 2} 55 ${base[k] + 8} T100 ${base[k] + 4}" stroke="#FF8A2A" stroke-width="1.4" fill="none" opacity=".85"/>`;
+  }
+  // 물결·거품·불티·반짝이
+  if (P.sea) { for (let i = 0; i < 12; i++) { const x = r() * 100, y = 30 + r() * 100, z = .6 + r() * 1.8; g += `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${z.toFixed(1)}" fill="none" stroke="#DDFBFF" stroke-width=".4" opacity=".7"/>`; } g += `<path d="M0 14 q12 -4 25 0 t25 0 t25 0 t25 0" stroke="#fff" stroke-width=".8" fill="none" opacity=".4"/>`; }
+  if (P.lava) for (let i = 0; i < 18; i++) g += `<circle cx="${(r() * 100).toFixed(0)}" cy="${(30 + r() * 80).toFixed(0)}" r="${(.3 + r() * .7).toFixed(1)}" fill="#FFB04A" opacity="${(.5 + r() * .5).toFixed(2)}"/>`;
+  if (P.candy || s.b === 0) for (let i = 0; i < 10; i++) { const x = r() * 100, y = 20 + r() * 90, z = 1 + r() * 1.6; g += `<path d="M${x} ${y - z} L${x + z * .3} ${y - z * .3} L${x + z} ${y} L${x + z * .3} ${y + z * .3} L${x} ${y + z} L${x - z * .3} ${y + z * .3} L${x - z} ${y} L${x - z * .3} ${y - z * .3}Z" fill="#fff" opacity="${(.5 + r() * .5).toFixed(2)}"/>`; }
+  if (P.dune) g += `<path d="M0 118 Q40 108 100 116" stroke="#FFE3B0" stroke-width=".6" fill="none" opacity=".7"/><path d="M0 126 Q50 120 100 128" stroke="#FFE3B0" stroke-width=".6" fill="none" opacity=".5"/>`;
+  // 주인공 발밑 그림자와 빛, 종이 질감, 가장자리 어둡게
+  g += `<ellipse cx="50" cy="118" rx="26" ry="4" fill="#000" opacity=".22" filter="url(#dxBlur)"/><rect width="100" height="70" fill="url(#${u}h)"/><rect width="100" height="140" filter="url(#dxGrain)" opacity=".22"/><rect width="100" height="140" fill="url(#dxVig)"/></svg>`;
+  return SCN[id] = g;
+}
 function dcard(id, cls = '', attrs = '') {
+  if (isDOM) dsDefs();
   const s = SPEC[id], r = hsh(id), many = s.l === 4 || s.l === 1;
   const sub = many ? [0, 1, 2, 3, 4].slice(0, s.l === 1 ? 3 : 5).map(k => `<span class="dx-o s dxs${k}" style="--rr:${((r(k) - .5) * 40).toFixed(0)}deg;--ss:${(.75 + r(k + 1) * .5).toFixed(2)}">${U.img(s.c)}</span>`).join('') : `<span class="dx-o b" style="--rr:${((r(2) - .5) * 36).toFixed(0)}deg">${U.img(s.c)}</span>`;
-  return `<span class="dxc p${s.b} l${s.l} ${cls}" ${attrs}><span class="dx-bg"></span>${sub}<span class="dx-o a" style="--ra:${((r(1) - .5) * 14).toFixed(0)}deg">${U.img(s.a)}</span><span class="dx-glow"></span></span>`;
+  const rr = rng(id + 101), pool = PROP[s.b].filter(k => k !== s.a && k !== s.c), used = new Set(), spots = SPOT.slice().sort(() => rr() - .5);
+  let props = '';
+  for (let k = 0; k < (s.l === 4 || s.l === 1 ? 2 : 3); k++) { const pk = pool[Math.floor(rr() * pool.length)]; if (used.has(pk)) continue; used.add(pk); const [x, y] = spots[k]; props += `<span class="dx-o x" style="left:${x}%;top:${y}%;--rr:${((rr() - .5) * 50).toFixed(0)}deg;--ss:${(.55 + rr() * .4).toFixed(2)};--d:${(rr() * -6).toFixed(1)}s">${U.img(pk)}</span>`; }
+  return `<span class="dxc p${s.b} l${s.l} ${cls}" ${attrs}><span class="dx-bg">${dscene(id)}</span>${props}${sub}<span class="dx-o a" style="--ra:${((r(1) - .5) * 14).toFixed(0)}deg">${U.img(s.a)}</span><span class="dx-glow"></span></span>`;
 }
 const dback = (cls = '') => `<span class="dxc back ${cls}"><span class="dx-bg"></span><span class="dx-o a">${U.img('crystal')}</span></span>`;
 const ids = P => P.map((_, i) => i);
@@ -284,6 +370,7 @@ function xBot(S, P) {
   return false;
 }
 G.dixit.botStep = xBot;
+G.dixit.card = dcard;
 G.dixit.BOTNAMES = ['몽상가', '이야기꾼', '그림쟁이', '시인', '꿈나무', '달토끼', '별지기', '구름'];
 G.dixit.art = (k, x) => k === 'card' ? dcard(x, 'big') : k === 'back' ? dback('big') : '';
 G.dixit._n = NCARD;

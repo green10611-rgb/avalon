@@ -14,11 +14,11 @@
   const img = (k, cls = '') => `<img class="fe ${cls}" src="img/${k}.webp" alt="" draggable="false">`;
   function theme(key) { return T[key] || {c1: '#4A5AE8', c2: '#1A2050', c3: '#FFD54F', tag: '', sub: '', art: ['die', 'star', 'gift'], seat: 'pawn', empty: '빈 자리', ready: '시작!'}; }
   function style(key) { const t = theme(key); return `--lb1:${t.c1};--lb2:${t.c2};--lb3:${t.c3}`; }
-  function hero(key, name, min, max, n) {
-    const t = theme(key), need = Math.max(0, min - n), full = n >= max;
+  function hero(key, name, min, max, n, cap) {
+    cap = cap || max; const t = theme(key), need = Math.max(0, min - n), full = n >= cap;
     const pct = Math.min(100, Math.round(n / Math.max(min, 1) * 100));
     return `<section class="lb-hero"><div class="lb-fly" aria-hidden="true">${t.art.map((a, i) => img(a, 'f' + i)).join('')}</div>
-<div class="lb-ht"><span class="lb-kick">대기실 · ${min}~${max}명</span><h2>${esc(name)}</h2><p>${esc(t.tag)}</p><small>${esc(t.sub)}</small></div>
+<div class="lb-ht"><span class="lb-kick">대기실 · ${min}~${max}명${cap < max ? ` · 이 방은 최대 ${cap}명` : ''}</span><h2>${esc(name)}</h2><p>${esc(t.tag)}</p><small>${esc(t.sub)}</small></div>
 <div class="lb-gauge${need ? '' : ' ok'}"><div class="lb-gbar"><i style="width:${pct}%"></i></div><b>${need ? `${n}/${min}명 · ${need}명 더 모이면 시작!` : full ? `${n}명 가득! ${esc(t.ready)}` : `${n}명 모였어요 · ${esc(t.ready)}`}</b></div></section>`;
   }
   // list: [{name, bot, host, me, off, color, extra}]
@@ -32,5 +32,10 @@
     for (let i = list.length; i < slots; i++) h += `<div class="lb-seat empty" style="--k:${i}"><span class="lb-av">${img(t.seat)}</span><span class="lb-nm"><b>${esc(t.empty)}</b><small>${i < min ? '친구를 기다려요…' : '더 올 수 있어요'}</small></span></div>`;
     return h + `</section>`;
   }
-  R.LOBBY = {theme, style, hero, seats};
+  // 방장이 정하는 최대 인원 (navKey: 서버는 data-nav, 게임판도 data-nav 사용)
+  function cap(c, lo, hi, host) {
+    if (!host) return `<div class="lb-cap ro"><span>👥 최대 인원</span><b>${c}명</b></div>`;
+    return `<div class="lb-cap"><span>👥 방 인원 제한</span><button type="button" class="lb-cb" data-nav="setcap" data-n="${c - 1}"${c - 1 < lo ? ' disabled' : ''} aria-label="한 명 줄이기">−</button><b>${c}명</b><button type="button" class="lb-cb" data-nav="setcap" data-n="${c + 1}"${c + 1 > hi ? ' disabled' : ''} aria-label="한 명 늘리기">+</button><small>${lo}~${hi}명 사이로 정할 수 있어요</small></div>`;
+  }
+  R.LOBBY = {theme, style, hero, seats, cap};
 })();

@@ -1986,9 +1986,8 @@ body.g-werewords .turnbar,body.g-werewords .connline.ok{display:none}
 @keyframes lbGlow{to{filter:brightness(1.3);box-shadow:0 0 22px var(--lb3)}}
 .lb-gauge b{font-size:15px;font-weight:900;text-shadow:0 1px 4px rgba(0,0,0,.3)}
 .lobby .invite{border-color:var(--lb1)!important;box-shadow:0 10px 26px color-mix(in srgb,var(--lb1) 25%,transparent);background:linear-gradient(160deg,#fff,color-mix(in srgb,var(--lb1) 8%,#fff))}
-.lobby .inv-code{background:linear-gradient(90deg,var(--lb2),var(--lb1));-webkit-background-clip:text;background-clip:text;color:transparent;animation:lbCode 3s ease-in-out infinite}
+.lobby .inv-code{background:linear-gradient(90deg,var(--lb2),var(--lb1));-webkit-background-clip:text;background-clip:text;color:transparent}
 @keyframes lbCode{50%{letter-spacing:.32em}}
-.lobby .inv-qr{animation:lbQr 3s ease-in-out infinite}
 @keyframes lbQr{50%{transform:rotate(-2deg) scale(1.03)}}
 .lb-panel{background:linear-gradient(160deg,#fff,color-mix(in srgb,var(--lb1) 6%,#fff))!important}
 .lb-seats{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:8px}
@@ -2020,6 +2019,14 @@ body.g-werewords .turnbar,body.g-werewords .connline.ok{display:none}
 .lb-halli .lb-ht h2{text-shadow:0 4px 0 rgba(120,40,0,.35)}
 @media (max-width:600px){.lb-ht{max-width:none}.lb-fly img{opacity:.35}.lb-hero{padding:20px 16px 16px}.lb-seats{grid-template-columns:1fr 1fr}.lb-seat{padding:8px}.lb-av{width:40px;height:40px}}
 @media (prefers-reduced-motion:reduce){.lobby *,.lobby *::before,.lobby *::after{animation:none!important}}
+.lb-cap{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px;padding:10px 14px;border-radius:16px;background:color-mix(in srgb,var(--lb1) 8%,#fff);border:2px solid color-mix(in srgb,var(--lb1) 25%,#fff)}
+.lb-cap>span{font-weight:900;font-size:15px;margin-right:4px}
+.lb-cap>b{min-width:56px;text-align:center;font-size:22px;font-weight:900;color:var(--lb2)}
+.lb-cap small{flex-basis:100%;color:var(--muted);font-size:12px}
+.lb-cb{width:40px;height:40px;border-radius:50%;border:none;background:linear-gradient(145deg,var(--lb1),var(--lb2));color:#fff;font-size:22px;font-weight:900;line-height:1;cursor:pointer;box-shadow:0 3px 0 color-mix(in srgb,var(--lb2) 70%,#000);transition:transform .12s}
+.lb-cb:not(:disabled):hover{transform:translateY(-2px)}
+.lb-cb:disabled{opacity:.3;cursor:default}
+.lb-cap.ro{justify-content:flex-start}.lb-cap.ro b{font-size:18px}
 /* ===== 대기실 테마 끝 ===== */
 /* ===== 3D 그림 끝 ===== */
 /* 크라켄 카드 (3D 그림) */
@@ -2545,6 +2552,13 @@ body.g-dixit .turnbar,body.g-dixit .log,body.g-dixit .connline.ok{display:none}
 @keyframes dxPlus{from{transform:scale(0);opacity:0}}
 .dx-desc{font-size:12px;font-weight:700;color:#4B3A70;text-align:center;line-height:1.3;padding:3px 8px;border-radius:10px;background:#F6F1FF;border:1px solid #E2D6FF;max-width:100%;word-break:keep-all}
 .dx-tc.st .dx-desc{background:#FFF6D8;border-color:#F2D58A}
+/* 딕싯 그림: 정교한 풍경 */
+.dx-scene{position:absolute;inset:0;width:100%;height:100%;display:block}
+.dxc:not(.back) .dx-bg{background:none!important}
+.dxc:not(.back)::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 2px rgba(255,236,180,.85),inset 0 0 0 4px rgba(120,80,30,.35),inset 0 0 0 5px rgba(255,236,180,.4);z-index:3}
+.dxc .dx-o img.fe{filter:drop-shadow(0 calc(var(--w) * .035) calc(var(--w) * .04) rgba(0,0,0,.38)) drop-shadow(0 0 calc(var(--w) * .03) rgba(255,255,255,.35))}
+.dx-o.x{width:calc(var(--w) * .2);opacity:.82;filter:blur(.3px) saturate(.9);animation:dxDrift 7s var(--d,0s) ease-in-out infinite}
+.dxc.sm .dx-o.x{display:none}
 /* ===== 딕싯 끝 ===== */
 /* 다른 게임도 보기: 크게 */
 .more-games-w{text-align:center;margin:18px 0 8px}

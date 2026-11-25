@@ -68,7 +68,8 @@ const rooms = new Map();          // code -> room
 const socks = new Map();          // ws -> {pid, code}
 const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 const newCode = () => { for (;;) { const c = Array.from({ length: 4 }, () => A[U.rint(A.length)]).join(''); if (!rooms.has(c)) return c; } };
-const pub = r => ({ code: r.code, game: r.game || 'avalon', host: r.host, status: r.status, players: r.players, state: r.state, gid: r.gid, chat: r.chat || [], online: r.players.map(p => p.bot ? true : isOnline(r.code, p.id)) });
+const capOf = r => { const g = gOf(r); return Math.min(g.max, Math.max(g.min, r.cap || g.max)); };
+const pub = r => ({ code: r.code, game: r.game || 'avalon', cap: capOf(r), host: r.host, status: r.status, players: r.players, state: r.state, gid: r.gid, chat: r.chat || [], online: r.players.map(p => p.bot ? true : isOnline(r.code, p.id)) });
 function isOnline(code, pid) { for (const v of socks.values()) if (v.code === code && v.pid === pid) return true; return false; }
 function send(ws, m) { if (ws.readyState === 1) ws.send(JSON.stringify(m)); }
 function broadcast(r) { r.touched = Date.now(); const m = JSON.stringify({ type: 'room', room: pub(r) }); for (const [ws, v] of socks) if (v.code === r.code && ws.readyState === 1) ws.send(m); scheduleBots(r); scheduleDue(r); }
@@ -98,7 +99,7 @@ function handle(ws, m) {
     if (!name) return err(ws, '이름을 먼저 적어 주세요.');
     if (!r.players.some(p => p.id === me.pid)) {
       if (r.status !== 'lobby') return err(ws, '이미 게임이 시작된 방이에요.');
-      const g = gOf(r); if (r.players.length >= g.max) return err(ws, `방이 꽉 찼어요(최대 ${g.max}명).`);
+      const g = gOf(r); if (r.players.length >= capOf(r)) return err(ws, `방이 꽉 찼어요(최대 ${capOf(r)}명).`);
       let nm = name; while (r.players.some(p => p.name === nm)) nm += '2';
       r.players.push({ id: me.pid, name: nm });
     }
@@ -124,9 +125,15 @@ function handle(ws, m) {
     if (r.host !== me.pid || r.status !== 'lobby') return err(ws, '대기실에서 방장만 바꿀 수 있어요.');
     if (!GAMES.includes(m.game)) return; r.game = m.game; return broadcast(r);
   }
+  if (m.type === 'setcap') {
+    if (r.host !== me.pid || r.status !== 'lobby') return err(ws, '대기실에서 방장만 바꿀 수 있어요.');
+    const g = gOf(r), n = Math.round(+m.n || 0);
+    if (n < Math.max(g.min, r.players.length) || n > g.max) return err(ws, `인원 제한은 ${Math.max(g.min, r.players.length)}~${g.max}명 사이로 정할 수 있어요.`);
+    r.cap = n; return broadcast(r);
+  }
   if (m.type === 'addbot') {
     if (r.host !== me.pid || r.status !== 'lobby') return err(ws, '대기실에서 방장만 할 수 있어요.');
-    const g = gOf(r); if (r.players.length >= g.max) return err(ws, `최대 ${g.max}명까지예요.`);
+    const g = gOf(r); if (r.players.length >= capOf(r)) return err(ws, `최대 ${capOf(r)}명까지예요. 방장이 인원 제한을 늘릴 수 있어요.`);
     const used = new Set(r.players.map(p => p.name));
     const nm = '🤖' + ((g.BOTNAMES || []).find(b => !used.has('🤖' + b)) || ('AI' + r.players.length));
     r.players.push({ id: 'bot-' + Math.random().toString(36).slice(2, 8), name: nm, bot: true });

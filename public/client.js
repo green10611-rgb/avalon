@@ -130,13 +130,13 @@ function homeHTML(){
 <section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>`;
 }
 function lobbyHTML(){
-  const P = players(), host = room.host === pid, n = P.length, ok = n >= g.min && n <= g.max;
+  const P = players(), host = room.host === pid, n = P.length, ok = n >= g.min && n <= g.max, cap = Math.min(g.max, room.cap || g.max);
   let h = `<div class="bar"><button type="button" class="btn ghost" data-nav="leave">${host ? '방 닫기' : '나가기'}</button><div class="t"><b>대기실</b><small>${esc(GN())} · ${g.min}~${g.max}명</small></div></div>${conn()}`;
-  h += `<div class="lobby lb-${esc(room.game)}" style="${LOBBY.style(room.game)}">` + LOBBY.hero(room.game, g.name, g.min, g.max, n);
+  h += `<div class="lobby lb-${esc(room.game)}" style="${LOBBY.style(room.game)}">` + LOBBY.hero(room.game, g.name, g.min, g.max, n, cap);
   const link = inviteURL(code);
   h += `<section class="invite"><div class="inv-qr">${qrSVG(link)}</div><div class="inv-r"><span class="small">방 코드</span><b class="inv-code">${esc(code)}</b><p>폰 카메라로 QR을 찍거나 링크를 열면 바로 들어와요.</p><div class="inv-link">${esc(link.replace(/^https?:\/\//, ''))}</div><div class="row"><button type="button" class="btn primary" data-nav="copyLink">🔗 링크 복사</button>${navigator.share ? '<button type="button" class="btn" data-nav="shareLink">📤 공유하기</button>' : ''}</div></div></section>`;
-  h += `<section class="panel lb-panel"><div class="lbl">참가자 ${n}명 · ${g.min}~${g.max}명</div>${LOBBY.seats(room.game, P.map((p, i) => ({name: p.name, bot: p.bot, host: p.id === room.host, me: p.id === pid, off: !p.bot && room.online && room.online[i] === false, color: U.pc(i), extra: host && p.id !== pid ? `<button type="button" class="btn tiny ghost lb-kick" data-nav="kick" data-id="${esc(p.id)}">내보내기</button>` : ''})), g.min, g.max)}</section>`;
-  if (host) h += `<div class="row"><button type="button" class="btn" data-nav="addbot"${n >= g.max ? ' disabled' : ''}>🤖 AI 참가자 추가</button><span class="small muted">사람이 모자랄 때 AI가 같이 해요</span></div>`;
+  h += `<section class="panel lb-panel"><div class="lbl">참가자 ${n}명 · ${g.min}~${g.max}명</div>${LOBBY.seats(room.game, P.map((p, i) => ({name: p.name, bot: p.bot, host: p.id === room.host, me: p.id === pid, off: !p.bot && room.online && room.online[i] === false, color: U.pc(i), extra: host && p.id !== pid ? `<button type="button" class="btn tiny ghost lb-kick" data-nav="kick" data-id="${esc(p.id)}">내보내기</button>` : ''})), g.min, cap)}${LOBBY.cap(cap, Math.max(g.min, n), g.max, host)}</section>`;
+  if (host) h += `<div class="row"><button type="button" class="btn" data-nav="addbot"${n >= cap ? ' disabled' : ''}>🤖 AI 참가자 추가</button><span class="small muted">사람이 모자랄 때 AI가 같이 해요</span></div>`;
   h += host ? `<button type="button" class="btn primary big lb-start${ok ? ' ready' : ''}" data-nav="start"${ok && !busy ? '' : ' disabled'}>${ok ? `${n}명으로 시작하기` : `${g.min}명 이상 모이면 시작할 수 있어요`}</button>` : `<div class="hint">방장이 시작하기를 기다리는 중이에요.</div>`;
   h += `<details class="ref"><summary>규칙 보기</summary><ol class="rules">${g.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol>${g.rulesExtra ? g.rulesExtra() : ''}</details>`;
   if (host && !SOLO) h += `<section class="swgame"><div class="small muted">다른 게임으로 바꾸기</div><div class="row">${GAMES.map(k => `<button type="button" class="btn${k === room.game ? ' primary' : ''}" data-nav="setgame" data-key="${k}">${esc(G[k].mark)} ${esc(G[k].name)}</button>`).join('')}</div></section>`;
@@ -183,6 +183,7 @@ document.addEventListener('click', e => {
     if (n === 'lobby') return backToLobby();
     if (n === 'kick') return kick(d.id);
     if (n === 'addbot') return sendMsg({type: 'addbot'});
+    if (n === 'setcap') return sendMsg({type: 'setcap', n: +d.n});
     if (n === 'askEnd'){ confirmQ = 'end'; return render(); }
     if (n === 'cancel') return render();
     return;
