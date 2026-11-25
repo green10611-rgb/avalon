@@ -409,10 +409,12 @@ function wFx(S, me, P) {
     [st, big].forEach(e => e && e.animate && e.animate([{transform: 'scale(2.6) rotate(-25deg)', opacity: 0, filter: 'blur(4px)'}, {transform: 'scale(.88) rotate(5deg)', opacity: 1, filter: 'blur(0)', offset: .6}, {transform: 'none', opacity: 1}], {duration: 560, easing: 'cubic-bezier(.2,1.5,.4,1)'}));
     const cols = k === 'yes' ? ['#3DDC84', '#B6F5CF', '#fff'] : k === 'no' ? ['#FF5A6E', '#FFC2CA', '#fff'] : k === 'close' ? ['#FF8A3D', '#FFD54F', '#fff', '#FF3D3D'] : k === 'hit' ? ['#FFD54F', '#fff', '#FFB300'] : ['#C59BFF', '#fff'];
     burst(st || big, cols, k === 'close' ? 36 : 16);
+    if (W.SFX) { W.SFX.play('stamp'); setTimeout(() => W.SFX.play(k === 'yes' ? 'yes' : k === 'no' ? 'no' : k === 'hit' ? 'fanfare' : k === 'close' ? 'alarm' : 'chime'), 90); }
     if (k === 'close') { shake($('.www'), 7); flash('rgba(255,120,40,.45)'); }
   }
-  if (cur.gone > rec.gone) { const e = $('.ww-b.gone'); if (e && e.animate) e.animate([{opacity: 1, transform: 'none'}, {opacity: .4, transform: 'translateX(14px) scale(.96)', filter: 'grayscale(1)'}], {duration: 600, fill: 'forwards'}); }
+  if (cur.gone > rec.gone) { if (W.SFX) W.SFX.play('swish'); const e = $('.ww-b.gone'); if (e && e.animate) e.animate([{opacity: 1, transform: 'none'}, {opacity: .4, transform: 'translateX(14px) scale(.96)', filter: 'grayscale(1)'}], {duration: 600, fill: 'forwards'}); }
   if (cur.nq > rec.nq && cur.ph === 'day') {
+    if (W.SFX) W.SFX.play('pop');
     const e = document.querySelectorAll('.ww-b'); const l = e[e.length - 1];
     if (l && l.animate) l.animate([{transform: 'translateY(20px) scale(.9)', opacity: 0}, {transform: 'none', opacity: 1}], {duration: 380, easing: 'cubic-bezier(.2,1.4,.4,1)'});
     const sp = $('.ww-spot.live,.ww-pad.live'); if (sp && sp.animate) sp.animate([{boxShadow: '0 0 0 0 rgba(255,213,79,.9)'}, {boxShadow: '0 0 0 18px rgba(255,213,79,0)'}], {duration: 700});

@@ -1952,6 +1952,11 @@ body.g-werewords .turnbar,body.g-werewords .connline.ok{display:none}
 .ww-hl li.empty{width:100%;text-align:center;color:#D8CFFF;font-weight:700;padding:20px 0}
 .ww-day.live .ww-last .ww-tk.big{font-size:26px}.ww-day.live .ww-last .ww-tk.big img.fe{width:60px;height:60px}
 /* ===== 한밤의 수수께끼 끝 ===== */
+/* 효과음 켜고 끄기 */
+.sfx-tog{position:fixed;left:12px;bottom:12px;z-index:120;width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.8);background:linear-gradient(145deg,#6B55F0,#3A2BA0);color:#fff;font-size:22px;line-height:1;display:grid;place-items:center;box-shadow:0 6px 16px rgba(40,20,120,.35);cursor:pointer;transition:transform .15s}
+.sfx-tog:hover{transform:scale(1.08)}
+.sfx-tog.off{background:#8C8AA0;box-shadow:0 4px 10px rgba(0,0,0,.2)}
+@media (max-width:759px){.sfx-tog{width:40px;height:40px;font-size:19px;left:8px;bottom:auto;top:8px}}
 /* ===== 3D 그림 끝 ===== */
 /* 크라켄 카드 (3D 그림) */
 .kcard{position:relative;container-type:inline-size;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2%;width:100%;aspect-ratio:100/140;border-radius:12%/8.6%;overflow:hidden;border:3px solid #8B6A3C;box-sizing:border-box;box-shadow:inset 0 0 0 2px rgba(255,255,255,.45)}
