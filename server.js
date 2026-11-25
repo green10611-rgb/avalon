@@ -68,7 +68,7 @@ const rooms = new Map();          // code -> room
 const socks = new Map();          // ws -> {pid, code}
 const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 const newCode = () => { for (;;) { const c = Array.from({ length: 4 }, () => A[U.rint(A.length)]).join(''); if (!rooms.has(c)) return c; } };
-const capOf = r => { const g = gOf(r); return Math.min(g.max, Math.max(g.min, r.cap || g.min)); };
+const capOf = r => { const g = gOf(r); return Math.min(g.max, Math.max(g.min, r.cap || g.max)); };
 const pub = r => ({ code: r.code, game: r.game || 'avalon', cap: capOf(r), host: r.host, status: r.status, players: r.players, state: r.state, gid: r.gid, chat: r.chat || [], online: r.players.map(p => p.bot ? true : isOnline(r.code, p.id)) });
 function isOnline(code, pid) { for (const v of socks.values()) if (v.code === code && v.pid === pid) return true; return false; }
 function send(ws, m) { if (ws.readyState === 1) ws.send(JSON.stringify(m)); }
