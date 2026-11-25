@@ -77,6 +77,7 @@ G.werewords = {
     '토큰은 예/아니오 36개, 애매해요 10개, 아주 가까워요 1개뿐! 예/아니오 토큰이 바닥나거나 시간이 끝나면 단어 찾기는 실패예요.',
     '단어를 맞히면: 늑대인간이 정체를 드러내고 30초 안에 예언자를 지목해요. 맞히면 늑대 승리, 틀리면 마을 승리.',
     '못 맞히면: 3분 동안 이야기하고 모두 늑대인간이라고 생각하는 사람에게 투표해요. 가장 많이 지목된 사람(동점이면 모두) 중에 늑대인간이 있으면 마을 승리. 모두가 한 표씩 받으면 늑대 승리.',
+    '같은 공간에서 할 때는 "🏠 같은 공간에서 하기"를 고르세요. 질문은 소리 내어 말로 하고, 시장은 듣고 토큰만 눌러요(5초 제한 없음).',
     '시장이 늑대인간이면 토큰으로 거짓말을 해도 돼요!'],
   rulesExtra() { return `<section class="ww-legend">${TKS.map(k => tkimg(k)).join('')}</section>`; },
   setup(P) {
@@ -143,6 +144,13 @@ G.werewords = {
       lg(S, '🤫 시장이 비밀 단어를 골랐어요. 예언자와 늑대인간은 단어를 확인해요.');
       return;
     }
+    if (t === 'mode') {
+      if (me < 0) throw U.err('참가자만 바꿀 수 있어요.');
+      const m = a.m ? 1 : 0; if ((S.live || 0) === m) return;
+      S.live = m; S.queue = []; S.n++;
+      lg(S, m ? `🏠 ${P[me].name}님이 '같은 공간에서 하기'로 바꿨어요. 질문은 말로 하고 시장은 토큰만 눌러요.` : `📱 ${P[me].name}님이 '각자 온라인으로 하기'로 바꿨어요. 질문은 질문 채팅으로 보내요.`);
+      return;
+    }
     if (t === 'go') {
       if (S.phase !== 'gate') throw U.err('지금은 넘어갈 수 없어요.');
       const nx = S.gnext;
@@ -160,6 +168,7 @@ G.werewords = {
     if (t === 'ask') {
       if (S.phase !== 'day') throw U.err('지금은 질문할 수 없어요.');
       if (me === S.mayor) throw U.err('시장은 토큰으로만 답해요.');
+      if (S.live) throw U.err('같은 공간 모드에서는 질문을 말로 해요.');
       const q = String(a.q || '').trim().replace(/\s+/g, ' ').slice(0, 50);
       if (!q) throw U.err('질문이나 맞힐 단어를 적어 주세요.');
       if (now() - (S.lastAsk[me] || 0) < ASKGAP * 1000 - 100) throw U.err(`질문은 ${ASKGAP}초에 한 번만 할 수 있어요.`);
@@ -179,7 +188,7 @@ G.werewords = {
       let q = head(S);
       if (a.i != null && (!q || q.id !== +a.i)) throw U.err('그 질문은 시간이 지나 사라졌어요.');
       if (q) nextHead(S);
-      else { if (!a.free) throw U.err('답할 질문이 없어요.'); q = {id: S.qs.length, by: -1, q: '', t: null}; S.qs.push(q); }
+      else { if (!a.free && !S.live) throw U.err('답할 질문이 없어요.'); q = {id: S.qs.length, by: -1, q: '', t: null}; S.qs.push(q); }
       q.t = k; S.n++;
       if (k === 'yes' || k === 'no') S.tok.yn--; else if (k === 'maybe') S.tok.maybe--; else if (k === 'close') S.tok.close--;
       S.lastAns = {id: q.id, t: k, n: S.n};
@@ -291,15 +300,25 @@ function chat(S, P, me) {
 ${canAsk ? `<div class="ww-send"><input id="ww-q" data-field="q" data-clear data-enter maxlength="50" placeholder="${hd ? '질문은 순서대로 시장에게 가요' : '예: 살아있는 거예요? / 사과?'}" autocomplete="off"><button type="button" class="btn primary ww-cool${cool ? ' cooling' : ''}" data-act="ask" data-arg="{}" data-fields${cool ? ` data-until="${until}" disabled` : ''}>보내기<i>${cool ? ' ' + Math.ceil((until - Date.now()) / 1000) : ''}</i></button></div>` : me === S.mayor ? '<p class="ww-ch-note">👑 시장은 말없이 토큰으로만 답해요.</p>' : ''}</section>`;
 }
 function mayorPad(S, P, ui) {
-  const q = head(S), local = !!ui._local;
+  const q = S.live ? null : head(S), local = !!ui._local || !!S.live;
   const btns = free => TKS.map(k => U.btn(`<span class="ww-abi">${U.img(TK[k][1])}</span><b>${TK[k][0]}</b>${k !== 'hit' ? `<small>${tokLeft(S, k)}</small>` : ''}`, 'ans', free ? {t: k, free: 1} : {t: k, i: q.id}, `ww-ab k-${k}`, !tokOk(S, k))).join('');
   if (q) return `<section class="ww-pad live"><div class="ww-pad-q"><span class="ww-bwho" style="--pc:${U.pc(q.by)}">${pn(P, q.by)}님의 질문</span>${ring(ANS, S._g + ':h:' + q.id + ':' + S.headAt, 'sec r-big', 'sec')}<p>${U.esc(q.q)}</p>${S.queue.length > 1 ? `<small>뒤에 ${S.queue.length - 1}개 대기 중</small>` : ''}</div><div class="ww-abs">${btns(false)}</div></section>`;
-  return `<section class="ww-pad idle"><div class="ww-pad-q"><span class="ww-pad-ic">${U.img('ww_talk')}</span><p>${local ? '말로 받은 질문에 바로 토큰으로 답해요' : '질문을 기다리는 중…'}</p><small>${local ? '한 폰으로 할 땐 질문을 말로 하고, 시장이 아래 토큰을 눌러요.' : '질문이 오면 5초 안에 토큰을 눌러 답해요.'}</small></div>${local ? `<div class="ww-abs">${btns(true)}</div>` : ''}</section>`;
+  return `<section class="ww-pad idle"><div class="ww-pad-q"><span class="ww-pad-ic">${U.img('ww_talk')}</span><p>${local ? '질문을 귀로 듣고 토큰을 눌러 답해요' : '질문을 기다리는 중…'}</p><small>${local ? '같은 공간에서는 모두 소리 내어 질문하고, 시장은 말없이 아래 토큰만 눌러요.' : '질문이 오면 5초 안에 토큰을 눌러 답해요.'}</small></div>${local ? `<div class="ww-abs">${btns(true)}</div>` : ''}</section>`;
 }
 function spotlight(S, P) {
   const q = head(S);
   if (!q) return `<section class="ww-spot idle"><span class="ww-spot-ic">${U.img('ww_mayor')}</span><p>시장이 다음 질문을 기다리고 있어요</p></section>`;
   return `<section class="ww-spot live"><span class="ww-bwho" style="--pc:${U.pc(q.by)}">${pn(P, q.by)}님의 질문</span><p>“${U.esc(q.q)}”</p>${ring(ANS, S._g + ':h:' + q.id + ':' + S.headAt, 'sec r-big', 'sec')}</section>`;
+}
+function history(S, P) {
+  const L = S.qs.filter(q => q.t).slice(-60);
+  const c = k => S.qs.filter(q => q.t === k).length;
+  return `<section class="ww-hist"><header class="ww-ch-h"><b>🗣 시장의 답 기록</b><small>질문은 소리 내어 말로! 시장은 말없이 토큰으로만 답해요</small></header><div class="ww-hsum">${['yes', 'no', 'maybe', 'close'].map(k => `<span class="ww-hs k-${k}">${U.img(TK[k][1])}<b>${c(k)}</b></span>`).join('')}</div><ol class="ww-hl">${L.length ? L.map((q, i) => `<li class="k-${q.t}${i === L.length - 1 ? ' fresh' : ''}" data-q="${q.id}">${tkimg(q.t)}${q.by >= 0 ? `<small>${pn(P, q.by)}: ${U.esc(q.q)}</small>` : ''}</li>`).join('') : '<li class="empty">아직 답한 토큰이 없어요. 시장에게 질문을 말해 보세요!</li>'}</ol></section>`;
+}
+function modeSel(S, me) {
+  if (me < 0) return '';
+  const on = S.live ? 1 : 0;
+  return `<section class="ww-mode"><b>어디서 함께 하나요?</b><div class="ww-modes">${U.btn('<span>📱</span><b>각자 온라인으로 하기</b><small>질문을 질문 채팅으로 보내요 · 시장은 5초 안에 답해요</small>', 'mode', {m: 0}, 'ww-mb' + (on ? '' : ' on'))}${U.btn('<span>🏠</span><b>같은 공간에서 하기</b><small>질문은 소리 내어 말로 · 시장은 듣고 토큰만 눌러요</small>', 'mode', {m: 1}, 'ww-mb' + (on ? ' on' : ''))}</div><small>누구나 바꿀 수 있어요 · 낮이 시작돼도 바꿀 수 있어요</small></section>`;
 }
 function lastAnswer(S, P) {
   const L = S.lastAns; if (!L) return '';
@@ -321,21 +340,24 @@ function wBody(S, me, ui, P) {
   if (ph === 'word') {
     if (isMayor) h += roleCard(S, me, ui, P) + `<section class="ww-panel ww-pick"><div class="ww-h"><b>👑 시장님, 비밀 단어를 골라 주세요</b><small>위에서 내 비밀 역할을 먼저 확인하세요! 늑대인간이면 조금 어려운 단어, 예언자면 조금 쉬운 단어가 좋아요. 고르면 예언자와 늑대인간이 이 단어를 알게 돼요.</small></div><div class="ww-words">${S.words.map((w, i) => U.btn(`<small>${i + 1}</small><b>${U.esc(w)}</b>`, 'pick', {w}, 'ww-wbtn')).join('')}</div>${S.reroll ? U.btn('🎲 다른 단어 2개 뽑기 (1번)', 'reroll', {}, 'ww-reroll') : ''}</section>`;
     else h += `<section class="ww-panel ww-waitp"><span class="ww-big">${U.img('ww_mayor')}</span><b>${pn(P, S.mayor)}님이 시장이에요</b><p>시장이 비밀 역할을 확인하고 단어를 고르는 동안 기다려요… 🌙</p></section>`;
+    if (!ui._local) h += modeSel(S, me);
     return h + seats(S, me, P);
   }
   if (ph === 'gate') {
     const nx = S.gnext, lbl = nx === 'day' ? '🌞 낮 시작하기' : nx === 'hunt' ? '🐺 늑대인간 지목 시작' : '🗳 투표 시작하기';
     const art = nx === 'day' ? 'sun' : nx === 'hunt' ? 'ww_hit' : 'ww_wolf';
     h += `<section class="ww-panel ww-gate g-${nx}"><span class="ww-big">${U.img(art)}</span><b class="ww-gt">${U.esc(S.gtitle || '')}</b><p>${U.esc(S.gmsg || '')}</p>${me >= 0 ? U.btn(lbl, 'go', {}, 'primary big ww-go ww-gobtn') : ''}<small class="ww-note">누구든 버튼을 누르면 모두 함께 넘어가요</small></section>`;
+    if (nx === 'day' && !ui._local) h += modeSel(S, me);
     return h + seats(S, me, P);
   }
   if (ph === 'look') {
     h += roleCard(S, me, ui, P);
     h += `<section class="ww-panel ww-look"><b>${me >= 0 && (S.role[me] !== 'V' || isMayor) ? '역할과 비밀 단어를 몰래 확인했으면' : '역할을 몰래 확인했으면'} 눌러 주세요</b>${me >= 0 && !S.seen[me] ? U.btn('✅ 확인했어요', 'seen', {}, 'primary big ww-go') : `<p class="ww-note">다른 사람을 기다리는 중… (${Object.keys(S.seen).length}/${P.length})</p>`}</section>`;
+    if (!ui._local) h += modeSel(S, me);
     return h + seats(S, me, P);
   }
   if (ph === 'day') {
-    h += `<div class="ww-day${isMayor ? ' mayor' : ''}"><div class="ww-left">${tokBar(S)}${isMayor ? `<div class="ww-mword"><small>비밀 단어</small><b>${ui._local && !ui.wwpeek ? '••••' : U.esc(S.word)}</b></div>` + mayorPad(S, P, ui) : spotlight(S, P)}${lastAnswer(S, P)}${roleCard(S, me, ui, P)}</div><div class="ww-right">${chat(S, P, me)}</div></div>`;
+    h += `<div class="ww-day${isMayor ? ' mayor' : ''}${S.live ? ' live' : ''}"><div class="ww-left">${tokBar(S)}${isMayor ? `<div class="ww-mword"><small>비밀 단어</small><b>${ui._local && !ui.wwpeek ? '••••' : U.esc(S.word)}</b></div>` + mayorPad(S, P, ui) : S.live ? '' : spotlight(S, P)}${lastAnswer(S, P)}${roleCard(S, me, ui, P)}</div><div class="ww-right">${S.live || ui._local ? history(S, P) : chat(S, P, me)}</div></div>${ui._local ? '' : `<div class="ww-modemini">${U.btn(S.live ? '📱 각자 온라인으로 바꾸기' : '🏠 같은 공간에서 하기로 바꾸기', 'mode', {m: S.live ? 0 : 1}, 'sm ww-mswap')}</div>`}`;
     return h + seats(S, me, P);
   }
   if (ph === 'hunt') {
@@ -368,7 +390,7 @@ function wFx(S, me, P) {
   const cur = {ph: S.phase, la: S.lastAns ? S.lastAns.n : 0, nq: S.qs.length, gone: S.goneN || 0, end: !!S.winner};
   const rec = W.__wfx[S._g]; W.__wfx[S._g] = cur;
   const $ = q => document.querySelector(q);
-  const box = $('.ww-bubbles'); if (box) box.scrollTop = box.scrollHeight;
+  const box = $('.ww-bubbles'); if (box) box.scrollTop = box.scrollHeight; const hb = $('.ww-hl'); if (hb) hb.scrollTop = hb.scrollHeight;
   if (!rec || !$('.www')) return;
   if (W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   if (cur.ph !== rec.ph) {
@@ -383,7 +405,7 @@ function wFx(S, me, P) {
     document.querySelectorAll('.ww-seat').forEach((e, k) => e.animate && e.animate([{opacity: 0, transform: 'translateY(14px) rotateX(60deg)'}, {opacity: 1, transform: 'none'}], {duration: 520, delay: 200 + k * 60, easing: 'cubic-bezier(.2,1.2,.4,1)', fill: 'backwards'}));
   }
   if (cur.la !== rec.la && S.lastAns) {
-    const k = S.lastAns.t, st = $(`.ww-b[data-q="${S.lastAns.id}"] .ww-tk`), big = $('.ww-last .ww-tk');
+    const k = S.lastAns.t, st = $(`.ww-b[data-q="${S.lastAns.id}"] .ww-tk`) || $(`.ww-hl li[data-q="${S.lastAns.id}"] .ww-tk`), big = $('.ww-last .ww-tk');
     [st, big].forEach(e => e && e.animate && e.animate([{transform: 'scale(2.6) rotate(-25deg)', opacity: 0, filter: 'blur(4px)'}, {transform: 'scale(.88) rotate(5deg)', opacity: 1, filter: 'blur(0)', offset: .6}, {transform: 'none', opacity: 1}], {duration: 560, easing: 'cubic-bezier(.2,1.5,.4,1)'}));
     const cols = k === 'yes' ? ['#3DDC84', '#B6F5CF', '#fff'] : k === 'no' ? ['#FF5A6E', '#FFC2CA', '#fff'] : k === 'close' ? ['#FF8A3D', '#FFD54F', '#fff', '#FF3D3D'] : k === 'hit' ? ['#FFD54F', '#fff', '#FFB300'] : ['#C59BFF', '#fff'];
     burst(st || big, cols, k === 'close' ? 36 : 16);

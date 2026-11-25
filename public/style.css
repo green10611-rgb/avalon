@@ -1919,7 +1919,7 @@ button.ww-seat.on{background:var(--gold);color:#2A1A00;box-shadow:0 0 0 3px #fff
 body.g-werewords .wrap{max-width:none;padding-inline:max(12px,env(safe-area-inset-left,0px))}
 body.g-werewords .turnbar,body.g-werewords .connline.ok{display:none}
 @media (min-width:760px){body.g-werewords .chatdock{width:clamp(240px,20vw,300px)}body.g-werewords.has-chat{padding-right:calc(clamp(240px,20vw,300px) + 24px)}}
-@media (max-width:759px){body.g-werewords .chatdock{height:min(200px,24vh)}body.g-werewords.has-chat{padding-bottom:calc(min(200px,24vh) + 10px)}}
+@media (max-width:759px){body.g-werewords .chatdock{display:none!important}body.g-werewords.has-chat{padding-bottom:16px}}
 @container wwbox (max-width:560px){.ww-words{grid-template-columns:1fr}.ww-seats{grid-template-columns:1fr 1fr}}
 @media (prefers-reduced-motion:reduce){.www *,.www::before{animation:none!important}}
 .ww-gate{align-items:center;text-align:center;padding:26px 16px;background:linear-gradient(160deg,rgba(255,255,255,.14),rgba(255,255,255,.04))}
@@ -1929,6 +1929,28 @@ body.g-werewords .turnbar,body.g-werewords .connline.ok{display:none}
 .ww-gate p{margin:0;font-size:clamp(16px,2.5cqw,20px);font-weight:700;opacity:.95;max-width:34em}
 .ww-gobtn{min-width:min(100%,320px);min-height:66px;font-size:clamp(19px,3cqw,24px);animation:wwGo 1.3s ease-in-out infinite}
 @keyframes wwGo{0%,100%{transform:none;box-shadow:0 6px 0 rgba(0,0,0,.25),0 0 0 0 rgba(255,213,79,.7)}50%{transform:translateY(-3px) scale(1.03);box-shadow:0 9px 0 rgba(0,0,0,.25),0 0 0 14px rgba(255,213,79,0)}}
+/* 같은 공간에서 하기 */
+.ww-mode{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px;border-radius:22px;background:rgba(255,255,255,.08);border:1px dashed rgba(255,255,255,.3);text-align:center}
+.ww-mode>b{font-size:18px;font-weight:900}.ww-mode>small{opacity:.8}
+.ww-modes{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.ww-mb{display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px 10px;border-radius:18px;border:2px solid rgba(255,255,255,.25)!important;background:rgba(0,0,0,.25)!important;color:#fff!important;min-height:0;transition:transform .15s}
+.ww-mb span{font-size:30px}.ww-mb b{font-size:17px;font-weight:900}.ww-mb small{font-size:12.5px;opacity:.85;font-weight:600;line-height:1.3}
+.ww-mb.on{background:linear-gradient(160deg,#FFE7A3,#FFC94D)!important;color:#2A1A00!important;border-color:#fff!important;box-shadow:0 0 0 3px rgba(255,213,79,.5),0 8px 20px rgba(0,0,0,.3);transform:scale(1.02)}
+.ww-mb:hover{transform:translateY(-3px)}
+@container wwbox (max-width:520px){.ww-modes{grid-template-columns:1fr}}
+.ww-modemini{display:flex;justify-content:flex-end}
+.ww-mswap{background:rgba(255,255,255,.14)!important;color:#fff!important;border-color:rgba(255,255,255,.3)!important;font-weight:800}
+.ww-hist{display:flex;flex-direction:column;border-radius:22px;background:rgba(10,6,40,.55);border:2px solid rgba(190,170,255,.35);overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.ww-hsum{display:flex;gap:8px;padding:10px 12px;flex-wrap:wrap;background:rgba(255,255,255,.06)}
+.ww-hs{display:inline-flex;align-items:center;gap:4px;padding:3px 12px 3px 4px;border-radius:999px;font-weight:900;color:#fff}
+.ww-hs img.fe{width:28px;height:28px}.ww-hs b{font-size:20px}
+.ww-hs.k-yes{background:#1E8A4C}.ww-hs.k-no{background:#C62838}.ww-hs.k-maybe{background:#6A3FD0}.ww-hs.k-close{background:#E0571E}
+.ww-hl{list-style:none;margin:0;padding:12px;display:flex;flex-wrap:wrap;align-content:flex-start;gap:8px;height:clamp(220px,40vh,420px);overflow-y:auto}
+.ww-hl li{display:flex;flex-direction:column;gap:2px}
+.ww-hl li small{font-size:11px;opacity:.8;max-width:160px}
+.ww-hl li.fresh .ww-tk{box-shadow:0 0 0 3px #fff,0 0 18px rgba(255,255,255,.7)}
+.ww-hl li.empty{width:100%;text-align:center;color:#D8CFFF;font-weight:700;padding:20px 0}
+.ww-day.live .ww-last .ww-tk.big{font-size:26px}.ww-day.live .ww-last .ww-tk.big img.fe{width:60px;height:60px}
 /* ===== 한밤의 수수께끼 끝 ===== */
 /* ===== 3D 그림 끝 ===== */
 /* 크라켄 카드 (3D 그림) */
