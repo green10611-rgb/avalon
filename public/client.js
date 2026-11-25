@@ -147,7 +147,7 @@ function gameHTML(){
   let h = `<div class="bar"><div class="t"><b>${esc(GN())}</b><small>방 ${esc(code)} · ${P.length}명${me >= 0 ? ` · 나: ${esc(P[me].name)}` : ' · 관전'}</small></div></div>${conn()}`;
   if (S.winner){
     h += `<div class="winbar"><span class="small">게임 끝</span>${host ? `<div class="row"><button type="button" class="btn" data-nav="again">같은 사람들로 다시 하기</button><button type="button" class="btn" data-nav="lobby">대기실로</button></div>` : '<span class="small">방장이 다음 게임을 시작할 수 있어요.</span>'}</div>`;
-    h += `<div id="game">${g.view(S, -1, {}, P)}</div>`;
+    h += `<div id="game">${g.view(S, -1, ui, P)}</div>`;
   } else {
     const t = g.turns(S, P), mine = t.includes(me);
     const at = g.allTurn ? g.allTurn(S) : '';
