@@ -83,7 +83,7 @@ function homeHTML(){
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn primary big avjoin" data-nav="joinInvite">${esc(invite)} 방 들어가기</button>
 <button type="button" class="btn ghost" data-nav="noInvite">다른 방으로 가기</button>`;
-  if (SOLO === 'werewords') return `<div class="wwhero"><div class="wwh-art">${U.img('ww_wolf', 'a')}${U.img('ww_moon', 'b')}${U.img('crystal', 'c')}</div><span class="kicker">각자 폰으로 · 실시간 · 4~10명</span><h1>한밤의 수수께끼</h1><p>촌장의 비밀 단어를 예/아니오 질문으로 찾아내요.<br>단어를 아는 늑대인간과 예언자가 몰래 섞여 있어요!</p></div>${conn()}
+  if (SOLO === 'werewords') return `<div class="wwhero"><div class="wwh-art">${U.img('ww_wolf', 'a')}${U.img('ww_moon', 'b')}${U.img('crystal', 'c')}</div><span class="kicker">각자 폰으로 · 실시간 · 4~10명</span><h1>한밤의 수수께끼</h1><p>시장의 비밀 단어를 예/아니오 질문으로 찾아내요.<br>단어를 아는 늑대인간과 예언자가 몰래 섞여 있어요!</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn big ww-start" data-nav="create" data-key="werewords">🌙 한밤의 수수께끼 방 만들기</button>
 <section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
@@ -162,7 +162,7 @@ function gameHTML(){
 
 /* ---------- 입력 ---------- */
 document.addEventListener('input', e => { if (e.target.dataset && e.target.dataset.name !== undefined) { myName = e.target.value; ls.set('av_name', myName); } });
-document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'code') joinRoom(e.target.value); });
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'code') joinRoom(e.target.value); if (e.key === 'Enter' && !e.isComposing && e.target.dataset && e.target.dataset.enter !== undefined) { e.preventDefault(); const b = document.querySelector('#game [data-fields]:not([disabled])'); if (b) b.click(); } });
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-nav],[data-act],[data-g],[data-ui]'); if (!el) return;
   const d = el.dataset;
@@ -191,7 +191,7 @@ document.addEventListener('click', e => {
     const v = JSON.parse(d.val); ui[d.ui] = (d.tog !== undefined && JSON.stringify(ui[d.ui]) === JSON.stringify(v)) ? null : v; return render();
   }
   if (d.g){ g.uiAct(ui, S, myIdx(), d.g, d.val ? JSON.parse(d.val) : null, players()); return render(); }
-  if (d.act){ if (busy) return; let arg = d.arg ? JSON.parse(d.arg) : {}; if (d.fields !== undefined) { if (typeof arg !== 'object' || !arg) arg = {}; document.querySelectorAll('#game [data-field]').forEach(f => arg[f.dataset.field] = f.value); } act(d.act, arg); }
+  if (d.act){ if (busy) return; let arg = d.arg ? JSON.parse(d.arg) : {}; if (d.fields !== undefined) { if (typeof arg !== 'object' || !arg) arg = {}; document.querySelectorAll('#game [data-field]').forEach(f => { arg[f.dataset.field] = f.value; if (f.dataset.clear !== undefined) f.value = ''; }); } act(d.act, arg); }
 });
 
 
