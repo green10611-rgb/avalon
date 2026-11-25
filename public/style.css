@@ -2559,6 +2559,10 @@ body.g-dixit .turnbar,body.g-dixit .log,body.g-dixit .connline.ok{display:none}
 .dxc .dx-o img.fe{filter:drop-shadow(0 calc(var(--w) * .035) calc(var(--w) * .04) rgba(0,0,0,.38)) drop-shadow(0 0 calc(var(--w) * .03) rgba(255,255,255,.35))}
 .dx-o.x{width:calc(var(--w) * .2);opacity:.82;filter:blur(.3px) saturate(.9);animation:dxDrift 7s var(--d,0s) ease-in-out infinite}
 .dxc.sm .dx-o.x{display:none}
+.dx-o.x.far{filter:blur(.7px) saturate(.7) brightness(1.1);opacity:.6}
+.dx-o.refl{left:50%;top:92%;width:46%;opacity:.28;transform:translate(-50%,-50%) scaleY(-.55);filter:blur(1.2px);-webkit-mask:linear-gradient(to top,#000,transparent);mask:linear-gradient(to top,#000,transparent);pointer-events:none}
+.dxc.sm .dx-o.refl{display:none}
+.dxc:not(.back) .dx-glow{background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.22),transparent 55%)!important;mix-blend-mode:screen}
 /* ===== 딕싯 끝 ===== */
 /* 다른 게임도 보기: 크게 */
 .more-games-w{text-align:center;margin:18px 0 8px}
