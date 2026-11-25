@@ -130,7 +130,7 @@ function homeHTML(){
 <section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>`;
 }
 function lobbyHTML(){
-  const P = players(), host = room.host === pid, n = P.length, ok = n >= g.min && n <= g.max, cap = Math.min(g.max, room.cap || g.max);
+  const P = players(), host = room.host === pid, n = P.length, ok = n >= g.min && n <= g.max, cap = Math.min(g.max, room.cap || g.min);
   let h = `<div class="bar"><button type="button" class="btn ghost" data-nav="leave">${host ? '방 닫기' : '나가기'}</button><div class="t"><b>대기실</b><small>${esc(GN())} · ${g.min}~${g.max}명</small></div></div>${conn()}`;
   h += `<div class="lobby lb-${esc(room.game)}" style="${LOBBY.style(room.game)}">` + LOBBY.hero(room.game, g.name, g.min, g.max, n, cap);
   const link = inviteURL(code);
