@@ -2893,3 +2893,26 @@ body.g-rummikub .wrap{padding-block:6px 12px;gap:8px}
 
 .winbar .row .btn{min-height:84px;padding:16px 28px;font-size:30px;border-radius:20px;gap:10px;box-shadow:0 6px 16px rgba(0,0,0,.18)}
 .winbar .row{gap:14px}
+/* 게임 끝 막대: 화려하게 */
+.winbar{position:relative;overflow:hidden;padding:20px 22px;border-radius:24px;background:linear-gradient(120deg,#6A3DFF,#E0409A 45%,#FF8A3D 75%,#FFC93D);background-size:260% 260%;color:#fff;box-shadow:0 14px 34px rgba(160,60,200,.35),inset 0 0 0 2px rgba(255,255,255,.25);animation:wbIn .6s cubic-bezier(.2,1.4,.4,1) both,wbFlow 6s ease-in-out infinite}
+@keyframes wbIn{from{transform:translateY(-14px) scale(.94);opacity:0}}
+@keyframes wbFlow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.winbar::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 12% 30%,rgba(255,255,255,.55) 0 2px,transparent 3px),radial-gradient(circle at 78% 22%,rgba(255,255,255,.5) 0 2.5px,transparent 3.5px),radial-gradient(circle at 46% 80%,rgba(255,255,255,.45) 0 2px,transparent 3px),radial-gradient(circle at 90% 70%,rgba(255,255,255,.5) 0 2px,transparent 3px),radial-gradient(circle at 30% 60%,rgba(255,255,255,.4) 0 1.5px,transparent 2.5px);animation:wbTw 2.4s ease-in-out infinite alternate}
+@keyframes wbTw{from{opacity:.35;transform:translateY(2px)}to{opacity:1;transform:translateY(-2px)}}
+.winbar>*{position:relative}
+.winbar>.small:first-child{font-size:20px;font-weight:900;letter-spacing:.04em;text-shadow:0 2px 8px rgba(0,0,0,.25)}
+.winbar>.small:first-child::before{content:'🏆 ';display:inline-block;animation:wbCup 1.6s ease-in-out infinite}
+@keyframes wbCup{0%,100%{transform:rotate(-8deg) scale(1)}50%{transform:rotate(8deg) scale(1.15)}}
+.winbar .row .btn{position:relative;overflow:hidden;border:none!important;color:#fff!important;font-weight:900;letter-spacing:.02em;text-shadow:0 2px 4px rgba(0,0,0,.3);transition:transform .15s,box-shadow .15s,filter .15s}
+.winbar .row .btn[data-nav="again"],.winbar .row .btn[data-nav="rematch"]{background:linear-gradient(180deg,#3DE38A,#12A85A)!important;box-shadow:0 8px 0 #0B7A40,0 14px 26px rgba(10,120,60,.45)!important;animation:wbPulse 1.8s ease-in-out infinite}
+.winbar .row .btn[data-nav="lobby"],.winbar .row .btn[data-nav="tolobby"]{background:linear-gradient(180deg,#5B6BFF,#3440C8)!important;box-shadow:0 8px 0 #222A8A,0 14px 26px rgba(30,40,140,.45)!important}
+@keyframes wbPulse{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.04)}}
+.winbar .row .btn::after{content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);animation:wbShine 2.6s ease-in-out infinite}
+.winbar .row .btn[data-nav="lobby"]::after,.winbar .row .btn[data-nav="tolobby"]::after{animation-delay:1.3s}
+@keyframes wbShine{0%,55%{left:-60%}100%{left:130%}}
+.winbar .row .btn:hover{filter:brightness(1.08);transform:translateY(-4px) scale(1.05)!important}
+.winbar .row .btn:active{transform:translateY(5px) scale(.98)!important;animation:none}
+.winbar .row .btn[data-nav="again"]:active,.winbar .row .btn[data-nav="rematch"]:active{box-shadow:0 3px 0 #0B7A40,0 6px 12px rgba(10,120,60,.4)!important}
+.winbar .row .btn[data-nav="lobby"]:active,.winbar .row .btn[data-nav="tolobby"]:active{box-shadow:0 3px 0 #222A8A,0 6px 12px rgba(30,40,140,.4)!important}
+@media (prefers-reduced-motion:reduce){.winbar,.winbar::before,.winbar .row .btn,.winbar .row .btn::after{animation:none!important}}
+.winbar .row .btn{flex:1 1 220px;max-width:360px}
