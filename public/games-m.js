@@ -189,7 +189,7 @@ function mBody(S, me, ui, P) {
   if (me >= 0 && d) {
     const hand = sortHand(my ? d.hand : S.hand[me], ui.rsort || 'num');
     const changed = my && (d.hand.length !== S.hand[me].length);
-    const meldable = new Set(); if (!S.melded[me]) { const sets = findSets(hand); if (sets.reduce((t, x) => t + check(x).pts, 0) >= 30) sets.flat().forEach(id => meldable.add(id)); }
+    const meldable = new Set(); if (!S.melded[me]) { const sets = findSets(S.hand[me]); if (sets.reduce((t, x) => t + check(x).pts, 0) >= 30) sets.flat().forEach(id => meldable.add(id)); }
     const allOk = my && d.table.every(s => check(s));
     h += `<section class="rm-hand"><header><b>🀄 내 타일 ${hand.length}장</b><span class="rm-sort">${U.ub('123 순', 'rsort', 'num', 'sm' + ((ui.rsort || 'num') === 'num' ? ' primary' : ''))}${U.ub('색깔 순', 'rsort', 'col', 'sm' + (ui.rsort === 'col' ? ' primary' : ''))}</span>${meldable.size ? '<span class="rm-hint">✨ 황금빛 타일로 첫 등록(조커 빼고 합 30↑) 가능!</span>' : ''}${!S.melded[me] && my ? `<span class="rm-meld${freshPts >= 30 ? ' ok' : ''}">첫 등록 ${freshPts}/30</span>` : ''}</header>
 <div class="rm-rack" data-drop="hand">${hand.map((id, k) => my ? `<button type="button" class="rt-b" style="--k:${k}" data-g="rsel" data-val="${id}" data-tid="${id}">${tile(id, (sel.has(id) ? 'sel ' : '') + (meldable.has(id) ? 'meld' : ''))}</button>` : `<span class="rt-b" style="--k:${k}">${tile(id, meldable.has(id) ? 'meld' : '')}</span>`).join('')}</div>
