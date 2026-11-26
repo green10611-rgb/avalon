@@ -2881,3 +2881,5 @@ body.g-rummikub .wrap{padding-block:6px 12px;gap:8px}
 .rm-fly .rt{--tw:inherit;position:absolute;inset:0;width:var(--tw);height:calc(var(--tw) * 1.36);backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 10px 22px rgba(0,0,0,.4),0 3px 0 #C9B48A}
 .rm-fly .rt.back{transform:rotateY(180deg);background:repeating-linear-gradient(45deg,#E8873A 0 6px,#D6742A 6px 12px);box-shadow:inset 0 0 0 3px #FFE0B8,0 10px 22px rgba(0,0,0,.4)}
 .rm-fly .rt.back:only-child{transform:none}
+
+.mk-ic{display:inline-block;width:1.35em;height:1.35em;object-fit:contain;vertical-align:-.32em;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}

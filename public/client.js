@@ -17,10 +17,11 @@ let code = ss.get('av_room') || '';
 let invite = (new URLSearchParams(location.search).get('room') || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
 let room = null, ui = {}, busy = false, connected = false, lastGid = null, confirmQ = null, ws = null, retry = 0;
 
-const FUNC = {avalon: ['#3D5AFE', '#1A1F4D', 'knight'], kraken: ['#13B5A6', '#0B3D5C', 'kraken'], splendor: ['#A65CFF', '#3B1D78', 'gem'], cockroach: ['#7CC242', '#1F5A1A', 'cockroach'], halli: ['#FFB300', '#F0612B', 'bell'], dixit: ['#FF5FA2', '#6A2CC9', 'crystal'], werewords: ['#4B3BC4', '#120B33', 'ww_wolf'], marble: ['#2FA8FF', '#155EAD', 'globe'], court: ['#E0464E', '#6A1230', 'crown'], omok: ['#C98A4B', '#5A3415', 'om_stone']};
+const FUNC = {avalon: ['#3D5AFE', '#1A1F4D', 'knight'], kraken: ['#13B5A6', '#0B3D5C', 'kraken'], splendor: ['#A65CFF', '#3B1D78', 'gem'], cockroach: ['#7CC242', '#1F5A1A', 'ladybug'], halli: ['#FFB300', '#F0612B', 'bell'], dixit: ['#FF5FA2', '#6A2CC9', 'crystal'], werewords: ['#4B3BC4', '#120B33', 'ww_wolf'], marble: ['#2FA8FF', '#155EAD', 'globe'], court: ['#E0464E', '#6A1230', 'crown'], omok: ['#C98A4B', '#5A3415', 'om_stone'], alkkagi: ['#E07A3A', '#5A2A10', 'om_wstone'], rummikub: ['#F5A623', '#B23A2E', 'rm_icon']};
+const MKI = {alkkagi: 'om_wstone', rummikub: 'rm_icon'};
 const funSty = (k, i) => { const f = FUNC[k] || ['#4A5AE8', '#20264F']; return `--g1:${f[0]};--g2:${f[1]};--i:${i}`; };
 const funImg = k => FUNC[k] ? `<img class="gfun-im" src="img/${FUNC[k][2]}.webp" alt="" draggable="false">` : '';
-const heroFloat = () => `<div class="hero-float" aria-hidden="true">${['knight', 'kraken', 'gem', 'cockroach', 'bell', 'crystal', 'coin', 'crown', 'die', 'lime'].map((n, i) => `<img src="img/${n}.webp" alt="" style="--i:${i}">`).join('')}</div>`;
+const heroFloat = () => `<div class="hero-float" aria-hidden="true">${['knight', 'kraken', 'gem', 'ladybug', 'bell', 'crystal', 'coin', 'crown', 'die', 'lime'].map((n, i) => `<img src="img/${n}.webp" alt="" style="--i:${i}">`).join('')}</div>`;
 
 function toast(m){ const t = document.getElementById('toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 3200); }
 const players = () => room ? room.players : [];
@@ -88,13 +89,13 @@ function homeHTML(){
 <button type="button" class="btn ghost" data-nav="noInvite">다른 방으로 가기</button>`;
   if (SOLO === 'alkkagi') return `<div class="akhero"><div class="akh-art"><i class="om-st c0"></i><i class="om-st c1 fly"></i><i class="om-st c0"></i></div><span class="kicker">둘이서 · 실시간 · AI 대전 가능</span><h1>알까기</h1><p>손가락으로 튕겨서 상대 돌을 판 밖으로!<br>먼저 다 떨어뜨리면 승리!</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
-<button type="button" class="btn big akhero-start" data-nav="create" data-key="alkkagi">🎯 알까기 방 만들기</button>
+<button type="button" class="btn big akhero-start" data-nav="create" data-key="alkkagi"><img class="mk-ic" src="img/om_wstone.webp" alt=""> 알까기 방 만들기</button>
 <section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
 <details class="ref"><summary>규칙 보기</summary><ol class="rules">${G.alkkagi.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol></details>
 <p class="more-games-w"><a class="more-games" href="/">🎲 다른 게임도 보기 <span>→</span></a></p>`;
   if (SOLO === 'rummikub') return `<div class="rmhero"><div class="rmh-art"><span class="rt c0"><b>7</b><i></i></span><span class="rt c1"><b>7</b><i></i></span><span class="rt c2"><b>7</b><i></i></span><span class="rt j"><b>☺</b></span></div><span class="kicker">2~4명 · 실시간 · AI 대전 가능</span><h1>루미큐브</h1><p>숫자 타일로 세트를 만들어<br>손패를 먼저 다 내면 승리!</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
-<button type="button" class="btn big rmhero-start" data-nav="create" data-key="rummikub">🀄 루미큐브 방 만들기</button>
+<button type="button" class="btn big rmhero-start" data-nav="create" data-key="rummikub"><img class="mk-ic" src="img/rm_icon.webp" alt=""> 루미큐브 방 만들기</button>
 <section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
 <details class="ref"><summary>규칙 보기</summary><ol class="rules">${G.rummikub.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol></details>
 <p class="more-games-w"><a class="more-games" href="/">🎲 다른 게임도 보기 <span>→</span></a></p>`;
@@ -124,7 +125,7 @@ function homeHTML(){
 <p class="more-games-w"><a class="more-games" href="/">🎲 다른 게임도 보기 <span>→</span></a></p>`; }
   if (SOLO === 'cockroach') { const C = G.cockroach; return `<div class="rkhero"><div class="rkh-art">${C.art('card', 1)}${C.art('card', 0)}${C.art('back')}</div><span class="kicker">각자 폰으로 · 실시간 · 2~6명</span><h1>바퀴벌레 포커</h1><p>"바퀴벌레!" 진짜일까, 거짓말일까?<br>같은 벌레 4장을 떠안으면 패배! AI와 함께 해도 돼요.</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
-<button type="button" class="btn big rk-start" data-nav="create" data-key="cockroach">🪳 바퀴벌레 포커 방 만들기</button>
+<button type="button" class="btn big rk-start" data-nav="create" data-key="cockroach">🐞 바퀴벌레 포커 방 만들기</button>
 <section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
 <details class="ref"><summary>규칙 보기</summary><ol class="rules">${C.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol>${C.rulesExtra()}</details>
 <p class="more-games-w"><a class="more-games" href="/">🎲 다른 게임도 보기 <span>→</span></a></p>`; }
@@ -160,7 +161,7 @@ function lobbyHTML(){
   if (host) h += `<div class="row"><button type="button" class="btn" data-nav="addbot"${n >= cap ? ' disabled' : ''}>🤖 AI 참가자 추가</button><span class="small muted">사람이 모자랄 때 AI가 같이 해요</span></div>`;
   h += host ? `<button type="button" class="btn primary big lb-start${ok ? ' ready' : ''}" data-nav="start"${ok && !busy ? '' : ' disabled'}>${ok ? `${n}명으로 시작하기` : `${g.min}명 이상 모이면 시작할 수 있어요`}</button>` : `<div class="hint">방장이 시작하기를 기다리는 중이에요.</div>`;
   h += `<details class="ref"><summary>규칙 보기</summary><ol class="rules">${g.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol>${g.rulesExtra ? g.rulesExtra() : ''}</details>`;
-  if (host && !SOLO) h += `<section class="swgame"><div class="small muted">다른 게임으로 바꾸기</div><div class="row">${GAMES.map(k => `<button type="button" class="btn${k === room.game ? ' primary' : ''}" data-nav="setgame" data-key="${k}">${esc(G[k].mark)} ${esc(G[k].name)}</button>`).join('')}</div></section>`;
+  if (host && !SOLO) h += `<section class="swgame"><div class="small muted">다른 게임으로 바꾸기</div><div class="row">${GAMES.map(k => `<button type="button" class="btn${k === room.game ? ' primary' : ''}" data-nav="setgame" data-key="${k}">${MKI[k] ? `<img class="mk-ic" src="img/${MKI[k]}.webp" alt="">` : esc(G[k].mark)} ${esc(G[k].name)}</button>`).join('')}</div></section>`;
   h += '</div>';
   return h;
 }

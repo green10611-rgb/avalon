@@ -63,7 +63,7 @@ function sim(st, k, vx, vy, rec) {
 const setupDone = S => !S.ready || (S.ready[0] && S.ready[1]);
 const alive = (S, p) => S.st.filter(o => o.a && o.p === p).length;
 G.alkkagi = {
-  name: '알까기', tag: '튕겨서 상대 돌을 판 밖으로!', min: 2, max: 2, mark: '🎯', hue: '#B5783A',
+  name: '알까기', tag: '튕겨서 상대 돌을 판 밖으로!', min: 2, max: 2, mark: '⚪', hue: '#B5783A',
   rules: ['바둑판 양쪽에 각자 돌 12개를 놓고 시작해요. 첫 튕기기 전에 각자 시작 대형(두 줄·엇갈린 성벽·피라미드·V자·네모 진지·무작위)을 고를 수 있어요. 흑·백은 무작위, 흑이 먼저예요.', '내 차례에 내 돌 하나를 꾹 눌러 뒤로 당겼다 놓으면 반대쪽으로 튕겨 나가요. 많이 당길수록 세게!', '돌이 판 밖으로 나가면 떨어져서 사라져요. 내 돌이 떨어질 수도 있어요!', '상대 돌을 먼저 모두 떨어뜨리면 승리. 둘 다 동시에 없어지면 무승부예요.', 'AI와 둘이서도 할 수 있어요.'],
   setup(P) {
     const black = Math.random() < .5 ? 0 : 1, st = [];
