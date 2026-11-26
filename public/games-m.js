@@ -28,7 +28,7 @@ function check(set) {
   // 그룹
   const num = numOf(rs[0]);
   if (n <= 4 && rs.every(id => numOf(id) === num) && new Set(rs.map(colOf)).size === rs.length) {
-    return {kind: 'g', pts: num * rs.length, order: rs.slice().sort((a, b) => colOf(a) - colOf(b)).concat(nj)};
+    return {kind: 'g', pts: num * rs.length, order: set.slice()};
   }
   // 런
   const c = colOf(rs[0]);
@@ -70,7 +70,7 @@ function compat(set) {
   if (n <= 13 && rs.every(id => colOf(id) === c)) { const ns = rs.map(numOf); if (new Set(ns).size !== ns.length) return false; const span = Math.max(...ns) - Math.min(...ns) + 1; return span - rs.length <= J; }
   return false;
 }
-const partOrder = s => { if (s.some(isJ) && runAsGiven(s)) return s.slice(); const rs = s.filter(id => !isJ(id)), js = s.filter(isJ); const g = rs.length > 1 && rs.every(id => numOf(id) === numOf(rs[0])); return rs.slice().sort(g ? (a, b) => colOf(a) - colOf(b) : (a, b) => numOf(a) - numOf(b) || colOf(a) - colOf(b)).concat(js); };
+const partOrder = s => { if (s.some(isJ) && runAsGiven(s)) return s.slice(); { const r = s.filter(id => !isJ(id)); if (r.length && r.every(id => numOf(id) === numOf(r[0]))) return s.slice(); } const rs = s.filter(id => !isJ(id)), js = s.filter(isJ); const g = rs.length > 1 && rs.every(id => numOf(id) === numOf(rs[0])); return rs.slice().sort(g ? (a, b) => colOf(a) - colOf(b) : (a, b) => numOf(a) - numOf(b) || colOf(a) - colOf(b)).concat(js); };
 const handSum = h => h.reduce((s, id) => s + tval(id), 0);
 G.rummikub = {
   name: '루미큐브', tag: '숫자 타일로 세트를 만들어 먼저 다 내기', min: 2, max: 4, mark: '🀄', hue: '#E8873A',
@@ -242,7 +242,7 @@ function bindDrag() {
     const row = Math.max(0, Math.min(G2.rows - 1, Math.floor((y - G2.r.top) / G2.rh)));
     const col = Math.max(0, Math.min(COLS - k, Math.round((x - G2.r.left) / G2.cw - k / 2)));
     let cand = stEl;
-    if (!cand) for (const st of box.querySelectorAll('.rm-set[data-si]')) { const c = +st.dataset.c, n = +st.dataset.n; if (+st.dataset.r !== row) continue; if (col <= c + n && col + k - 1 >= c - 1) { cand = st; break; } }
+    if (!cand) { const px = (x - G2.r.left) / G2.cw; let bd = .6; for (const st of box.querySelectorAll('.rm-set[data-si]')) { if (+st.dataset.r !== row) continue; const c = +st.dataset.c, n = +st.dataset.n, dd = Math.max(0, c - px, px - (c + n)); if (dd < bd) { bd = dd; cand = st; } } }
     if (cand) {
       const rest = cand.dataset.ids.split(',').map(Number).filter(id => !ids.includes(id));
       if (!rest.length) return {g: 'rmove', v: {i: +cand.dataset.si, x: col, y: row}};
