@@ -142,6 +142,14 @@ G.rummikub = {
       if (!S.melded[me] && ids.some(id => oldSet.has(id))) { ui.rmsg = '첫 등록 전에는 바닥 타일을 옮길 수 없어요.'; return; }
       if (v.to === 'hand') { ids = ids.filter(id => !oldSet.has(id)); if (!ids.length) { ui.rmsg = '원래 바닥에 있던 타일은 손으로 못 가져와요.'; return; } }
       ui.rmsg = ''; if (!ids.length) return;
+      if (v.to === 'split') {
+        const i = +v.i, set = d.table[i], seq = (v.seq || []).map(Number); if (!set || seq.length !== set.length || !seq.every(id => set.includes(id))) return;
+        if (!S.melded[me] && set.some(id => oldSet.has(id))) { ui.rmsg = '첫 등록 전에는 바닥 세트를 쪼갤 수 없어요.'; return; }
+        d.sel = ids; const moved = pull(); const at = +v.at;
+        const L = v.side === 'L' ? seq.slice(0, at).concat(moved) : seq.slice(0, at), Rr = v.side === 'L' ? seq.slice(at) : moved.concat(seq.slice(at));
+        const k = d.table.indexOf(set); d.table[k] = L; d.table.push(Rr); const pz = d.pos[k] || [0, 0]; d.pos.push([pz[0] + L.length + 1, pz[1]]);
+        clean(); ui.rsnap = moved; ui.rmsg = ''; return;
+      }
       d.sel = ids; const tgt = v.to === 'set' ? d.table[+v.i] : null; const moved = pull();
       if (tgt) { const at = v.before != null ? tgt.indexOf(+v.before) : -1; if (at >= 0) tgt.splice(at, 0, ...moved); else tgt.push(...moved); }
       else if (v.to === 'hand') d.hand.push(...moved);
@@ -228,6 +236,14 @@ function bindDrag() {
       if (!rest.length) return {g: 'rmove', v: {i: +cand.dataset.si, x: col, y: row}};
       const c = +cand.dataset.c, n = +cand.dataset.n, mid = c + n / 2, dir = (col + k / 2) < mid ? -1 : 1;
       if (compat(rest.concat(ids))) return {g: 'rdrop', v: {ids, to: 'set', i: +cand.dataset.si}, el: cand};
+      // 세트 사이에 끼워 둘로 쪼개기 (예: 7~13 런의 10과 11 사이에 11 → 7~11 + 11~13)
+      const ord = [...cand.querySelectorAll('[data-tid]')].map(t => [+t.dataset.tid, t.getBoundingClientRect()]).filter(([id]) => !ids.includes(id));
+      const at = ord.filter(([, r]) => x > r.left + r.width / 2).length, seq = ord.map(([id]) => id);
+      if (at > 0 && at < seq.length) {
+        const opts = [['L', seq.slice(0, at).concat(ids), seq.slice(at)], ['R', seq.slice(0, at), ids.concat(seq.slice(at))]].filter(([, a, b]) => compat(a) && compat(b));
+        opts.sort((p1, p2) => (!!check(p2[1]) + !!check(p2[2])) - (!!check(p1[1]) + !!check(p1[2])));
+        if (opts.length) return {g: 'rdrop', v: {ids, to: 'split', i: +cand.dataset.si, at, side: opts[0][0], seq}, el: cand};
+      }
       return {g: 'rdrop', v: {ids, to: 'new', x: dir < 0 ? c - k - 1 : c + n + 1, y: row, rep: +cand.dataset.si, dir}, el: cand, bad: 1};
     }
     return {g: 'rdrop', v: {ids, to: 'new', x: col, y: row}};
