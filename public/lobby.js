@@ -10,6 +10,8 @@
     halli: {c1: '#FFB300', c2: '#E0461E', c3: '#FFFFFF', tag: '같은 과일이 딱 5개면 종을 땡!', sub: '눈치와 순발력 대결', art: ['bell', 'strawberry', 'banana', 'lime', 'plum', 'bell'], seat: 'banana', empty: '빈 자리', ready: '종 칠 준비!'},
     dixit: {c1: '#FF5FA2', c2: '#4A1FA0', c3: '#FFF0A8', tag: '그림 한 장에 담긴 이야기를 맞혀라', sub: '너무 쉽지도 어렵지도 않게', art: ['crystal', 'rainbow', 'unicorn', 'balloon', 'fairy', 'kite'], seat: 'palette', empty: '빈 자리', ready: '이야기 시작!'},
     omok: {c1: '#C98A4B', c2: '#4A2A10', c3: '#FFE9B0', tag: '다섯 알을 먼저 이어라', sub: '흑과 백, 단 한 수의 승부', art: ['om_stone', 'om_wstone', 'teacup', 'scroll', 'pine', 'lantern'], seat: 'om_stone', empty: '빈 자리', ready: '대국 시작!'},
+    alkkagi: {c1: '#E07A3A', c2: '#4A2210', c3: '#FFE9B0', tag: '튕겨서 상대 돌을 판 밖으로!', sub: '손끝 하나로 정하는 승부', art: ['om_wstone', 'om_stone', 'om_wstone', 'om_stone', 'fire', 'trophy'], seat: 'om_wstone', empty: '빈 자리', ready: '튕길 준비!'},
+    rummikub: {c1: '#F5A623', c2: '#A8322A', c3: '#FFF3D0', tag: '숫자 타일로 세트를 만들어 먼저 다 내라', sub: '같은 숫자 · 연속 숫자 · 조커', art: ['rm_tile', 'rm_tile2', 'rm_tile3', 'gem', 'trophy', 'star'], seat: 'rm_tile', empty: '빈 자리', ready: '타일 섞는 중!'},
     werewords: {c1: '#4B3BC4', c2: '#0B0726', c3: '#FFE38A', tag: '예/아니오로 비밀 단어를 찾아라', sub: '숨은 늑대인간과 예언자', art: ['ww_moon', 'ww_wolf', 'crystal', 'ww_mayor', 'owl', 'star'], seat: 'ww_farmer', empty: '빈 자리', ready: '밤이 찾아와요!'},
   };
   const img = (k, cls = '') => `<img class="fe ${cls}" src="img/${k}.webp" alt="" draggable="false">`;

@@ -2,8 +2,8 @@
 (function(){
 const $app = document.getElementById('app');
 const esc = U.esc;
-const GAMES = ['avalon', 'kraken', 'splendor', 'cockroach', 'halli', 'dixit', 'werewords', 'omok'];
-const SOLO = (location.pathname.match(/^\/(kraken|avalon|splendor|cockroach|halli|dixit|werewords|omok)\/?$/) || [])[1] || '';
+const GAMES = ['avalon', 'kraken', 'splendor', 'cockroach', 'halli', 'dixit', 'werewords', 'omok', 'alkkagi', 'rummikub'];
+const SOLO = (location.pathname.match(/^\/(kraken|avalon|splendor|cockroach|halli|dixit|werewords|omok|alkkagi|rummikub)\/?$/) || [])[1] || '';
 let g = G[SOLO] || G.avalon;
 if (SOLO) document.title = G[SOLO].name;
 document.body.classList.toggle('solo-' + (SOLO || 'all'), true);
@@ -68,6 +68,8 @@ function render(){
   $app.innerHTML = !code ? homeHTML() : !room ? `<div class="empty">방 <b>${esc(code)}</b>에 연결하는 중…</div><button type="button" class="btn ghost" data-nav="leaveLocal">처음으로</button>` : room.status === 'lobby' ? lobbyHTML() : gameHTML();
   document.body.classList.toggle('g-kraken', !!(room && room.status !== 'lobby' && room.game === 'kraken' && state()));
   document.body.classList.toggle('g-dixit', !!(room && room.status !== 'lobby' && room.game === 'dixit' && state()));
+  document.body.classList.toggle('g-alkkagi', !!(room && room.status !== 'lobby' && room.game === 'alkkagi' && state()));
+  document.body.classList.toggle('g-rummikub', !!(room && room.status !== 'lobby' && room.game === 'rummikub' && state()));
   document.body.classList.toggle('g-omok', !!(room && room.status !== 'lobby' && room.game === 'omok' && state()));
   document.body.classList.toggle('g-werewords', !!(room && room.status !== 'lobby' && room.game === 'werewords' && state()));
   document.body.classList.toggle('g-halli', !!(room && room.status !== 'lobby' && room.game === 'halli' && state()));
@@ -84,6 +86,18 @@ function homeHTML(){
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn primary big avjoin" data-nav="joinInvite">${esc(invite)} 방 들어가기</button>
 <button type="button" class="btn ghost" data-nav="noInvite">다른 방으로 가기</button>`;
+  if (SOLO === 'alkkagi') return `<div class="akhero"><div class="akh-art"><i class="om-st c0"></i><i class="om-st c1 fly"></i><i class="om-st c0"></i></div><span class="kicker">둘이서 · 실시간 · AI 대전 가능</span><h1>알까기</h1><p>손가락으로 튕겨서 상대 돌을 판 밖으로!<br>먼저 다 떨어뜨리면 승리!</p></div>${conn()}
+<section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
+<button type="button" class="btn big akhero-start" data-nav="create" data-key="alkkagi">🎯 알까기 방 만들기</button>
+<section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
+<details class="ref"><summary>규칙 보기</summary><ol class="rules">${G.alkkagi.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol></details>
+<p class="more-games-w"><a class="more-games" href="/">🎲 다른 게임도 보기 <span>→</span></a></p>`;
+  if (SOLO === 'rummikub') return `<div class="rmhero"><div class="rmh-art"><span class="rt c0"><b>7</b><i></i></span><span class="rt c1"><b>7</b><i></i></span><span class="rt c2"><b>7</b><i></i></span><span class="rt j"><b>☺</b></span></div><span class="kicker">2~4명 · 실시간 · AI 대전 가능</span><h1>루미큐브</h1><p>숫자 타일로 세트를 만들어<br>손패를 먼저 다 내면 승리!</p></div>${conn()}
+<section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
+<button type="button" class="btn big rmhero-start" data-nav="create" data-key="rummikub">🀄 루미큐브 방 만들기</button>
+<section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
+<details class="ref"><summary>규칙 보기</summary><ol class="rules">${G.rummikub.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol></details>
+<p class="more-games-w"><a class="more-games" href="/">🎲 다른 게임도 보기 <span>→</span></a></p>`;
   if (SOLO === 'omok') return `<div class="omhero"><div class="omh-art"><i class="om-st c0"></i><i class="om-st c1"></i><i class="om-st c0"></i><i class="om-st c1"></i><i class="om-st c0"></i></div><span class="kicker">둘이서 · 실시간 · AI 대전 가능</span><h1>오목</h1><p>다섯 알을 먼저 잇는 사람이 승리!<br>친구와, 또는 AI와 한 판!</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn big om-start" data-nav="create" data-key="omok">⚫ 오목 방 만들기</button>

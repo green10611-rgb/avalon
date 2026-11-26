@@ -14,8 +14,10 @@ require('./public/games-h.js');
 require('./public/games-x.js');
 require('./public/games-w.js');
 require('./public/games-o.js');
+require('./public/games-l.js');
+require('./public/games-m.js');
 const G = globalThis.G, U = globalThis.U;
-const GAMES = ['avalon', 'kraken', 'splendor', 'cockroach', 'halli', 'dixit', 'werewords', 'omok'];
+const GAMES = ['avalon', 'kraken', 'splendor', 'cockroach', 'halli', 'dixit', 'werewords', 'omok', 'alkkagi', 'rummikub'];
 const gOf = r => G[r && GAMES.includes(r.game) ? r.game : 'avalon'];
 
 const PORT = process.env.PORT || 3000;
@@ -26,8 +28,8 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
 const server = http.createServer((req, res) => {
   let p = decodeURIComponent((req.url || '/').split('?')[0]);
   if (p === '/health') { res.writeHead(200, { 'Content-Type': 'text/plain' }); return res.end('ok'); }
-  if (p === '/' || /^\/(kraken|avalon|splendor|cockroach|halli|dixit|werewords|omok)\/?$/.test(p)) p = '/index.html';
-  p = p.replace(/^\/(kraken|avalon|splendor|cockroach|halli|dixit|werewords|omok)\/(img\/)/, '/$2');
+  if (p === '/' || /^\/(kraken|avalon|splendor|cockroach|halli|dixit|werewords|omok|alkkagi|rummikub)\/?$/.test(p)) p = '/index.html';
+  p = p.replace(/^\/(kraken|avalon|splendor|cockroach|halli|dixit|werewords|omok|alkkagi|rummikub)\/(img\/)/, '/$2');
   const f = path.normalize(path.join(PUB, p));
   if (!f.startsWith(PUB)) { res.writeHead(403); return res.end(); }
   fs.readFile(f, (err, buf) => {
