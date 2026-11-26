@@ -56,6 +56,7 @@ function sim(st, k, vx, vy, rec) {
   if (rec) frames.push(s.map(o => [o.x, o.y, o.a]));
   return {end: s.map(o => ({x: Math.round(o.x * 100) / 100, y: Math.round(o.y * 100) / 100, a: o.a, p: 0})), frames, hits, falls, steps};
 }
+const setupDone = S => !S.ready || (S.ready[0] && S.ready[1]);
 const alive = (S, p) => S.st.filter(o => o.a && o.p === p).length;
 G.alkkagi = {
   name: '알까기', tag: '튕겨서 상대 돌을 판 밖으로!', min: 2, max: 2, mark: '🎯', hue: '#B5783A',
@@ -63,14 +64,17 @@ G.alkkagi = {
   setup(P) {
     const black = Math.random() < .5 ? 0 : 1, st = [];
     for (const p of [0, 1]) for (let k = 0; k < NST; k++) st.push({x: 0, y: 0, a: 1, p});
-    const S = {_g: Math.random().toString(36).slice(2, 9), st, form: ['wall', 'wall'], col: black === 0 ? [0, 1] : [1, 0], turn: black, n: 0, shots: 0, log: [`${P[black].name}님이 흑, 먼저 튕겨요! 첫 튕기기 전에 각자 시작 대형을 고를 수 있어요.`]};
+    const S = {_g: Math.random().toString(36).slice(2, 9), st, form: ['wall', 'wall'], ready: [false, false], col: black === 0 ? [0, 1] : [1, 0], turn: black, n: 0, shots: 0, log: [`${P[black].name}님이 흑, 먼저 튕겨요! 먼저 각자 시작 대형을 고르고 "결정!"을 눌러요.`]};
     placeSide(S, 0, 'wall'); placeSide(S, 1, 'wall'); return S;
   },
-  turns: S => S.winner ? [] : [S.turn],
+  turns: S => S.winner ? [] : !setupDone(S) ? [0, 1].filter(i => !S.ready[i]) : [S.turn],
+  allTurn(S) { return !S.winner && !setupDone(S) ? '🧱 각자 시작 대형 고르기' : ''; },
   act(S, me, t, a, P) {
     if (S.winner) return;
-    if (t === 'form') { if (S.shots) throw U.err('첫 튕기기 전에만 대형을 바꿀 수 있어요.'); if (!FORM[a.f]) throw U.err('대형을 골라 주세요.'); placeSide(S, me, a.f); S.n++; U.log(S, `${P[me].name}님이 '${FORM[a.f][0]}' 대형을 골랐어요.`); return; }
+    if (t === 'ready') { if (setupDone(S)) return; S.ready[me] = true; S.n++; U.log(S, `${P[me].name}님 대형 결정! (${FORM[S.form[me]][0]})`); if (setupDone(S)) U.log(S, `양쪽 다 결정했어요. ${P[S.turn].name}님부터 튕겨요!`); return; }
+    if (t === 'form') { if (S.shots || setupDone(S)) throw U.err('대형은 시작 전에만 바꿀 수 있어요.'); if (S.ready[me]) throw U.err('이미 결정했어요.'); if (!FORM[a.f]) throw U.err('대형을 골라 주세요.'); placeSide(S, me, a.f); S.n++; U.log(S, `${P[me].name}님이 '${FORM[a.f][0]}' 대형을 골랐어요.`); return; }
     if (t !== 'flick') throw U.err('알 수 없는 행동이에요.');
+    if (!setupDone(S)) throw U.err('두 사람 모두 대형을 결정해야 시작돼요.');
     if (me !== S.turn) throw U.err('내 차례가 아니에요.');
     const k = +a.k, o = S.st[k];
     if (!o || !o.a || o.p !== me) throw U.err('내 돌을 골라 튕겨요.');
@@ -99,15 +103,15 @@ G.alkkagi = {
 };
 const flip = me => me === 1;   // 백(두 번째 자리)은 판을 뒤집어 내 돌이 아래에 오게
 function lBody(S, me, P) {
-  const my = me === S.turn && !S.winner, fl = flip(me);
+  const my = me === S.turn && !S.winner && setupDone(S), fl = flip(me);
   const card = i => `<div class="ak-p${i === S.turn && !S.winner ? ' on' : ''}${S.winner && S.wp === i ? ' win' : ''}"><span class="ak-ps"><i class="om-st c${S.col[i]}"></i></span><div><b>${U.nm(P, i)}${i === me ? ' <small>(나)</small>' : ''}</b><span class="ak-left">${Array.from({length: NST}, (_, k) => `<i class="${k < alive(S, i) ? 'on' : ''} c${S.col[i]}"></i>`).join('')}</span></div>${i === S.turn && !S.winner ? '<span class="om-turn">차례</span>' : ''}${S.winner && S.wp === i ? '<span class="om-turn gold">🏆 승리</span>' : ''}</div>`;
   const top = me === 1 ? 0 : 1, bot = 1 - top;
   let h = `<header class="ak-top">${card(top)}</header>`;
-  const msg = S.winner ? (S.wp >= 0 ? `🏆 ${U.esc(S.winner)}` : '🤝 무승부!') : my ? '👉 내 돌을 꾹 눌러 뒤로 당겼다 놓으세요!' : me >= 0 ? `${U.nm(P, S.turn)}님이 겨누는 중…` : `${U.nm(P, S.turn)}님 차례`;
+  const msg = S.winner ? (S.wp >= 0 ? `🏆 ${U.esc(S.winner)}` : '🤝 무승부!') : !setupDone(S) ? (me >= 0 && !S.ready[me] ? '🧱 시작 대형을 고르고 "결정!"을 눌러요' : '상대가 대형을 정하는 중…') : my ? '👉 내 돌을 꾹 눌러 뒤로 당겼다 놓으세요!' : me >= 0 ? `${U.nm(P, S.turn)}님이 겨누는 중…` : `${U.nm(P, S.turn)}님 차례`;
   const stones = S.st.map((o, i) => { const x = fl ? BR - o.x : o.x, y = fl ? BR - o.y : o.y; return `<span class="ak-s${o.a ? '' : ' gone'}${my && o.a && o.p === me ? ' mine' : ''}" data-k="${i}" style="left:${x}%;top:${y}%"><i class="om-st c${S.col[o.p]}"></i></span>`; }).join('');
   let lines = ''; for (let k = 0; k <= 12; k++) { const v = (k / 12 * 100).toFixed(2); lines += `<line x1="${v}" y1="0" x2="${v}" y2="100"/><line x1="0" y1="${v}" x2="100" y2="${v}"/>`; }
   h += `<div class="ak-msg${my ? ' me' : ''}${S.winner ? ' end' : ''}">${msg}</div>`;
-  if (!S.shots && !S.winner && me >= 0) h += `<div class="ak-forms"><b>🧱 내 시작 대형</b>${Object.keys(FORM).map(k => U.btn(`${FORM[k][0]}`, 'form', {f: k}, 'sm' + (S.form[me] === k ? ' primary' : ''))).join('')}<small>첫 튕기기 전까지 바꿀 수 있어요 · 상대 대형: ${FORM[S.form[1 - me]][0]}</small></div>`;
+  if (!setupDone(S) && !S.winner && me >= 0) h += `<div class="ak-forms${S.ready[me] ? ' done' : ''}"><b>🧱 내 시작 대형</b>${Object.keys(FORM).map(k => U.btn(`${FORM[k][0]}`, 'form', {f: k}, 'sm' + (S.form[me] === k ? ' primary' : ''), S.ready[me])).join('')}${S.ready[me] ? '<span class="ak-rd ok">✅ 결정 완료</span>' : U.btn('✅ 이 대형으로 결정!', 'ready', {}, 'primary ak-go')}<small>${S.ready[me] ? (S.ready[1 - me] ? '' : `${U.nm(P, 1 - me)}님이 대형을 고르는 중…`) : '두 사람 모두 결정하면 시작해요'} · 상대 대형: ${FORM[S.form[1 - me]][0]}${S.ready[1 - me] ? ' (결정함)' : ''}</small></div>`;
   h += `<div class="ak-boardwrap"><div class="ak-board${my ? ' my' : ''}" data-fl="${fl ? 1 : 0}"><svg class="ak-grid" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${lines}</svg><svg class="ak-aim" viewBox="0 0 100 100" aria-hidden="true"><line class="pull"/><line class="shot"/><circle class="pw" r="0"/></svg>${stones}<span class="ak-pow" hidden><i></i></span></div></div>`;
   h += `<footer class="ak-bot">${card(bot)}</footer>`;
   if (my) h += `<button type="button" class="ak-fire" hidden data-act="flick" data-arg="{}"></button>`;
@@ -204,6 +208,7 @@ function lFx(S, me, P) {
 /* ---------- AI: 막히지 않은 상대 돌을 노려요 ---------- */
 function lBot(S, P) {
   if (!S || S.winner) return false;
+  if (!setupDone(S)) { const b = [0, 1].find(i => P[i].bot && !S.ready[i]); if (b == null) return false; const ks = Object.keys(FORM); G.alkkagi.act(S, b, 'form', {f: ks[Math.floor(Math.random() * ks.length)]}, P); G.alkkagi.act(S, b, 'ready', {}, P); return true; }
   const me = S.turn; if (!P[me] || !P[me].bot) return false;
   const mine = S.st.map((o, i) => [o, i]).filter(([o]) => o.a && o.p === me), ops = S.st.map((o, i) => [o, i]).filter(([o]) => o.a && o.p !== me);
   let best = null;
