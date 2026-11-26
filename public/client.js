@@ -17,11 +17,11 @@ let code = ss.get('av_room') || '';
 let invite = (new URLSearchParams(location.search).get('room') || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
 let room = null, ui = {}, busy = false, connected = false, lastGid = null, confirmQ = null, ws = null, retry = 0;
 
-const FUNC = {avalon: ['#3D5AFE', '#1A1F4D', 'knight'], kraken: ['#13B5A6', '#0B3D5C', 'kraken'], splendor: ['#A65CFF', '#3B1D78', 'gem'], cockroach: ['#7CC242', '#1F5A1A', 'ladybug'], halli: ['#FFB300', '#F0612B', 'bell'], dixit: ['#FF5FA2', '#6A2CC9', 'crystal'], werewords: ['#4B3BC4', '#120B33', 'ww_wolf'], marble: ['#2FA8FF', '#155EAD', 'globe'], court: ['#E0464E', '#6A1230', 'crown'], omok: ['#C98A4B', '#5A3415', 'om_stone'], alkkagi: ['#E07A3A', '#5A2A10', 'om_wstone'], rummikub: ['#F5A623', '#B23A2E', 'rm_icon']};
+const FUNC = {avalon: ['#3D5AFE', '#1A1F4D', 'knight'], kraken: ['#13B5A6', '#0B3D5C', 'kraken'], splendor: ['#A65CFF', '#3B1D78', 'gem'], cockroach: ['#7CC242', '#1F5A1A', 'rk_toad'], halli: ['#FFB300', '#F0612B', 'bell'], dixit: ['#FF5FA2', '#6A2CC9', 'crystal'], werewords: ['#4B3BC4', '#120B33', 'ww_wolf'], marble: ['#2FA8FF', '#155EAD', 'globe'], court: ['#E0464E', '#6A1230', 'crown'], omok: ['#C98A4B', '#5A3415', 'om_stone'], alkkagi: ['#E07A3A', '#5A2A10', 'om_wstone'], rummikub: ['#F5A623', '#B23A2E', 'rm_icon']};
 const MKI = {alkkagi: 'om_wstone', rummikub: 'rm_icon'};
 const funSty = (k, i) => { const f = FUNC[k] || ['#4A5AE8', '#20264F']; return `--g1:${f[0]};--g2:${f[1]};--i:${i}`; };
 const funImg = k => FUNC[k] ? `<img class="gfun-im" src="img/${FUNC[k][2]}.webp" alt="" draggable="false">` : '';
-const heroFloat = () => `<div class="hero-float" aria-hidden="true">${['knight', 'kraken', 'gem', 'ladybug', 'bell', 'crystal', 'coin', 'crown', 'die', 'lime'].map((n, i) => `<img src="img/${n}.webp" alt="" style="--i:${i}">`).join('')}</div>`;
+const heroFloat = () => `<div class="hero-float" aria-hidden="true">${['knight', 'kraken', 'gem', 'rk_toad', 'bell', 'crystal', 'coin', 'crown', 'die', 'lime'].map((n, i) => `<img src="img/${n}.webp" alt="" style="--i:${i}">`).join('')}</div>`;
 
 function toast(m){ const t = document.getElementById('toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 3200); }
 const players = () => room ? room.players : [];
@@ -125,7 +125,7 @@ function homeHTML(){
 <p class="more-games-w"><a class="more-games" href="/">🎲 다른 게임도 보기 <span>→</span></a></p>`; }
   if (SOLO === 'cockroach') { const C = G.cockroach; return `<div class="rkhero"><div class="rkh-art">${C.art('card', 1)}${C.art('card', 0)}${C.art('back')}</div><span class="kicker">각자 폰으로 · 실시간 · 2~6명</span><h1>바퀴벌레 포커</h1><p>"바퀴벌레!" 진짜일까, 거짓말일까?<br>같은 벌레 4장을 떠안으면 패배! AI와 함께 해도 돼요.</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
-<button type="button" class="btn big rk-start" data-nav="create" data-key="cockroach">🐞 바퀴벌레 포커 방 만들기</button>
+<button type="button" class="btn big rk-start" data-nav="create" data-key="cockroach">🐸 바퀴벌레 포커 방 만들기</button>
 <section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
 <details class="ref"><summary>규칙 보기</summary><ol class="rules">${C.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol>${C.rulesExtra()}</details>
 <p class="more-games-w"><a class="more-games" href="/">🎲 다른 게임도 보기 <span>→</span></a></p>`; }

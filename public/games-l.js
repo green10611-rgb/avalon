@@ -6,7 +6,7 @@ const isDOM = typeof document !== 'undefined';
 /* =================== 알까기 =================== */
 /* 바둑판 위에서 내 돌을 손가락으로 튕겨 상대 돌을 판 밖으로 떨어뜨려요. 상대 돌을 먼저 다 떨어뜨리면 승리!
    물리는 서버(방장)와 모든 화면이 같은 계산을 해요(같은 입력 → 같은 결과). 화면은 그 계산을 다시 돌려 움직임을 보여 줘요. */
-const BR = 100, RAD = 3.2, MAXV = 3.3, NST = 12;
+const BR = 100, RAD = 3.2, MAXV = 3.7, NST = 12;
 // 시작 대형 (아래쪽 사람 기준 좌표, 위쪽 사람은 판을 돌려서 같은 모양)
 const FORM = {
   line: ['두 줄', () => [0, 1].flatMap(r => Array.from({length: 6}, (_, k) => [20 + k * 12, 74 + r * 12]))],
@@ -31,7 +31,7 @@ function sim(st, k, vx, vy, rec) {
   s[k].vx = vx; s[k].vy = vy;
   const frames = rec ? [] : null, hits = [], falls = []; let steps = 0;
   // 묵직한 바둑알: 바닥 마찰이 일정하게 속도를 깎아(쿨롱 마찰) 쭉 미끄러지다 '딱' 멈춰요. 돌끼리는 거의 탄성 충돌.
-  const SUB = 4, DEC = .036 / SUB, E = .93;
+  const SUB = 4, DEC = .062 / SUB, E = .86;
   for (let step = 0; step < 1500; step++) {
     let moving = false; steps = step;
     for (let sub = 0; sub < SUB; sub++) {
@@ -40,7 +40,7 @@ function sim(st, k, vx, vy, rec) {
         const sp = Math.sqrt(o.vx * o.vx + o.vy * o.vy);
         if (sp < 1e-4) { o.vx = 0; o.vy = 0; continue; }
         moving = true;
-        const ns = Math.max(0, sp * .9995 - DEC), f = ns / sp;
+        const ns = Math.max(0, sp * (1 - .0035 / SUB) - DEC * (sp < .5 ? 1.6 : 1)), f = ns / sp;
         o.vx *= f; o.vy *= f; o.x += o.vx / SUB; o.y += o.vy / SUB;
       }
       for (let i = 0; i < s.length; i++) for (let j = i + 1; j < s.length; j++) {
@@ -157,7 +157,7 @@ function bindAim(S, me) {
 }
 
 /* ---------- 움직임: 같은 물리를 다시 돌려, 시간에 맞춰 부드럽게 보여 줘요 ---------- */
-const STEPMS = 11;   // 물리 한 걸음 = 11ms
+const STEPMS = 13;   // 물리 한 걸음 = 13ms
 function lFx(S, me, P) {
   const W = window; W.__lfx = W.__lfx || {};
   const rec = W.__lfx[S._g]; W.__lfx[S._g] = {n: S.n};

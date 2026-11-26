@@ -32,7 +32,7 @@ function lose(S, P, i, why) {
 }
 
 G.cockroach = {
-  name: '바퀴벌레 포커', tag: '벌레 카드를 떠넘기는 뻔뻔한 거짓말 게임', min: 2, max: 6, mark: '🐞', hue: '#8B5A2B',
+  name: '바퀴벌레 포커', tag: '벌레 카드를 떠넘기는 뻔뻔한 거짓말 게임', min: 2, max: 6, mark: '🐸', hue: '#8B5A2B',
   rules: ['벌레 8종 × 8장, 모두 64장을 똑같이 나눠 가져요. 손에 든 카드는 나만 봐요.',
     '내 차례: 카드 한 장을 골라 엎은 채로 다른 사람에게 주면서 "○○!"라고 말해요. 거짓말해도 돼요!',
     '받은 사람은 둘 중 하나: ① 받아들이고 "진실!" 또는 "거짓!"이라고 대답해요. ② 몰래 보고, 아직 이 카드를 안 본 사람에게 다시 넘기며 새로 말해요.',
@@ -192,7 +192,7 @@ function rFx(S, me, P) {
       const hp = S.cur.hops[S.cur.hops.length - 1];
       fly(rback(), seat(hp.from), $('.rk-fly .rkc') || seat(hp.to), {w: 70, h: 98, dur: 750, lift: -80, rot: 18});
       setTimeout(() => pop($('.rk-bubble')), 650);
-      if (S.cur.to === me && P[me] && !P[me].bot) banner('🐞 카드가 왔어요!', `${U.nm(P, hp.from)}님: "${RN[hp.claim]}!"`, 'b');
+      if (S.cur.to === me && P[me] && !P[me].bot) banner('🐸 카드가 왔어요!', `${U.nm(P, hp.from)}님: "${RN[hp.claim]}!"`, 'b');
     } else if (S.last) {
       const L = S.last;
       setTimeout(() => {
