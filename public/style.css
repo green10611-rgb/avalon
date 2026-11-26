@@ -2874,3 +2874,10 @@ body.g-rummikub .wrap{padding-block:6px 12px;gap:8px}
 @keyframes rmRepel{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .rm-zap{position:fixed;z-index:150;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;pointer-events:none;background:radial-gradient(circle,#fff 0 10%,#FFB3B3 26%,rgba(255,80,80,.5) 46%,transparent 70%);animation:rmZap .55s ease-out forwards}
 @keyframes rmZap{from{transform:scale(.3);opacity:1}to{transform:scale(2.3);opacity:0}}
+/* 루미큐브: 격자 점 숨김 + 더미에서 날아오는 타일 */
+.rm-grid{background-image:none!important}
+.rm-fly{position:fixed;left:0;top:0;z-index:170;pointer-events:none;perspective:600px}
+.rm-fly-in{position:relative;transform-style:preserve-3d;width:var(--tw);height:calc(var(--tw) * 1.36)}
+.rm-fly .rt{--tw:inherit;position:absolute;inset:0;width:var(--tw);height:calc(var(--tw) * 1.36);backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 10px 22px rgba(0,0,0,.4),0 3px 0 #C9B48A}
+.rm-fly .rt.back{transform:rotateY(180deg);background:repeating-linear-gradient(45deg,#E8873A 0 6px,#D6742A 6px 12px);box-shadow:inset 0 0 0 3px #FFE0B8,0 10px 22px rgba(0,0,0,.4)}
+.rm-fly .rt.back:only-child{transform:none}

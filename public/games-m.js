@@ -9,7 +9,7 @@ const isDOM = typeof document !== 'undefined';
    세트 = 같은 숫자 다른 색 3~4장(그룹) 또는 같은 색 연속 숫자 3장 이상(런). 조커는 아무 타일 대신.
    첫 등록은 내 타일만으로 합 30 이상이어야 하고, 그 전에는 바닥 세트를 건드릴 수 없어요.
    손패를 먼저 다 내면 승리! 더미가 바닥나고 모두 한 바퀴 넘기면 손패 합이 가장 적은 사람이 승리. */
-const JK = [104, 105];
+const JK = [104, 105], RMH = {};
 const isJ = id => id >= 104;
 const colOf = id => Math.floor(id / 26), numOf = id => id % 13 + 1;
 const CN = ['빨강', '파랑', '주황', '검정'];
@@ -115,7 +115,13 @@ G.rummikub = {
     next(S, P);
   },
   view(S, me, ui, P) {
-    if (isDOM) setTimeout(() => { mFx(S, me, P); rmSnapFx(ui); }, 0);
+    if (me >= 0 && S.hand[me]) {
+      const rec = RMH[S._g + ':' + me] = RMH[S._g + ':' + me] || {}, prev = rec.h, cur = S.hand[me];
+      if (prev && S.last && S.last.by === me && S.last.draw && cur.length === prev.length + 1) { const add = cur.find(id => !prev.includes(id)); if (add != null) { rec.drawn = add; rec.fly = add; } }
+      if (rec.drawn != null && !cur.includes(rec.drawn)) rec.drawn = null;
+      rec.h = cur.slice(); ui.rdrawn = rec.drawn; ui.rfly = rec.fly;
+    }
+    if (isDOM) setTimeout(() => { mFx(S, me, P, ui); rmSnapFx(ui); }, 0);
     return `<div class="rkbox2"><div class="rmw">${mBody(S, me, ui, P)}</div></div>`;
   },
   uiAct(ui, S, me, name, val) {
@@ -129,7 +135,7 @@ G.rummikub = {
     if (name === 'rto') { if (!d.sel.length) return; const tgt = d.table[+val]; const ids = pull(); if (tgt) tgt.push(...ids); else { d.table.push(ids); d.pos.push(null); } clean(); return; }
     if (name === 'rback') { const ids = d.sel.filter(id => !oldSet.has(id)); if (!ids.length) { ui.rmsg = '원래 바닥에 있던 타일은 손으로 못 가져와요.'; return; } d.sel = ids; d.hand.push(...pull()); clean(); return; }
     if (name === 'rreset') { ui.rk = null; return; }
-    if (name === 'rsort') { ui.rsort = val; if (d) d.hand = sortHand(d.hand, val); return; }
+    if (name === 'rsort') { ui.rsort = val; ui.rdrawn = null; if (RMH[S._g + ':' + me]) RMH[S._g + ':' + me].drawn = null; if (d) d.hand = sortHand(d.hand, val); return; }
     if (name === 'rclr') { d.sel = []; return; }
     if (name === 'rdrop') {
       const v = val || {}; let ids = (v.ids || []).map(Number).filter(id => where(id));
@@ -187,12 +193,12 @@ function mBody(S, me, ui, P) {
   h += `<section class="rm-table"><div class="rm-felt${my ? ' mine' : ''}" data-rows="${rows}" style="--rows:${rows}">${sets ? '' : '<p class="rm-empty">아직 바닥이 비었어요. 첫 세트를 내 보세요!</p>'}<div class="rm-grid">${sets}</div>${my && sel.size ? `<button type="button" class="rm-newset" data-g="rnew">＋ 새 세트 만들기</button>` : ''}</div></section>`;
   // 손패와 버튼
   if (me >= 0 && d) {
-    const hand = sortHand(my ? d.hand : S.hand[me], ui.rsort || 'num');
+    const hand = sortHand(my ? d.hand : S.hand[me], ui.rsort || 'num'); { const k = hand.indexOf(ui.rdrawn); if (k >= 0) hand.push(hand.splice(k, 1)[0]); }
     const changed = my && (d.hand.length !== S.hand[me].length);
     const meldable = new Set(); if (!S.melded[me]) { const sets = findSets(S.hand[me]); if (sets.reduce((t, x) => t + check(x).pts, 0) >= 30) sets.flat().forEach(id => meldable.add(id)); }
     const allOk = my && d.table.every(s => check(s));
     h += `<section class="rm-hand"><header><b>🀄 내 타일 ${hand.length}장</b><span class="rm-sort">${U.ub('123 순', 'rsort', 'num', 'sm' + ((ui.rsort || 'num') === 'num' ? ' primary' : ''))}${U.ub('색깔 순', 'rsort', 'col', 'sm' + (ui.rsort === 'col' ? ' primary' : ''))}</span>${meldable.size ? '<span class="rm-hint">✨ 황금빛 타일로 첫 등록(조커 빼고 합 30↑) 가능!</span>' : ''}${!S.melded[me] && my ? `<span class="rm-meld${freshPts >= 30 ? ' ok' : ''}">첫 등록 ${freshPts}/30</span>` : ''}</header>
-<div class="rm-rack" data-drop="hand">${hand.map((id, k) => my ? `<button type="button" class="rt-b" style="--k:${k}" data-g="rsel" data-val="${id}" data-tid="${id}">${tile(id, (sel.has(id) ? 'sel ' : '') + (meldable.has(id) ? 'meld' : ''))}</button>` : `<span class="rt-b" style="--k:${k}">${tile(id, meldable.has(id) ? 'meld' : '')}</span>`).join('')}</div>
+<div class="rm-rack" data-drop="hand">${hand.map((id, k) => my ? `<button type="button" class="rt-b" style="--k:${k}" data-g="rsel" data-val="${id}" data-tid="${id}" data-hid="${id}">${tile(id, (sel.has(id) ? 'sel ' : '') + (meldable.has(id) ? 'meld' : ''))}</button>` : `<span class="rt-b" style="--k:${k}" data-hid="${id}">${tile(id, meldable.has(id) ? 'meld' : '')}</span>`).join('')}</div>
 ${my ? `<div class="rm-acts">${sel.size ? `<button type="button" class="btn sm" data-g="rclr">선택 풀기 (${sel.size})</button><button type="button" class="btn sm" data-g="rback">↩ 손으로 되돌리기</button>` : ''}${changed || d.table.length !== S.table.length ? `<button type="button" class="btn sm ghost" data-g="rreset">↺ 처음부터</button>` : ''}${U.btn(changed ? (allOk ? '✅ 이대로 내기' : '세트를 올바르게 맞춰 주세요') : '낼 타일을 고르세요', 'play', {t: d.table, p: d.pos}, 'primary big rm-go', !changed || !allOk)}${U.btn(S.pool.length ? '🎴 한 장 가져가기' : '넘기기', 'draw', {p: d.table.length === S.table.length ? d.pos : null}, 'big rm-draw')}</div>${ui.rmsg ? `<p class="rm-warn">${U.esc(ui.rmsg)}</p>` : ''}` : ''}</section>`;
   }
   return h;
@@ -309,14 +315,35 @@ function rmFit() {
 }
 
 /* ---------- 움직임 ---------- */
-function mFx(S, me, P) {
+function mFx(S, me, P, ui) {
   const W = window; W.__mfx = W.__mfx || {};
   bindDrag(); rmFit(); requestAnimationFrame(rmFit);
   const cur = {n: S.n, end: !!S.winner, last: S.last ? S.last.n : 0}, rec = W.__mfx[S._g]; W.__mfx[S._g] = cur;
   if (!rec || rec.n === cur.n || (W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
   const $ = q => document.querySelector(q);
   if (S.last && S.last.n !== rec.last) {
-    if (S.last.draw) { const pile = $('.rm-pool'); if (pile && pile.animate) pile.animate([{transform: 'scale(1)'}, {transform: 'scale(1.15) rotate(-4deg)'}, {transform: 'none'}], {duration: 400}); if (W.SFX) W.SFX.play('flip'); }
+    if (S.last.draw) {
+      const pile = $('.rm-pool'); if (pile && pile.animate) pile.animate([{transform: 'scale(1)'}, {transform: 'scale(1.15) rotate(-4deg)'}, {transform: 'none'}], {duration: 400});
+      const rk = RMH[S._g + ':' + me] || {}, flyId = rk.fly; rk.fly = null; const mine = S.last.by === me && flyId != null;
+      const dst = mine ? $(`.rm-rack [data-hid="${flyId}"] .rt`) : document.querySelectorAll('.rmw .rm-p')[S.last.by];
+      if (pile && dst) {
+        const a = pile.getBoundingClientRect(), b = dst.getBoundingClientRect();
+        const fl = document.createElement('div'); fl.className = 'rm-fly';
+        fl.innerHTML = mine ? `<div class="rm-fly-in"><span class="rt back"></span>${tile(flyId, 'front')}</div>` : '<div class="rm-fly-in"><span class="rt back"></span></div>';
+        document.body.appendChild(fl);
+        const tw = mine ? b.width : 34, x0 = a.left + a.width / 2 - tw / 2, y0 = a.top + a.height / 2 - tw * .68, x1 = mine ? b.left : b.left + b.width - 60, y1 = mine ? b.top : b.top + b.height / 2 - tw * .68;
+        fl.style.setProperty('--tw', tw + 'px');
+        if (mine) dst.style.opacity = '0';
+        const mx = (x0 + x1) / 2, my2 = Math.min(y0, y1) - 90;
+        fl.animate([{transform: `translate(${x0}px,${y0}px) scale(.7) rotate(-18deg)`}, {transform: `translate(${mx}px,${my2}px) scale(1.25) rotate(8deg)`, offset: .5}, {transform: `translate(${x1}px,${y1}px) scale(1) rotate(0)`}], {duration: 780, easing: 'cubic-bezier(.45,.05,.3,1)', fill: 'forwards'}).onfinish = () => {
+          fl.remove();
+          if (mine) { dst.style.opacity = ''; dst.animate && dst.animate([{transform: 'translateY(-10px) scale(1.2)', boxShadow: '0 0 0 3px #FFE07A,0 0 22px rgba(255,224,122,.95)'}, {transform: 'none', boxShadow: '0 0 0 0 rgba(0,0,0,0)'}], {duration: 600, easing: 'cubic-bezier(.3,1.5,.5,1)'}); if (W.SFX) W.SFX.play('clack', .8); }
+          else if (dst.animate) dst.animate([{transform: 'scale(1.06)'}, {transform: 'none'}], {duration: 300});
+        };
+        if (mine) { const inn = fl.querySelector('.rm-fly-in'); inn.animate([{transform: 'rotateY(180deg)'}, {transform: 'rotateY(180deg)', offset: .3}, {transform: 'rotateY(0)'}], {duration: 780, fill: 'forwards', easing: 'ease-in-out'}); }
+      }
+      if (W.SFX) W.SFX.play('whoosh');
+    }
     else { document.querySelectorAll('.rt.last').forEach((e, k) => e.animate && e.animate([{transform: 'translateY(-40px) scale(1.3) rotate(-10deg)', opacity: 0}, {transform: 'none', opacity: 1}], {duration: 480, delay: k * 60, easing: 'cubic-bezier(.2,1.4,.4,1)', fill: 'backwards'})); if (W.SFX) W.SFX.play(S.last.by === me ? 'success' : 'coin'); }
   }
   if (!S.winner && S.turn === me && rec.n !== cur.n) { const m = $('.rm-msg'); if (m && m.animate) m.animate([{transform: 'scale(.94)'}, {transform: 'scale(1.03)'}, {transform: 'none'}], {duration: 420}); }
