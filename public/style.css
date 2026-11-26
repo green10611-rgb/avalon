@@ -2096,6 +2096,21 @@ body.g-omok .wrap{max-width:min(980px,100%)}
 @container ombox (max-width:520px){.om-top{grid-template-columns:1fr 1fr}.om-vs{display:none}.om-p{padding:8px}.omw{padding:10px}}
 @media (prefers-reduced-motion:reduce){.omw *{animation:none!important}}
 /* ===== 오목 끝 ===== */
+/* 채팅 이모티콘 */
+.chatdock .cd-form{position:relative}
+.cd-eb{flex:none;width:44px;border:none;border-radius:12px;background:#FFF3C4;font-size:22px;cursor:pointer;transition:transform .12s}
+.cd-eb:hover{transform:scale(1.1) rotate(-8deg)}
+.cd-emo{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;padding:8px;background:#fff;border-top:1px solid rgba(0,0,0,.08);box-shadow:0 -6px 16px rgba(0,0,0,.06);animation:cdEmo .18s ease-out}
+.cd-emo[hidden]{display:none}
+@keyframes cdEmo{from{opacity:0;transform:translateY(8px)}}
+.cd-e{font-size:24px;line-height:1;padding:6px 0;border:none;border-radius:10px;background:transparent;cursor:pointer;transition:transform .1s,background .1s}
+.cd-e:hover{background:#F2EEFF;transform:scale(1.25)}
+.cd-m.emo span{background:none!important;box-shadow:none!important;font-size:38px;line-height:1.1;padding:0!important}
+.cd-pop{position:fixed;z-index:95;pointer-events:none;bottom:calc(24vh + var(--lane) * 5vh);left:calc(8vw + var(--lane) * 9vw);display:flex;flex-direction:column;align-items:center;gap:2px;filter:drop-shadow(0 8px 16px rgba(0,0,0,.25))}
+.cd-pop .cd-pe{font-size:clamp(52px,9vw,84px);line-height:1}
+.cd-pop b{font-size:14px;font-weight:900;padding:3px 12px;border-radius:999px;background:#fff;color:#2A1E6E;box-shadow:0 3px 8px rgba(0,0,0,.2);white-space:nowrap}
+.cd-pop.me b{background:#2A56D6;color:#fff}
+@media (max-width:759px){.cd-pop{bottom:calc(30vh + var(--lane) * 5vh);left:calc(6vw + var(--lane) * 16vw)}.cd-emo{grid-template-columns:repeat(8,1fr)}.cd-e{font-size:22px}}
 /* ===== 3D 그림 끝 ===== */
 /* 크라켄 카드 (3D 그림) */
 .kcard{position:relative;container-type:inline-size;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2%;width:100%;aspect-ratio:100/140;border-radius:12%/8.6%;overflow:hidden;border:3px solid #8B6A3C;box-sizing:border-box;box-shadow:inset 0 0 0 2px rgba(255,255,255,.45)}
