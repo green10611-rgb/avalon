@@ -38,7 +38,7 @@ function connect(){
     const m = JSON.parse(e.data); if (m.type === 'pong') return; busy = false;
     if (m.type === 'err') { toast(m.msg); return render(); }
     if (m.type === 'closed') { toast('방장이 방을 닫았어요.'); return leaveLocal(); }
-    if (m.type === 'live') { window.__rmLive = m.live; const S = state(); if (S && S.turn !== myIdx()) render(); return; }
+    if (m.type === 'live') { const S = state(); if ('drag' in m.live) { window.__rmDrag = m.live.drag ? Object.assign({g: m.live.g, n: m.live.n}, m.live.drag) : null; if (S && G.rummikub && G.rummikub.remoteFx) G.rummikub.remoteFx(S, myIdx()); return; } window.__rmLive = m.live; if (S && S.turn !== myIdx()) render(); return; }
     if (m.type === 'kicked') { toast('방에서 나가게 되었어요.'); return leaveLocal(); }
     if (m.type === 'room') {
       if (!m.room) { room = null; if (code) { code = ''; ss.del('av_room'); } if (invite && myName.trim() && !joinRoom.tried) { joinRoom.tried = true; joinRoom(invite); } return render(); }
@@ -48,6 +48,7 @@ function connect(){
     }
   };
 }
+window.__rmSend = o => { const S = state(); if (S && ws && ws.readyState === 1) ws.send(JSON.stringify({type: 'live', live: Object.assign({g: S._g, n: S.n}, o)})); };
 function sendMsg(m){ if (!ws || ws.readyState !== 1) return toast('서버에 연결하는 중이에요. 잠시 후 다시 눌러 주세요.'); busy = true; ws.send(JSON.stringify(m)); }
 function leaveLocal(){ room = null; code = ''; ss.del('av_room'); ui = {}; render(); }
 const createRoom = key => { if (!myName.trim()) return toast('이름을 먼저 적어 주세요.'); sendMsg({type: 'create', name: myName, game: key}); };

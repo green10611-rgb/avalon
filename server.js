@@ -112,8 +112,15 @@ function handle(ws, m) {
   if (!r) return err(ws, '방을 찾을 수 없어요.');
   const idx = r.players.findIndex(p => p.id === me.pid);
   if (m.type === 'live') {
-    const S = r.state, L = m.live; if (!S || S.winner || idx < 0 || !L || !Array.isArray(L.t)) return;
+    const S = r.state, L = m.live; if (!S || S.winner || idx < 0 || !L) return;
     if (gOf(r).turns(S, r.players)[0] !== idx) return;
+    if ('drag' in L) {
+      const d = L.drag, drag = d && Array.isArray(d.ids) ? {ids: d.ids.slice(0, 13).map(x => x | 0), x: +d.x || 0, y: +d.y || 0, set: d.set ? 1 : 0} : null;
+      const out = JSON.stringify({type: 'live', live: {g: String(L.g || ''), n: L.n | 0, drag}});
+      for (const [w, v] of socks) if (w !== ws && v.code === r.code && w.readyState === 1) w.send(out);
+      return;
+    }
+    if (!Array.isArray(L.t)) return;
     const t = L.t.slice(0, 60).map(s => Array.isArray(s) ? s.slice(0, 13).map(x => x | 0) : []), p = Array.isArray(L.p) ? L.p.slice(0, 60).map(q => Array.isArray(q) ? [q[0] | 0, q[1] | 0] : null) : [];
     const out = JSON.stringify({type: 'live', live: {g: String(L.g || ''), n: L.n | 0, t, p}});
     for (const [w, v] of socks) if (w !== ws && v.code === r.code && w.readyState === 1) w.send(out);

@@ -137,7 +137,7 @@ G.rummikub = {
       if (rec.drawn != null && !cur.includes(rec.drawn)) rec.drawn = null;
       rec.h = cur.slice(); ui.rdrawn = rec.drawn; ui.rfly = rec.fly;
     }
-    if (isDOM) setTimeout(() => { mFx(S, me, P, ui); rmSnapFx(ui); }, 0);
+    if (isDOM) setTimeout(() => { mFx(S, me, P, ui); rmSnapFx(ui); rmRemote(S, me); }, 0);
     return `<div class="rkbox2"><div class="rmw">${mBody(S, me, ui, P)}</div></div>`;
   },
   uiAct(ui, S, me, name, val) {
@@ -217,7 +217,7 @@ function mBody(S, me, ui, P) {
   h += `<div class="rm-msg${my ? ' me' : ''}${S.winner ? ' end' : ''}"><span>${msg}</span>${tm}${tools}</div>`;
   // 바닥
   const rows = Math.max(ROWS, ...pos.map(q => q[1] + 1));
-  const sets = table.map((s, i) => { const c = check(s), ord = c ? c.order : partOrder(s); const fresh = my && !S.melded[me] && s.every(id => !oldSet.has(id)); return `<div class="rm-set ${s.length && !c ? 'bad' : 'ok'}${fresh ? ' fresh' : ''}" data-si="${i}" data-ids="${s.join(',')}" data-n="${s.length}" data-c="${pos[i][0]}" data-r="${pos[i][1]}" style="--c:${pos[i][0]};--r:${pos[i][1]}">${ord.map(id => my ? `<button type="button" class="rt-b" data-g="rsel" data-val="${id}" data-tid="${id}">${tile(id, (sel.has(id) ? 'sel ' : '') + (!oldSet.has(id) ? 'new ' : ''))}</button>` : `<span class="rt-s">${tile(id, (lastSet.has(id) ? 'last ' : '') + (LV && !oldSet.has(id) ? 'live' : ''))}</span>`).join('')}${c && fresh ? `<em class="rm-pts">${c.pts}점</em>` : ''}</div>`; }).join('');
+  const sets = table.map((s, i) => { const c = check(s), ord = c ? c.order : partOrder(s); const fresh = my && !S.melded[me] && s.every(id => !oldSet.has(id)); return `<div class="rm-set ${s.length && !c ? 'bad' : 'ok'}${fresh ? ' fresh' : ''}" data-si="${i}" data-ids="${s.join(',')}" data-n="${s.length}" data-c="${pos[i][0]}" data-r="${pos[i][1]}" style="--c:${pos[i][0]};--r:${pos[i][1]}">${ord.map(id => my ? `<button type="button" class="rt-b" data-g="rsel" data-val="${id}" data-tid="${id}">${tile(id, (sel.has(id) ? 'sel ' : '') + (!oldSet.has(id) ? 'new ' : ''))}</button>` : `<span class="rt-s" data-lid="${id}">${tile(id, (lastSet.has(id) ? 'last ' : '') + (LV && !oldSet.has(id) ? 'live' : ''))}</span>`).join('')}${c && fresh ? `<em class="rm-pts">${c.pts}점</em>` : ''}</div>`; }).join('');
   const freshPts = my && !S.melded[me] ? table.filter(s => s.every(id => !oldSet.has(id))).reduce((sum, s) => { const c = check(s); return sum + (c ? c.pts : 0); }, 0) : 0;
   h += `<section class="rm-table"><div class="rm-felt${my ? ' mine' : ''}" data-rows="${rows}" style="--rows:${rows}">${sets ? '' : '<p class="rm-empty">아직 바닥이 비었어요. 첫 세트를 내 보세요!</p>'}<div class="rm-grid">${sets}</div>${my && sel.size ? `<button type="button" class="rm-newset" data-g="rnew">＋ 새 세트 만들기</button>` : ''}</div></section>`;
   // 손패와 버튼
@@ -295,6 +295,7 @@ function bindDrag() {
     }
     if (dr.set != null) { dr.g.style.left = (e.clientX - dr.ox) + 'px'; dr.g.style.top = (e.clientY - dr.oy) + 'px'; }
     else { dr.g.style.left = e.clientX + 'px'; dr.g.style.top = e.clientY + 'px'; }
+    { const now = Date.now(), G2 = gridInfo(); if (G2 && window.__rmSend && now - (dr.sent || 0) > (window.__rmSendGap || 60)) { dr.sent = now; const ids = dr.set != null ? [...dr.el.querySelectorAll('[data-tid]')].map(t => +t.dataset.tid) : dr.ids; window.__rmSend({drag: {ids, x: +((e.clientX - G2.r.left) / G2.cw).toFixed(2), y: +((e.clientY - G2.r.top) / G2.rh).toFixed(2), set: dr.set != null ? 1 : 0}}); } }
     const t = target(e.clientX, e.clientY); clearHi();
     if (!t) return;
     if (t.to === 'hand') { t.el.classList.add('drop'); return; }
@@ -305,6 +306,7 @@ function bindDrag() {
   const end = e => {
     if (!dr) return; const d = dr; dr = null;
     if (!d.on) return;
+    if (window.__rmSend) window.__rmSend({drag: null});
     const gr = d.g.getBoundingClientRect(); d.g.remove();
     clearHi(); box.querySelectorAll('.lifted').forEach(x => x.classList.remove('lifted'));
     const swallow = ev => { ev.stopPropagation(); ev.preventDefault(); };
@@ -339,6 +341,39 @@ function rmSnapFx(ui) {
     if (W.SFX) { W.SFX.play('no'); W.SFX.play('swish'); }
   }
 }
+/* 상대가 끌고 있는 타일(유령)과, 바뀐 타일이 원래 자리에서 날아오는 움직임 */
+function rmRemote(S, me) {
+  const W = window, f = document.querySelector('.rmw .rm-felt'), my = S && me === S.turn && !S.winner;
+  const D = W.__rmDrag, G2 = gridInfo();
+  let gh = document.getElementById('rm-rghost');
+  const okD = !my && D && S && D.g === S._g && D.n === S.n && Array.isArray(D.ids) && D.ids.length && G2;
+  if (okD) {
+    if (!gh) { gh = document.createElement('div'); gh.id = 'rm-rghost'; gh.className = 'rm-ghost remote'; document.body.appendChild(gh); }
+    const key = D.ids.join(','); if (gh.dataset.k !== key) { gh.dataset.k = key; gh.innerHTML = D.ids.map(id => tile(+id)).join(''); }
+    gh.style.setProperty('--tw', Math.max(26, G2.cw - 4) + 'px');
+    const inG = D.y >= -0.5 && D.y <= G2.rows + .3 && D.x >= -1 && D.x <= COLS + 1, cd = document.querySelectorAll('.rmw .rm-p')[S.turn], cR = cd && cd.getBoundingClientRect();
+    if (inG || !cR) { gh.style.left = (G2.r.left + D.x * G2.cw) + 'px'; gh.style.top = (G2.r.top + D.y * G2.rh) + 'px'; gh.classList.remove('incard'); }
+    else { gh.style.left = (cR.left + cR.width * .72) + 'px'; gh.style.top = (cR.top + cR.height * .75) + 'px'; gh.classList.add('incard'); }
+    D.ids.forEach(id => { const t = f && f.querySelector(`[data-lid="${id}"]`); if (t) t.style.opacity = '.25'; });
+  } else if (gh) { W.__rmGhostRect = {r: gh.getBoundingClientRect(), t: Date.now(), ids: (gh.dataset.k || '').split(',').map(Number)}; gh.remove(); }
+  if (!f) return;
+  if (my) { W.__rmRects = null; return; }
+  const prev = W.__rmRects, now = {}, gr = W.__rmGhostRect && Date.now() - W.__rmGhostRect.t < 1500 ? W.__rmGhostRect : null;
+  const card = document.querySelectorAll('.rmw .rm-p')[S.turn], cr = card && card.getBoundingClientRect();
+  f.querySelectorAll('[data-lid]').forEach(el => {
+    const id = +el.dataset.lid, r = el.getBoundingClientRect(); now[id] = [r.left, r.top];
+    if (!prev || (okD && D.ids.includes(id))) return;
+    let from = null;
+    if (gr && gr.ids.includes(id)) { const k = gr.ids.indexOf(id); from = [gr.r.left + k * r.width, gr.r.top]; }
+    else if (prev[id]) from = prev[id];
+    else if (cr) from = [cr.left + cr.width / 2 - r.width / 2, cr.top];
+    if (!from) return; const dx = from[0] - r.left, dy = from[1] - r.top; if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return;
+    el.animate && el.animate([{transform: `translate(${dx}px,${dy}px) scale(${prev[id] ? 1 : 1.15})`, zIndex: 5}, {transform: 'none', zIndex: 5}], {duration: prev[id] || gr ? 320 : 620, easing: 'cubic-bezier(.3,1.25,.5,1)'});
+  });
+  if (gr) W.__rmGhostRect = null;
+  W.__rmRects = now;
+}
+G.rummikub.remoteFx = (S, me) => rmRemote(S, me);
 /* 한 화면에 맞추기 + 칸 크기 정하기 */
 function rmFit() {
   const w = document.querySelector('.rmw'); if (!w) return;
