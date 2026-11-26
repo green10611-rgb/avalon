@@ -14,6 +14,12 @@ const FORM = {
   tri: ['피라미드', () => [[5, 88], [4, 79], [3, 70]].flatMap(([n, y]) => Array.from({length: n}, (_, k) => [50 + (k - (n - 1) / 2) * 10, y]))],
   v: ['V자', () => Array.from({length: 6}, (_, k) => [[12 + k * 6.8, 66 + k * 4.6], [88 - k * 6.8, 66 + k * 4.6]]).flat()],
   box: ['네모 진지', () => { const a = []; for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) a.push([32 + c * 12, 66 + r * 11]); return a; }],
+  arrow: ['화살촉', () => [[50, 60], ...[1, 2, 3, 4, 5].flatMap(k => [[50 - k * 6.6, 60 + k * 5.6], [50 + k * 6.6, 60 + k * 5.6]]), [50, 73]]],
+  circle: ['원진', () => Array.from({length: 12}, (_, k) => [50 + 16 * Math.cos(k * Math.PI / 6), 76 + 14 * Math.sin(k * Math.PI / 6)].map(v => Math.round(v * 10) / 10))],
+  diamond: ['다이아몬드', () => [1, 2, 3, 3, 2, 1].flatMap((n, r) => Array.from({length: n}, (_, k) => [50 + (k - (n - 1) / 2) * 10, 58 + r * 7.2]))],
+  cross: ['십자', () => [...[58, 65, 72, 79, 86, 93].map(y => [50, y]), ...[-30, -20, -10, 10, 20, 30].map(d => [50 + d, 72])]],
+  zig: ['지그재그', () => Array.from({length: 12}, (_, k) => [10 + k * 7.2, k % 2 ? 80 : 70])],
+  wings: ['양 날개', () => [22, 78].flatMap(cx => [[cx - 9, 88], [cx, 88], [cx + 9, 88], [cx - 4.5, 80], [cx + 4.5, 80], [cx, 72]])],
   rand: ['무작위', null]
 };
 function formation(key) {
