@@ -38,6 +38,7 @@ function connect(){
     const m = JSON.parse(e.data); if (m.type === 'pong') return; busy = false;
     if (m.type === 'err') { toast(m.msg); return render(); }
     if (m.type === 'closed') { toast('방장이 방을 닫았어요.'); return leaveLocal(); }
+    if (m.type === 'live') { window.__rmLive = m.live; const S = state(); if (S && S.turn !== myIdx()) render(); return; }
     if (m.type === 'kicked') { toast('방에서 나가게 되었어요.'); return leaveLocal(); }
     if (m.type === 'room') {
       if (!m.room) { room = null; if (code) { code = ''; ss.del('av_room'); } if (invite && myName.trim() && !joinRoom.tried) { joinRoom.tried = true; joinRoom(invite); } return render(); }
@@ -215,7 +216,7 @@ document.addEventListener('click', e => {
     if (el.tagName === 'SUMMARY') e.preventDefault();
     const v = JSON.parse(d.val); ui[d.ui] = (d.tog !== undefined && JSON.stringify(ui[d.ui]) === JSON.stringify(v)) ? null : v; return render();
   }
-  if (d.g){ g.uiAct(ui, S, myIdx(), d.g, d.val ? JSON.parse(d.val) : null, players()); return render(); }
+  if (d.g){ g.uiAct(ui, S, myIdx(), d.g, d.val ? JSON.parse(d.val) : null, players()); if (g.liveOut) { const lo = g.liveOut(ui, S, myIdx()); if (lo && ws && ws.readyState === 1) ws.send(JSON.stringify({type: 'live', live: lo})); } return render(); }
   if (d.act){ if (busy) return; let arg = d.arg ? JSON.parse(d.arg) : {}; if (d.fields !== undefined) { if (typeof arg !== 'object' || !arg) arg = {}; document.querySelectorAll('#game [data-field]').forEach(f => { arg[f.dataset.field] = f.value; if (f.dataset.clear !== undefined) f.value = ''; }); } act(d.act, arg); }
 });
 

@@ -20,6 +20,14 @@ function runAsGiven(set) {
   let pts = 0; for (let i = 0; i < n; i++) { const id = set[i]; if (isJ(id)) continue; if (colOf(id) !== c || numOf(id) !== start + i) return null; pts += start + i; }
   return {kind: 'r', pts, order: set.slice()};
 }
+/* 상대가 지금 바닥에 놓고 있는 모습(실시간) */
+function liveOf(S) {
+  const L = R.__rmLive; if (!L || L.g !== S._g || L.n !== S.n || !Array.isArray(L.t)) return null;
+  const seen = new Set(); const t = L.t.map(s => Array.isArray(s) ? s.map(Number) : []).filter(s => s.length);
+  for (const s of t) for (const id of s) { if (!(id >= 0 && id < 106) || seen.has(id)) return null; seen.add(id); }
+  if (!S.table.flat().every(id => seen.has(id))) return null;
+  return {t, p: Array.isArray(L.p) ? L.p : []};
+}
 function check(set) {
   const n = set.length; if (n < 3) return null;
   if (set.some(isJ)) { const g = runAsGiven(set); if (g) return g; }
@@ -199,16 +207,17 @@ function mBody(S, me, ui, P) {
   const my = me === S.turn && !S.winner;
   const d = me >= 0 ? draft(ui, S, me) : null;
   const oldSet = new Set(S.table.flat()), sel = new Set(d ? d.sel : []), lastSet = new Set(S.last && S.last.ids || []);
-  const table = my ? d.table : S.table, pos = my ? d.pos : autoPlace(S.pos, S.table);
+  const LV = !my && !S.winner && liveOf(S);
+  const table = my ? d.table : LV ? LV.t : S.table, pos = my ? d.pos : LV ? autoPlace(LV.p, LV.t) : autoPlace(S.pos, S.table);
   // 상단: 사람들
   let h = `<header class="rm-top">${P.map((p, i) => `<div class="rm-p${i === S.turn && !S.winner ? ' on' : ''}${S.winner && S.wp === i ? ' win' : ''}" style="--pc:${U.pc(i)}"><span class="rm-av">${U.esc(Array.from(String(p.name || '?').replace(/^🤖/u, ''))[0] || '?')}</span><div><b>${U.nm(P, i)}${i === me ? ' <small>(나)</small>' : ''}</b><small>${S.melded[i] ? '✅ 등록함' : '첫 등록 전'}</small></div><span class="rm-cnt"><i></i>${S.hand[i].length}</span>${i === S.turn && !S.winner ? '<span class="om-turn">차례</span>' : ''}</div>`).join('')}<div class="rm-pool"><span class="rm-pile">${Array.from({length: Math.min(5, Math.ceil(S.pool.length / 15))}, () => '<i></i>').join('')}</span><b>${S.pool.length}</b><small>더미</small></div></header>`;
   const tm = S.tl && !S.winner ? (() => { if (!isDOM) return ''; const W = window; W.__rmT = W.__rmT || {}; const k = S._g + ':' + S.ts; const seen = W.__rmT[k] = W.__rmT[k] || Date.now(); rmTick(); const left = Math.max(0, S.tl - (Date.now() - seen) / 1000); return `<b class="om-clock${left <= Math.min(10, S.tl / 3) ? ' hurry' : ''}" data-seen="${seen}" data-len="${S.tl}">⏳ <span>${Math.ceil(left)}</span>초</b>`; })() : '';
-  const msg = S.winner ? `🏆 ${U.esc(S.winner)}` : my ? (S.melded[me] ? '👉 내 차례! 타일을 끌어다 세트에 붙이거나 빈 곳에 놓아 새 세트를 만들어요' : '👉 내 차례! 내 타일로 합 30 이상을 첫 등록해요 (조커는 0점)') : `${U.nm(P, S.turn)}님 차례…`;
+  const msg = S.winner ? `🏆 ${U.esc(S.winner)}` : my ? (S.melded[me] ? '👉 내 차례! 타일을 끌어다 세트에 붙이거나 빈 곳에 놓아 새 세트를 만들어요' : '👉 내 차례! 내 타일로 합 30 이상을 첫 등록해요 (조커는 0점)') : (LV && LV.t.flat().length > S.table.flat().length ? `✋ ${U.nm(P, S.turn)}님이 타일을 놓는 중…` : `${U.nm(P, S.turn)}님 차례…`);
   const tools = S.n === 0 && !S.winner && me >= 0 ? `<span class="om-tl"><b>⏱ 한 차례 제한시간</b>${[0, 15, 30, 60].map(s => U.btn(s ? (s < 60 ? `${s}초` : '1분') : '없음', 'tl', {s}, 'sm' + (S.tl === s ? ' primary' : ''))).join('')}</span>` : '';
   h += `<div class="rm-msg${my ? ' me' : ''}${S.winner ? ' end' : ''}"><span>${msg}</span>${tm}${tools}</div>`;
   // 바닥
   const rows = Math.max(ROWS, ...pos.map(q => q[1] + 1));
-  const sets = table.map((s, i) => { const c = check(s), ord = c ? c.order : partOrder(s); const fresh = my && !S.melded[me] && s.every(id => !oldSet.has(id)); return `<div class="rm-set ${s.length && !c ? 'bad' : 'ok'}${fresh ? ' fresh' : ''}" data-si="${i}" data-ids="${s.join(',')}" data-n="${s.length}" data-c="${pos[i][0]}" data-r="${pos[i][1]}" style="--c:${pos[i][0]};--r:${pos[i][1]}">${ord.map(id => my ? `<button type="button" class="rt-b" data-g="rsel" data-val="${id}" data-tid="${id}">${tile(id, (sel.has(id) ? 'sel ' : '') + (!oldSet.has(id) ? 'new ' : ''))}</button>` : `<span class="rt-s">${tile(id, lastSet.has(id) ? 'last' : '')}</span>`).join('')}${c && fresh ? `<em class="rm-pts">${c.pts}점</em>` : ''}</div>`; }).join('');
+  const sets = table.map((s, i) => { const c = check(s), ord = c ? c.order : partOrder(s); const fresh = my && !S.melded[me] && s.every(id => !oldSet.has(id)); return `<div class="rm-set ${s.length && !c ? 'bad' : 'ok'}${fresh ? ' fresh' : ''}" data-si="${i}" data-ids="${s.join(',')}" data-n="${s.length}" data-c="${pos[i][0]}" data-r="${pos[i][1]}" style="--c:${pos[i][0]};--r:${pos[i][1]}">${ord.map(id => my ? `<button type="button" class="rt-b" data-g="rsel" data-val="${id}" data-tid="${id}">${tile(id, (sel.has(id) ? 'sel ' : '') + (!oldSet.has(id) ? 'new ' : ''))}</button>` : `<span class="rt-s">${tile(id, (lastSet.has(id) ? 'last ' : '') + (LV && !oldSet.has(id) ? 'live' : ''))}</span>`).join('')}${c && fresh ? `<em class="rm-pts">${c.pts}점</em>` : ''}</div>`; }).join('');
   const freshPts = my && !S.melded[me] ? table.filter(s => s.every(id => !oldSet.has(id))).reduce((sum, s) => { const c = check(s); return sum + (c ? c.pts : 0); }, 0) : 0;
   h += `<section class="rm-table"><div class="rm-felt${my ? ' mine' : ''}" data-rows="${rows}" style="--rows:${rows}">${sets ? '' : '<p class="rm-empty">아직 바닥이 비었어요. 첫 세트를 내 보세요!</p>'}<div class="rm-grid">${sets}</div>${my && sel.size ? `<button type="button" class="rm-newset" data-g="rnew">＋ 새 세트 만들기</button>` : ''}</div></section>`;
   // 손패와 버튼
@@ -238,11 +247,12 @@ function bindDrag() {
   };
   // 바닥에 놓을 때: 칸에 맞추고, 옆 세트와 붙을지(자석) 밀어낼지 결정
   const plan = (x, y, ids, stEl) => {
+    const origin = (() => { const b = box.querySelector(`.rm-set [data-tid="${ids[0]}"]`); return b ? b.closest('.rm-set') : null; })();
     const G2 = gridInfo(); if (!G2) return null; const k = ids.length;
     const row = Math.max(0, Math.min(G2.rows - 1, Math.floor((y - G2.r.top) / G2.rh)));
     const col = Math.max(0, Math.min(COLS - k, Math.round((x - G2.r.left) / G2.cw - k / 2)));
     let cand = stEl;
-    if (!cand) { const px = (x - G2.r.left) / G2.cw; let bd = .6; for (const st of box.querySelectorAll('.rm-set[data-si]')) { if (+st.dataset.r !== row) continue; const c = +st.dataset.c, n = +st.dataset.n, dd = Math.max(0, c - px, px - (c + n)); if (dd < bd) { bd = dd; cand = st; } } }
+    if (!cand) { const px = (x - G2.r.left) / G2.cw; let bd = .5; for (const st of box.querySelectorAll('.rm-set[data-si]')) { if (+st.dataset.r !== row || st === origin) continue; const c = +st.dataset.c, n = +st.dataset.n, dd = Math.max(0, c - px, px - (c + n)); if (dd < bd) { bd = dd; cand = st; } } }
     if (cand) {
       const rest = cand.dataset.ids.split(',').map(Number).filter(id => !ids.includes(id));
       if (!rest.length) return {g: 'rmove', v: {i: +cand.dataset.si, x: col, y: row}};
@@ -428,5 +438,6 @@ function mBot(S, P) {
 G.rummikub.botStep = mBot;
 G.rummikub.botDelay = () => 1200;
 G.rummikub.BOTNAMES = ['타일왕', '조커', '숫자박사', '런런'];
-G.rummikub.check = check; G.rummikub.compat = compat;
+G.rummikub.check = check;
+G.rummikub.liveOut = (ui, S, me) => S && !S.winner && me === S.turn ? (ui.rk && ui.rk.n === S.n && ui.rk.g === S._g ? {g: S._g, n: S.n, t: ui.rk.table, p: ui.rk.pos} : {g: S._g, n: S.n, t: S.table, p: S.pos || []}) : null; G.rummikub.compat = compat;
 })();

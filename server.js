@@ -111,6 +111,14 @@ function handle(ws, m) {
   const r = me.code && rooms.get(me.code);
   if (!r) return err(ws, '방을 찾을 수 없어요.');
   const idx = r.players.findIndex(p => p.id === me.pid);
+  if (m.type === 'live') {
+    const S = r.state, L = m.live; if (!S || S.winner || idx < 0 || !L || !Array.isArray(L.t)) return;
+    if (gOf(r).turns(S, r.players)[0] !== idx) return;
+    const t = L.t.slice(0, 60).map(s => Array.isArray(s) ? s.slice(0, 13).map(x => x | 0) : []), p = Array.isArray(L.p) ? L.p.slice(0, 60).map(q => Array.isArray(q) ? [q[0] | 0, q[1] | 0] : null) : [];
+    const out = JSON.stringify({type: 'live', live: {g: String(L.g || ''), n: L.n | 0, t, p}});
+    for (const [w, v] of socks) if (w !== ws && v.code === r.code && w.readyState === 1) w.send(out);
+    return;
+  }
   if (m.type === 'leave') {
     me.code = null; send(ws, { type: 'room', room: null });
     if (r.host === me.pid) { for (const [w, v] of socks) if (v.code === r.code) { v.code = null; send(w, { type: 'closed' }); } rooms.delete(r.code); return; }
