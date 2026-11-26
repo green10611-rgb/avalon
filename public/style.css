@@ -2129,7 +2129,7 @@ body.g-omok .wrap{max-width:min(980px,100%)}
 .ak-ps{flex:none;width:40px;height:40px;position:relative}.ak-ps .om-st{left:0;top:0;transform:none;width:100%;height:100%}
 .ak-left{display:flex;gap:3px;margin-top:3px}
 .ak-left i{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.15)}
-.ak-left i.on.c0{background:radial-gradient(circle at 35% 30%,#666,#111)}.ak-left i.on.c1{background:radial-gradient(circle at 35% 30%,#fff,#cfc8bc)}
+.ak-left i.on.c0{background:radial-gradient(circle at 35% 30%,#666,#111);box-shadow:0 0 0 1.5px rgba(255,255,255,.7)}.ak-left i.on.c1{background:radial-gradient(circle at 35% 30%,#fff,#cfc8bc)}
 .ak-msg{text-align:center;padding:9px 14px;border-radius:14px;background:rgba(0,0,0,.28);font-weight:800;font-size:clamp(15px,2.5cqw,19px)}
 .ak-msg.me{background:linear-gradient(90deg,#F08C3A,#C9561E);color:#fff;box-shadow:0 6px 18px rgba(200,90,30,.45)}
 .ak-msg.end{background:linear-gradient(90deg,#FFD54F,#F0A500);color:#3A2200}
@@ -2145,7 +2145,7 @@ body.g-omok .wrap{max-width:min(980px,100%)}
 .ak-aim .pw{fill:rgba(255,255,255,.5);stroke:#fff;stroke-width:.3}
 .ak-pow{position:absolute;left:10%;right:10%;bottom:-24px;height:10px;border-radius:999px;background:rgba(0,0,0,.4);overflow:hidden}
 .ak-pow i{display:block;height:100%;background:linear-gradient(90deg,#7CF0B0,#FFD54F,#FF4D4D)}
-.ak-s{position:absolute;width:6.8%;aspect-ratio:1;transform:translate(-50%,-50%);transition:opacity .3s}
+.ak-s{position:absolute;width:6.4%;aspect-ratio:1;transform:translate(-50%,-50%);transition:opacity .3s}
 .ak-board.anim .ak-s{transition:none}
 .ak-s .om-st{width:100%;height:100%;filter:drop-shadow(0 .4cqw .5cqw rgba(0,0,0,.45))}
 .ak-s.gone{opacity:0;pointer-events:none}
@@ -2170,6 +2170,13 @@ body.g-omok .wrap{max-width:min(980px,100%)}
 .srvmini.ak{background:#B5582A}.srvmini.rm{background:#C0392B}
 body.g-alkkagi .wrap{max-width:min(860px,100%)}
 @media (prefers-reduced-motion:reduce){.akw *{animation:none!important}}
+.ak-forms{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;padding:8px 12px;border-radius:16px;background:rgba(255,255,255,.08);border:1px dashed rgba(255,210,150,.4)}
+.ak-forms b{font-size:14px;margin-right:4px}.ak-forms small{flex-basis:100%;text-align:center;opacity:.8;font-size:12px}
+.akw .btn.sm:not(.primary){background:rgba(255,255,255,.12);color:#FFF4E2;border-color:rgba(255,255,255,.25)}
+.ak-left{flex-wrap:wrap;max-width:110px}.ak-left i{width:8px;height:8px}
+.akfx-hit{animation:akHit2 .4s ease-out forwards!important}
+@keyframes akHit2{from{transform:translate(-50%,-50%) scale(.3);opacity:1}to{transform:translate(-50%,-50%) scale(var(--hs,1.2));opacity:0}}
+.ak-board.anim .ak-s .om-st{filter:none}
 /* ===== 알까기 끝 ===== */
 /* ===== 루미큐브 ===== */
 .rkbox2{container:rmbox/inline-size}

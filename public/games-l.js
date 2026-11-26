@@ -6,13 +6,32 @@ const isDOM = typeof document !== 'undefined';
 /* =================== 알까기 =================== */
 /* 바둑판 위에서 내 돌을 손가락으로 튕겨 상대 돌을 판 밖으로 떨어뜨려요. 상대 돌을 먼저 다 떨어뜨리면 승리!
    물리는 서버(방장)와 모든 화면이 같은 계산을 해요(같은 입력 → 같은 결과). 화면은 그 계산을 다시 돌려 움직임을 보여 줘요. */
-const BR = 100, RAD = 3.4, MAXV = 4.4, NST = 6;
+const BR = 100, RAD = 3.2, MAXV = 4.4, NST = 12;
+// 시작 대형 (아래쪽 사람 기준 좌표, 위쪽 사람은 판을 돌려서 같은 모양)
+const FORM = {
+  line: ['두 줄', () => [0, 1].flatMap(r => Array.from({length: 6}, (_, k) => [20 + k * 12, 74 + r * 12]))],
+  wall: ['엇갈린 성벽', () => [0, 1].flatMap(r => Array.from({length: 6}, (_, k) => [16 + k * 13.6 + r * 6.8, 86 - r * 11]))],
+  tri: ['피라미드', () => [[5, 88], [4, 79], [3, 70]].flatMap(([n, y]) => Array.from({length: n}, (_, k) => [50 + (k - (n - 1) / 2) * 10, y]))],
+  v: ['V자', () => Array.from({length: 6}, (_, k) => [[12 + k * 6.8, 66 + k * 4.6], [88 - k * 6.8, 66 + k * 4.6]]).flat()],
+  box: ['네모 진지', () => { const a = []; for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) a.push([32 + c * 12, 66 + r * 11]); return a; }],
+  rand: ['무작위', null]
+};
+function formation(key) {
+  if (FORM[key] && FORM[key][1]) return FORM[key][1]();
+  const a = []; let guard = 0;
+  while (a.length < NST && guard++ < 4000) { const x = 8 + Math.random() * 84, y = 58 + Math.random() * 34; if (a.every(([x2, y2]) => (x - x2) ** 2 + (y - y2) ** 2 > 81)) a.push([Math.round(x * 10) / 10, Math.round(y * 10) / 10]); }
+  return a;
+}
+function placeSide(S, p, key) {
+  const pts = formation(key); S.form[p] = key;
+  S.st.filter(o => o.p === p).forEach((o, k) => { const [x, y] = pts[k]; o.x = p === 0 ? x : BR - x; o.y = p === 0 ? y : BR - y; o.a = 1; });
+}
 function sim(st, k, vx, vy, rec) {
   const s = st.map(o => ({x: o.x, y: o.y, a: o.a, vx: 0, vy: 0}));
   s[k].vx = vx; s[k].vy = vy;
-  const frames = rec ? [] : null, hits = [], falls = [];
+  const frames = rec ? [] : null, hits = [], falls = []; let steps = 0;
   for (let step = 0; step < 2400; step++) {
-    let moving = false;
+    let moving = false; steps = step;
     for (const o of s) {
       if (!o.a) continue;
       const sp = Math.sqrt(o.vx * o.vx + o.vy * o.vy);
@@ -28,27 +47,29 @@ function sim(st, k, vx, vy, rec) {
       const d = Math.sqrt(d2), nx = dx / d, ny = dy / d, ov = (m - d) / 2;
       A.x -= nx * ov; A.y -= ny * ov; B.x += nx * ov; B.y += ny * ov;
       const rv = (B.vx - A.vx) * nx + (B.vy - A.vy) * ny;
-      if (rv < 0) { const jj = -(1 + .9) * rv / 2; A.vx -= jj * nx; A.vy -= jj * ny; B.vx += jj * nx; B.vy += jj * ny; if (rec) hits.push(frames.length); }
+      if (rv < 0) { const jj = -(1 + .9) * rv / 2; A.vx -= jj * nx; A.vy -= jj * ny; B.vx += jj * nx; B.vy += jj * ny; if (rec) hits.push([frames.length, (A.x + B.x) / 2, (A.y + B.y) / 2, -rv]); }
     }
     for (let i = 0; i < s.length; i++) { const o = s[i]; if (o.a && (o.x < 0 || o.x > BR || o.y < 0 || o.y > BR)) { o.a = 0; falls.push([i, rec ? frames.length : 0, o.vx, o.vy]); } }
-    if (rec && step % 2 === 0) frames.push(s.map(o => [o.x, o.y, o.a]));
+    if (rec) frames.push(s.map(o => [o.x, o.y, o.a]));
     if (!moving) break;
   }
   if (rec) frames.push(s.map(o => [o.x, o.y, o.a]));
-  return {end: s.map(o => ({x: Math.round(o.x * 100) / 100, y: Math.round(o.y * 100) / 100, a: o.a, p: 0})), frames, hits, falls};
+  return {end: s.map(o => ({x: Math.round(o.x * 100) / 100, y: Math.round(o.y * 100) / 100, a: o.a, p: 0})), frames, hits, falls, steps};
 }
 const alive = (S, p) => S.st.filter(o => o.a && o.p === p).length;
 G.alkkagi = {
   name: '알까기', tag: '튕겨서 상대 돌을 판 밖으로!', min: 2, max: 2, mark: '🎯', hue: '#B5783A',
-  rules: ['바둑판 양쪽에 각자 돌 6개를 놓고 시작해요. 흑·백은 무작위, 흑이 먼저예요.', '내 차례에 내 돌 하나를 꾹 눌러 뒤로 당겼다 놓으면 반대쪽으로 튕겨 나가요. 많이 당길수록 세게!', '돌이 판 밖으로 나가면 떨어져서 사라져요. 내 돌이 떨어질 수도 있어요!', '상대 돌을 먼저 모두 떨어뜨리면 승리. 둘 다 동시에 없어지면 무승부예요.', 'AI와 둘이서도 할 수 있어요.'],
+  rules: ['바둑판 양쪽에 각자 돌 12개를 놓고 시작해요. 첫 튕기기 전에 각자 시작 대형(두 줄·엇갈린 성벽·피라미드·V자·네모 진지·무작위)을 고를 수 있어요. 흑·백은 무작위, 흑이 먼저예요.', '내 차례에 내 돌 하나를 꾹 눌러 뒤로 당겼다 놓으면 반대쪽으로 튕겨 나가요. 많이 당길수록 세게!', '돌이 판 밖으로 나가면 떨어져서 사라져요. 내 돌이 떨어질 수도 있어요!', '상대 돌을 먼저 모두 떨어뜨리면 승리. 둘 다 동시에 없어지면 무승부예요.', 'AI와 둘이서도 할 수 있어요.'],
   setup(P) {
     const black = Math.random() < .5 ? 0 : 1, st = [];
-    for (const p of [0, 1]) for (let k = 0; k < NST; k++) st.push({x: 15 + k * 14, y: p === 0 ? 80 : 20, a: 1, p});
-    return {_g: Math.random().toString(36).slice(2, 9), st, col: black === 0 ? [0, 1] : [1, 0], turn: black, n: 0, shots: 0, log: [`${P[black].name}님이 흑, 먼저 튕겨요!`]};
+    for (const p of [0, 1]) for (let k = 0; k < NST; k++) st.push({x: 0, y: 0, a: 1, p});
+    const S = {_g: Math.random().toString(36).slice(2, 9), st, form: ['wall', 'wall'], col: black === 0 ? [0, 1] : [1, 0], turn: black, n: 0, shots: 0, log: [`${P[black].name}님이 흑, 먼저 튕겨요! 첫 튕기기 전에 각자 시작 대형을 고를 수 있어요.`]};
+    placeSide(S, 0, 'wall'); placeSide(S, 1, 'wall'); return S;
   },
   turns: S => S.winner ? [] : [S.turn],
   act(S, me, t, a, P) {
     if (S.winner) return;
+    if (t === 'form') { if (S.shots) throw U.err('첫 튕기기 전에만 대형을 바꿀 수 있어요.'); if (!FORM[a.f]) throw U.err('대형을 골라 주세요.'); placeSide(S, me, a.f); S.n++; U.log(S, `${P[me].name}님이 '${FORM[a.f][0]}' 대형을 골랐어요.`); return; }
     if (t !== 'flick') throw U.err('알 수 없는 행동이에요.');
     if (me !== S.turn) throw U.err('내 차례가 아니에요.');
     const k = +a.k, o = S.st[k];
@@ -86,6 +107,7 @@ function lBody(S, me, P) {
   const stones = S.st.map((o, i) => { const x = fl ? BR - o.x : o.x, y = fl ? BR - o.y : o.y; return `<span class="ak-s${o.a ? '' : ' gone'}${my && o.a && o.p === me ? ' mine' : ''}" data-k="${i}" style="left:${x}%;top:${y}%"><i class="om-st c${S.col[o.p]}"></i></span>`; }).join('');
   let lines = ''; for (let k = 0; k <= 12; k++) { const v = (k / 12 * 100).toFixed(2); lines += `<line x1="${v}" y1="0" x2="${v}" y2="100"/><line x1="0" y1="${v}" x2="100" y2="${v}"/>`; }
   h += `<div class="ak-msg${my ? ' me' : ''}${S.winner ? ' end' : ''}">${msg}</div>`;
+  if (!S.shots && !S.winner && me >= 0) h += `<div class="ak-forms"><b>🧱 내 시작 대형</b>${Object.keys(FORM).map(k => U.btn(`${FORM[k][0]}`, 'form', {f: k}, 'sm' + (S.form[me] === k ? ' primary' : ''))).join('')}<small>첫 튕기기 전까지 바꿀 수 있어요 · 상대 대형: ${FORM[S.form[1 - me]][0]}</small></div>`;
   h += `<div class="ak-boardwrap"><div class="ak-board${my ? ' my' : ''}" data-fl="${fl ? 1 : 0}"><svg class="ak-grid" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${lines}</svg><svg class="ak-aim" viewBox="0 0 100 100" aria-hidden="true"><line class="pull"/><line class="shot"/><circle class="pw" r="0"/></svg>${stones}<span class="ak-pow" hidden><i></i></span></div></div>`;
   h += `<footer class="ak-bot">${card(bot)}</footer>`;
   if (my) h += `<button type="button" class="ak-fire" hidden data-act="flick" data-arg="{}"></button>`;
@@ -125,30 +147,50 @@ function bindAim(S, me) {
   board.addEventListener('pointerup', up); board.addEventListener('pointercancel', () => { drag = null; aim.classList.remove('on'); bar.hidden = true; });
 }
 
-/* ---------- 움직임: 같은 물리를 다시 돌려 보여 줘요 ---------- */
+/* ---------- 움직임: 같은 물리를 다시 돌려, 시간에 맞춰 부드럽게 보여 줘요 ---------- */
+const STEPMS = 7;   // 물리 한 걸음 = 7ms
 function lFx(S, me, P) {
   const W = window; W.__lfx = W.__lfx || {};
-  const cur = {n: S.n, end: !!S.winner}, rec = W.__lfx[S._g]; W.__lfx[S._g] = cur;
+  const rec = W.__lfx[S._g]; W.__lfx[S._g] = {n: S.n};
   const go = () => bindAim(S, me);
-  if (!rec || !S.shot || S.shot.n !== S.n || rec.n === S.n || (W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches)) { go(); return; }
-  const r = sim(S.shot.pre, S.shot.k, S.shot.vx, S.shot.vy, true), fl = flip(me);
-  const els = [...document.querySelectorAll('.ak-s')], board = document.querySelector('.ak-board'); if (!board) return;
+  const reduce = W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let A = W.__lanim;
+  if (rec && S.shot && S.shot.n === S.n && rec.n !== S.n && !reduce) {
+    const r = sim(S.shot.pre, S.shot.k, S.shot.vx, S.shot.vy, true);
+    A = W.__lanim = {g: S._g, n: S.n, t0: performance.now(), r, hitDone: new Set(), fallDone: new Set()};
+    if (W.SFX) W.SFX.play('flip');
+  }
+  if (!A || A.g !== S._g || A.n !== S.n || A.done) { go(); return; }
+  // 화면이 다시 그려져도 이어서 재생해요
+  const board = document.querySelector('.ak-board'); if (!board) return;
+  const els = [...board.querySelectorAll('.ak-s')], fl = flip(me), r = A.r, last = r.frames.length - 1;
   board.classList.add('anim');
-  const fallAt = {}; r.falls.forEach(([i, f, vx, vy]) => fallAt[i] = [f, vx, vy]);
-  const hitSet = new Set(r.hits.map(h => Math.floor(h)));
-  let fi = 0, last = 0;
-  const place = fr => fr.forEach((p, i) => { const el = els[i]; if (!el) return; const x = fl ? BR - p[0] : p[0], y = fl ? BR - p[1] : p[1]; el.style.left = x + '%'; el.style.top = y + '%'; if (fallAt[i] && fi >= fallAt[i][0] && !el.__fell) { el.__fell = 1; el.classList.remove('gone'); el.classList.add('falling'); if (W.SFX) W.SFX.play('swish'); } else if (!p[2] && !fallAt[i]) el.classList.add('gone'); else if (p[2]) el.classList.remove('gone'); });
-  place(r.frames[0]);
-  if (W.SFX) W.SFX.play('flip');
-  const tick = t => {
-    if (!document.body.contains(board)) return;
-    if (t - last >= 16) { last = t; fi++;
-      if (hitSet.has(fi) || hitSet.has(fi - 1)) { if (W.SFX) W.SFX.play('stamp'); const sp = document.createElement('i'); sp.className = 'akfx-hit'; board.appendChild(sp); const fr = r.frames[Math.min(fi, r.frames.length - 1)]; sp.style.left = (fl ? BR - fr[S.shot.k][0] : fr[S.shot.k][0]) + '%'; sp.style.top = (fl ? BR - fr[S.shot.k][1] : fr[S.shot.k][1]) + '%'; setTimeout(() => sp.remove(), 500); }
+  const fallAt = {}; r.falls.forEach(([i, f]) => fallAt[i] = f);
+  els.forEach(el => { el.style.left = '0'; el.style.top = '0'; el.style.willChange = 'transform'; });
+  const draw = () => {
+    if (!board.isConnected || W.__lanim !== A) return;
+    const bw = board.clientWidth, t = (performance.now() - A.t0) / STEPMS, i0 = Math.min(last, Math.floor(t)), i1 = Math.min(last, i0 + 1), f = Math.min(1, t - i0);
+    const F0 = r.frames[i0], F1 = r.frames[i1];
+    for (let i = 0; i < els.length; i++) {
+      const el = els[i], a = F0[i], b = F1[i]; let x = a[0] + (b[0] - a[0]) * f, y = a[1] + (b[1] - a[1]) * f; if (fl) { x = BR - x; y = BR - y; }
+      el.style.transform = `translate3d(${(x * bw / 100).toFixed(1)}px,${(y * bw / 100).toFixed(1)}px,0) translate(-50%,-50%)`;
+      if (fallAt[i] != null && i0 >= fallAt[i]) { if (!A.fallDone.has(i)) { A.fallDone.add(i); if (W.SFX) W.SFX.play('swish'); } el.classList.remove('gone'); el.classList.add('falling'); }
+      else if (!a[2]) el.classList.add('gone'); else el.classList.remove('gone', 'falling');
     }
-    if (fi < r.frames.length) { place(r.frames[fi]); requestAnimationFrame(tick); }
-    else { board.classList.remove('anim'); els.forEach((el, i) => { if (!S.st[i].a) el.classList.add('gone'); }); if (S.winner) win(); go(); }
+    for (const h of r.hits) if (h[0] <= i0 && !A.hitDone.has(h[0])) {
+      A.hitDone.add(h[0]); if (h[3] < .15) continue;
+      if (W.SFX) W.SFX.play('stamp');
+      const sp = document.createElement('i'); sp.className = 'akfx-hit'; const hx = fl ? BR - h[1] : h[1], hy = fl ? BR - h[2] : h[2];
+      sp.style.left = hx + '%'; sp.style.top = hy + '%'; sp.style.setProperty('--hs', Math.min(1.6, .5 + h[3] / 3).toFixed(2)); board.appendChild(sp); setTimeout(() => sp.remove(), 450);
+    }
+    if (i0 < last) requestAnimationFrame(draw);
+    else {
+      A.done = true; board.classList.remove('anim');
+      els.forEach((el, i) => { const o = S.st[i]; el.style.transform = ''; el.style.willChange = ''; el.style.left = (fl ? BR - o.x : o.x) + '%'; el.style.top = (fl ? BR - o.y : o.y) + '%'; el.classList.toggle('gone', !o.a); el.classList.remove('falling'); });
+      if (S.winner) win(); go();
+    }
   };
-  requestAnimationFrame(tick);
+  requestAnimationFrame(draw);
   function win() {
     const el = document.createElement('div'); el.className = 'omfx-banner' + (S.wp === me ? ' me' : '');
     el.innerHTML = `<b>${S.wp >= 0 ? (S.wp === me ? '🏆 승리!' : `🏆 ${U.esc(P[S.wp].name)}님 승리!`) : '🤝 무승부'}</b><small>${S.shots}번 튕겨서 끝났어요</small>`;
@@ -178,6 +220,6 @@ function lBot(S, P) {
   return true;
 }
 G.alkkagi.botStep = lBot;
-G.alkkagi.botDelay = () => 1600;
+G.alkkagi.botDelay = S => S && S.shot ? sim(S.shot.pre, S.shot.k, S.shot.vx, S.shot.vy, false).steps * STEPMS + 700 : 900;
 G.alkkagi.BOTNAMES = ['튕김왕', '손가락', '알부자', '돌멩이'];
 })();
