@@ -2111,6 +2111,13 @@ body.g-omok .wrap{max-width:min(980px,100%)}
 .cd-pop b{font-size:14px;font-weight:900;padding:3px 12px;border-radius:999px;background:#fff;color:#2A1E6E;box-shadow:0 3px 8px rgba(0,0,0,.2);white-space:nowrap}
 .cd-pop.me b{background:#2A56D6;color:#fff}
 @media (max-width:759px){.cd-pop{bottom:calc(30vh + var(--lane) * 5vh);left:calc(6vw + var(--lane) * 16vw)}.cd-emo{grid-template-columns:repeat(8,1fr)}.cd-e{font-size:22px}}
+.cd-pop.side{margin-left:0}
+.cd-pop.side .cd-pe{font-size:var(--es,64px)}
+.cd-pop.side b{font-size:12px;max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.cd-pop.corner{left:auto!important;right:10px;bottom:auto!important;top:calc(110px + var(--lane) * 64px)}
+.cd-pop.corner .cd-pe{font-size:40px}.cd-pop.corner b{font-size:11px}
+.cd-emo{grid-template-columns:repeat(10,1fr)!important;max-height:190px;overflow-y:auto}
+@media (max-width:759px){.cd-emo{grid-template-columns:repeat(8,1fr)!important}}
 /* ===== 3D 그림 끝 ===== */
 /* 크라켄 카드 (3D 그림) */
 .kcard{position:relative;container-type:inline-size;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2%;width:100%;aspect-ratio:100/140;border-radius:12%/8.6%;overflow:hidden;border:3px solid #8B6A3C;box-sizing:border-box;box-shadow:inset 0 0 0 2px rgba(255,255,255,.45)}

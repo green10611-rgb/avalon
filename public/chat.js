@@ -5,7 +5,7 @@
    dock.show(true/false) */
 (function(){
 const R = typeof window !== 'undefined' ? window : globalThis;
-const EMO = ['😂', '🤣', '😍', '😎', '🤔', '😱', '😭', '😡', '🥳', '😴', '🙄', '😏', '👍', '👏', '🙏', '💪', '🔥', '❤️', '💯', '🎉', '👀', '🤫', '🐺', '💀'];
+const EMO = ['😂', '🤣', '😆', '😊', '😍', '🥰', '😘', '😎', '🤩', '🤔', '🧐', '🤨', '😏', '🙄', '😬', '😳', '😱', '😨', '😭', '🥺', '😢', '😤', '😡', '🤬', '🥳', '😴', '🤯', '🤪', '😵', '🤮', '🫠', '🙃', '😇', '😈', '👻', '💀', '🤡', '💩', '👍', '👎', '👏', '🙌', '🙏', '💪', '✌️', '🤞', '👌', '🫡', '🔥', '❤️', '💔', '💯', '🎉', '✨', '⭐', '💤', '👀', '🤫', '🍀', '🎯', '🏆', '⚔️', '🐺', '🐙', '💎', '🪳', '🔔', '🔮', '⚫', '⚪'];
 const isEmo = t => { const s = String(t || '').replace(/\s/g, ''); return !!s && s.length <= 12 && /\p{Extended_Pictographic}/u.test(s) && !/[\p{L}\p{N}]/u.test(s.replace(/\p{Extended_Pictographic}|\uFE0F|\u200D/gu, '')); };
 R.ChatDock = function(opts){
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -56,7 +56,19 @@ R.ChatDock = function(opts){
   // 이모티콘은 채팅창을 닫아도 화면에 '누가 보냈는지'와 함께 둥실 떠올라요
   function pop(x){
     const el = document.createElement('div'); el.className = 'cd-pop' + (x.id === me ? ' me' : '');
-    const lane = popN++ % 5; el.style.setProperty('--lane', lane);
+    const lane = popN++ % 4; el.style.setProperty('--lane', lane);
+    try {
+      const wrap = document.querySelector('.wrap') || document.querySelector('#game') || document.body, wr = wrap.getBoundingClientRect();
+      const dk = !root.hidden ? root.getBoundingClientRect() : null, right = dk && dk.width ? dk.left : innerWidth;
+      const gapR = right - wr.right, gapL = wr.left;
+      const H = innerHeight, y = H * (.22 + lane * .17);
+      let x = null, size = 0;
+      if (gapR >= 90) { x = wr.right + gapR / 2; size = Math.min(84, gapR * .62); }
+      else if (gapL >= 90) { x = gapL / 2; size = Math.min(84, gapL * .62); }
+      if (x != null) { el.style.cssText += `;left:${x}px;top:${y}px;bottom:auto;translate:-50% 0;--es:${size}px`; el.classList.add('side'); }
+      else if (dk && dk.width > 200) { x = dk.left + dk.width * (.22 + (lane % 2) * .18); el.style.cssText += `;left:${x}px;top:${dk.top + 90 + lane * 70}px;bottom:auto;translate:-50% 0;--es:56px`; el.classList.add('side'); }   // 빈 곳이 없으면 채팅 칸 위쪽 빈자리에
+      else el.classList.add('corner');   // 그것도 없으면 화면 오른쪽 구석에 작게
+    } catch(e){}
     el.innerHTML = `<span class="cd-pe">${esc(x.t)}</span><b>${esc(x.n)}${x.id === me ? ' (나)' : ''}</b>`;
     document.body.appendChild(el);
     if (el.animate) el.animate([{transform: 'translateY(30px) scale(.4)', opacity: 0}, {transform: 'translateY(-8px) scale(1.15)', opacity: 1, offset: .15}, {transform: 'translateY(-20px) scale(1)', opacity: 1, offset: .7}, {transform: 'translateY(-70px) scale(.9)', opacity: 0}], {duration: 3200, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'both'}).onfinish = () => el.remove();

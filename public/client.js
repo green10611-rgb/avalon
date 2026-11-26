@@ -73,7 +73,7 @@ function render(){
   document.body.classList.toggle('g-halli', !!(room && room.status !== 'lobby' && room.game === 'halli' && state()));
   document.body.classList.toggle('g-cockroach', !!(room && room.status !== 'lobby' && room.game === 'cockroach' && state()));
   document.body.classList.toggle('g-splendor', !!(room && room.status !== 'lobby' && room.game === 'splendor' && state()));
-  const st = state(), lk = st && st.last && !st.decks ? JSON.stringify(st.last) + (st.quest || 0) : '';
+  const st = state(), lk = st && st.last && typeof st.last === 'object' && !st.decks ? JSON.stringify(st.last) + (st.quest || 0) : '';
   if (lk && render.lk !== undefined && lk !== render.lk) window.scrollTo(0, 0); else window.scrollTo(0, y);
   render.lk = lk;
   for (const id in keep) { const f = document.getElementById(id); if (f) f.value = keep[id]; }
