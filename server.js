@@ -106,7 +106,7 @@ function handle(ws, m) {
       let nm = name; while (r.players.some(p => p.name === nm)) nm += '2';
       r.players.push({ id: me.pid, name: nm });
     }
-    me.code = r.code; return broadcast(r);
+    if (r.gone) r.gone = r.gone.filter(x => x !== me.pid); me.code = r.code; return broadcast(r);
   }
   const r = me.code && rooms.get(me.code);
   if (!r) return err(ws, '방을 찾을 수 없어요.');
@@ -114,7 +114,7 @@ function handle(ws, m) {
   if (m.type === 'leave') {
     me.code = null; send(ws, { type: 'room', room: null });
     if (r.host === me.pid) { for (const [w, v] of socks) if (v.code === r.code) { v.code = null; send(w, { type: 'closed' }); } rooms.delete(r.code); return; }
-    if (r.status === 'lobby') r.players = r.players.filter(p => p.id !== me.pid);
+    if (r.status === 'lobby') r.players = r.players.filter(p => p.id !== me.pid); else (r.gone = r.gone || []).push(me.pid);
     return broadcast(r);
   }
   if (m.type === 'chat') {
@@ -156,7 +156,9 @@ function handle(ws, m) {
   }
   if (m.type === 'lobby') {
     if (r.host !== me.pid) return err(ws, '방장만 할 수 있어요.');
-    r.status = 'lobby'; r.state = null; r.gid = ''; return broadcast(r);
+    r.status = 'lobby'; r.state = null; r.gid = '';
+    if (r.gone && r.gone.length) { r.players = r.players.filter(p => !r.gone.includes(p.id)); r.gone = []; }
+    return broadcast(r);
   }
   if (m.type === 'act') {
     if (idx < 0) return err(ws, '이 방의 참가자가 아니에요.');
