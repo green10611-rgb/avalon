@@ -190,7 +190,7 @@ function lFx(S, me, P) {
       A.hitDone.add(h[0]); if (h[3] < .06) continue;
       if (W.SFX) W.SFX.play('clack', Math.min(1.3, .45 + h[3] / 2.2));
       const sp = document.createElement('i'); sp.className = 'akfx-hit'; const hx = fl ? BR - h[1] : h[1], hy = fl ? BR - h[2] : h[2];
-      sp.style.left = hx + '%'; sp.style.top = hy + '%'; if (h[3] > 1.4 && board.animate) board.animate([{transform: 'none'}, {transform: 'translate(-3px,2px)'}, {transform: 'translate(3px,-2px)'}, {transform: 'none'}], {duration: 160}); sp.style.setProperty('--hs', Math.min(1.6, .5 + h[3] / 3).toFixed(2)); board.appendChild(sp); setTimeout(() => sp.remove(), 450);
+      sp.style.left = hx + '%'; sp.style.top = hy + '%'; sp.style.setProperty('--hs', Math.min(1.6, .5 + h[3] / 3).toFixed(2)); board.appendChild(sp); setTimeout(() => sp.remove(), 450);
     }
     if (i0 < last) requestAnimationFrame(draw);
     else {
