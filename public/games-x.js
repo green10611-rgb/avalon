@@ -221,9 +221,7 @@ G.dixit = {
       const c = +a.c, mine = S.sub[me] || [];
       if (mine.length >= need(S, P)) throw U.err('이미 냈어요.');
       if (!S.hand[me].includes(c)) throw U.err('그 그림이 없어요.');
-      const txt = String(a.text || '').trim().slice(0, 40);
-      if (!txt) throw U.err('내 그림에 대한 설명을 적어 주세요.');
-      S.hand[me].splice(S.hand[me].indexOf(c), 1); S.sub[me] = mine.concat(c); S.desc = S.desc || {}; S.desc[me] = txt; S.n++;
+      S.hand[me].splice(S.hand[me].indexOf(c), 1); S.sub[me] = mine.concat(c); S.n++;
       if (ids(P).every(i => i === S.st || (S.sub[i] || []).length >= need(S, P))) {
         const all = []; for (const i in S.sub) S.sub[i].forEach(c2 => all.push({c: c2, by: +i}));
         S.table = U.shuffle(all); S.votes = {}; S.phase = 'vote';
@@ -295,7 +293,7 @@ function xBody(S, me, ui, P) {
   } else if (S.phase === 'submit') {
     const mine = S.sub[me] || [], left = me >= 0 && !isSt ? need(S, P) - mine.length : 0;
     const waiting = ids(P).filter(i => i !== st && (S.sub[i] || []).length < need(S, P));
-    if (left > 0) h += `<section class="dx-panel"><div class="dx-h"><b>🎴 “${U.esc(S.clue)}”에 어울리는 내 그림을 내요${need(S, P) > 1 ? ` (${left}장 더)` : ''}</b><small>그림을 고르고, 내 그림에 대한 설명을 직접 적어요. 설명은 공개 때 보여요!</small></div>${hand(ui.dsel, true)}<div class="dx-input"><input id="dx-desc" data-field="text" maxlength="40" placeholder="내 그림 설명 (예: 혼자 달을 올려다보는 여우)" autocomplete="off">${U.btn(ui.dsel != null ? '이 그림과 설명 내기' : '먼저 그림을 고르세요', 'sub', {c: ui.dsel}, 'primary big dx-go', ui.dsel == null).replace('<button ', '<button data-fields ')}</div></section>`;
+    if (left > 0) h += `<section class="dx-panel"><div class="dx-h"><b>🎴 “${U.esc(S.clue)}”에 어울리는 내 그림을 내요${need(S, P) > 1 ? ` (${left}장 더)` : ''}</b><small>이야기꾼의 제시어에 어울리는 그림을 하나 골라 내요. 설명은 쓰지 않아도 돼요!</small></div>${hand(ui.dsel, true)}${U.btn(ui.dsel != null ? '이 그림 내기' : '먼저 그림을 고르세요', 'sub', {c: ui.dsel}, 'primary big dx-go', ui.dsel == null)}</section>`;
     else h += `<section class="dx-panel wait"><div class="dx-pile">${Array.from({length: Object.values(S.sub).reduce((s, a) => s + a.length, 0)}, (_, k) => dback(`sm k${k}`)).join('')}</div><b>그림을 모으는 중…</b>${status(waiting)}</section>`;
   } else if (S.phase === 'vote' || S.phase === 'reveal') {
     const rv = S.phase === 'reveal', stIdx = S.table.findIndex(t => t.by === st);
@@ -371,7 +369,7 @@ function xBot(S, P) {
     const i = ids(P).find(k => P[k].bot && k !== S.st && (S.sub[k] || []).length < need(S, P)); if (i == null) return false;
     const best = S.hand[i].map(c => ({c, s: match(c, S.clue) + Math.random() * 1.5})).sort((a, b) => b.s - a.s)[0];
     const tg = tagsOf(best.c), w = tg[U.rint(tg.length)], w2 = tg[U.rint(tg.length)];
-    return run(i, 'sub', {c: best.c, text: w === w2 ? `${w}의 순간` : `${w}과 ${w2}`});
+    return run(i, 'sub', {c: best.c});
   }
   if (S.phase === 'vote') {
     const i = ids(P).find(k => P[k].bot && k !== S.st && S.votes[k] == null); if (i == null) return false;
