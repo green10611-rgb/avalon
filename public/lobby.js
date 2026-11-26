@@ -9,6 +9,7 @@
     cockroach: {c1: '#7CC242', c2: '#1A4A16', c3: '#FFD54F', tag: '"이건 바퀴벌레야!" 진짜일까, 거짓말일까?', sub: '같은 벌레 4장이면 패배', art: ['rk_roach', 'rk_bat', 'rk_fly', 'rk_toad', 'rk_rat', 'rk_spider'], seat: 'rk_roach', empty: '빈 자리', ready: '벌레 넘기기 시작!'},
     halli: {c1: '#FFB300', c2: '#E0461E', c3: '#FFFFFF', tag: '같은 과일이 딱 5개면 종을 땡!', sub: '눈치와 순발력 대결', art: ['bell', 'strawberry', 'banana', 'lime', 'plum', 'bell'], seat: 'banana', empty: '빈 자리', ready: '종 칠 준비!'},
     dixit: {c1: '#FF5FA2', c2: '#4A1FA0', c3: '#FFF0A8', tag: '그림 한 장에 담긴 이야기를 맞혀라', sub: '너무 쉽지도 어렵지도 않게', art: ['crystal', 'rainbow', 'unicorn', 'balloon', 'fairy', 'kite'], seat: 'palette', empty: '빈 자리', ready: '이야기 시작!'},
+    omok: {c1: '#C98A4B', c2: '#4A2A10', c3: '#FFE9B0', tag: '다섯 알을 먼저 이어라', sub: '흑과 백, 단 한 수의 승부', art: ['om_stone', 'om_wstone', 'teacup', 'scroll', 'pine', 'lantern'], seat: 'om_stone', empty: '빈 자리', ready: '대국 시작!'},
     werewords: {c1: '#4B3BC4', c2: '#0B0726', c3: '#FFE38A', tag: '예/아니오로 비밀 단어를 찾아라', sub: '숨은 늑대인간과 예언자', art: ['ww_moon', 'ww_wolf', 'crystal', 'ww_mayor', 'owl', 'star'], seat: 'ww_farmer', empty: '빈 자리', ready: '밤이 찾아와요!'},
   };
   const img = (k, cls = '') => `<img class="fe ${cls}" src="img/${k}.webp" alt="" draggable="false">`;

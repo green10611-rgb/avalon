@@ -2,8 +2,8 @@
 (function(){
 const $app = document.getElementById('app');
 const esc = U.esc;
-const GAMES = ['avalon', 'kraken', 'splendor', 'cockroach', 'halli', 'dixit', 'werewords'];
-const SOLO = (location.pathname.match(/^\/(kraken|avalon|splendor|cockroach|halli|dixit|werewords)\/?$/) || [])[1] || '';
+const GAMES = ['avalon', 'kraken', 'splendor', 'cockroach', 'halli', 'dixit', 'werewords', 'omok'];
+const SOLO = (location.pathname.match(/^\/(kraken|avalon|splendor|cockroach|halli|dixit|werewords|omok)\/?$/) || [])[1] || '';
 let g = G[SOLO] || G.avalon;
 if (SOLO) document.title = G[SOLO].name;
 document.body.classList.toggle('solo-' + (SOLO || 'all'), true);
@@ -17,7 +17,7 @@ let code = ss.get('av_room') || '';
 let invite = (new URLSearchParams(location.search).get('room') || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
 let room = null, ui = {}, busy = false, connected = false, lastGid = null, confirmQ = null, ws = null, retry = 0;
 
-const FUNC = {avalon: ['#3D5AFE', '#1A1F4D', 'knight'], kraken: ['#13B5A6', '#0B3D5C', 'kraken'], splendor: ['#A65CFF', '#3B1D78', 'gem'], cockroach: ['#7CC242', '#1F5A1A', 'cockroach'], halli: ['#FFB300', '#F0612B', 'bell'], dixit: ['#FF5FA2', '#6A2CC9', 'crystal'], werewords: ['#4B3BC4', '#120B33', 'ww_wolf'], marble: ['#2FA8FF', '#155EAD', 'globe'], court: ['#E0464E', '#6A1230', 'crown'], omok: ['#5D6B7E', '#1C2330', 'die']};
+const FUNC = {avalon: ['#3D5AFE', '#1A1F4D', 'knight'], kraken: ['#13B5A6', '#0B3D5C', 'kraken'], splendor: ['#A65CFF', '#3B1D78', 'gem'], cockroach: ['#7CC242', '#1F5A1A', 'cockroach'], halli: ['#FFB300', '#F0612B', 'bell'], dixit: ['#FF5FA2', '#6A2CC9', 'crystal'], werewords: ['#4B3BC4', '#120B33', 'ww_wolf'], marble: ['#2FA8FF', '#155EAD', 'globe'], court: ['#E0464E', '#6A1230', 'crown'], omok: ['#C98A4B', '#5A3415', 'om_stone']};
 const funSty = (k, i) => { const f = FUNC[k] || ['#4A5AE8', '#20264F']; return `--g1:${f[0]};--g2:${f[1]};--i:${i}`; };
 const funImg = k => FUNC[k] ? `<img class="gfun-im" src="img/${FUNC[k][2]}.webp" alt="" draggable="false">` : '';
 const heroFloat = () => `<div class="hero-float" aria-hidden="true">${['knight', 'kraken', 'gem', 'cockroach', 'bell', 'crystal', 'coin', 'crown', 'die', 'lime'].map((n, i) => `<img src="img/${n}.webp" alt="" style="--i:${i}">`).join('')}</div>`;
@@ -68,6 +68,7 @@ function render(){
   $app.innerHTML = !code ? homeHTML() : !room ? `<div class="empty">방 <b>${esc(code)}</b>에 연결하는 중…</div><button type="button" class="btn ghost" data-nav="leaveLocal">처음으로</button>` : room.status === 'lobby' ? lobbyHTML() : gameHTML();
   document.body.classList.toggle('g-kraken', !!(room && room.status !== 'lobby' && room.game === 'kraken' && state()));
   document.body.classList.toggle('g-dixit', !!(room && room.status !== 'lobby' && room.game === 'dixit' && state()));
+  document.body.classList.toggle('g-omok', !!(room && room.status !== 'lobby' && room.game === 'omok' && state()));
   document.body.classList.toggle('g-werewords', !!(room && room.status !== 'lobby' && room.game === 'werewords' && state()));
   document.body.classList.toggle('g-halli', !!(room && room.status !== 'lobby' && room.game === 'halli' && state()));
   document.body.classList.toggle('g-cockroach', !!(room && room.status !== 'lobby' && room.game === 'cockroach' && state()));
@@ -83,6 +84,12 @@ function homeHTML(){
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn primary big avjoin" data-nav="joinInvite">${esc(invite)} 방 들어가기</button>
 <button type="button" class="btn ghost" data-nav="noInvite">다른 방으로 가기</button>`;
+  if (SOLO === 'omok') return `<div class="omhero"><div class="omh-art"><i class="om-st c0"></i><i class="om-st c1"></i><i class="om-st c0"></i><i class="om-st c1"></i><i class="om-st c0"></i></div><span class="kicker">둘이서 · 실시간 · AI 대전 가능</span><h1>오목</h1><p>다섯 알을 먼저 잇는 사람이 승리!<br>친구와, 또는 AI와 한 판!</p></div>${conn()}
+<section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
+<button type="button" class="btn big om-start" data-nav="create" data-key="omok">⚫ 오목 방 만들기</button>
+<section class="panel"><div class="lbl">방 코드로 참가</div><div class="codeform"><input id="code" class="codein" maxlength="4" placeholder="ABCD" autocomplete="off"><button type="button" class="btn primary" data-nav="join">참가</button></div></section>
+<details class="ref"><summary>규칙 보기</summary><ol class="rules">${G.omok.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ol></details>
+<p class="more-games-w"><a class="more-games" href="/">🎲 다른 게임도 보기 <span>→</span></a></p>`;
   if (SOLO === 'werewords') return `<div class="wwhero"><div class="wwh-art">${U.img('ww_wolf', 'a')}${U.img('ww_moon', 'b')}${U.img('crystal', 'c')}</div><span class="kicker">각자 폰으로 · 실시간 · 4~10명</span><h1>한밤의 수수께끼</h1><p>시장의 비밀 단어를 예/아니오 질문으로 찾아내요.<br>단어를 아는 늑대인간과 예언자가 몰래 섞여 있어요!</p></div>${conn()}
 <section class="panel"><div class="nick"><label for="nm">내 이름</label><input id="nm" maxlength="10" placeholder="예: 동규" value="${esc(myName)}" data-name></div></section>
 <button type="button" class="btn big ww-start" data-nav="create" data-key="werewords">🌙 한밤의 수수께끼 방 만들기</button>
