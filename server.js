@@ -149,13 +149,16 @@ function handle(ws, m) {
     return broadcast(r);
   }
   if (m.type === 'start') {
-    if (r.host !== me.pid) return err(ws, '방장만 시작할 수 있어요.');
-    const g = gOf(r); if (r.players.length < g.min || r.players.length > g.max) return err(ws, `${g.name}은(는) ${g.min}~${g.max}명이 필요해요.`);
+    const over = r.status !== 'lobby' && r.state && r.state.winner;
+    if (r.host !== me.pid && !over) return err(ws, '방장만 시작할 수 있어요.');
+    if (r.status !== 'lobby' && !over) return err(ws, '이미 게임 중이에요.');
+    if (r.gone && r.gone.length) { r.players = r.players.filter(p => !r.gone.includes(p.id)); r.gone = []; }
+    const g = gOf(r); if (over && (r.players.length < g.min || r.players.length > g.max)) { r.status = 'lobby'; r.state = null; r.gid = ''; broadcast(r); return err(ws, `${g.name}은(는) ${g.min}~${g.max}명이 필요해서 대기실로 돌아왔어요.`); } if (r.players.length < g.min || r.players.length > g.max) return err(ws, `${g.name}은(는) ${g.min}~${g.max}명이 필요해요.`);
     r.state = g.setup(r.players); r.status = 'play'; r.gid = Math.random().toString(36).slice(2, 10); r.state._g = r.gid;
     return broadcast(r);
   }
   if (m.type === 'lobby') {
-    if (r.host !== me.pid) return err(ws, '방장만 할 수 있어요.');
+    if (r.host !== me.pid && !(r.state && r.state.winner)) return err(ws, '방장만 할 수 있어요.');
     r.status = 'lobby'; r.state = null; r.gid = '';
     if (r.gone && r.gone.length) { r.players = r.players.filter(p => !r.gone.includes(p.id)); r.gone = []; }
     return broadcast(r);

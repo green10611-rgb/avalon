@@ -170,7 +170,7 @@ function gameHTML(){
   if (!S) return `<div class="empty">게임을 불러오는 중…</div>`;
   let h = `<div class="bar"><div class="t"><b>${esc(GN())}</b><small>방 ${esc(code)} · ${P.length}명${me >= 0 ? ` · 나: ${esc(P[me].name)}` : ' · 관전'}</small></div></div>${conn()}`;
   if (S.winner){
-    h += `<div class="winbar"><span class="small">게임 끝</span><div class="row">${host ? `<button type="button" class="btn" data-nav="lobby">🔄 다시하기</button>` : ''}<button type="button" class="btn" data-nav="leave">🚪 나가기</button></div>${host ? '' : '<span class="small">방장이 \'다시하기\'를 누르면 대기실로 모여요.</span>'}</div>`;
+    h += `<div class="winbar"><span class="small">게임 끝</span><div class="row"><button type="button" class="btn" data-nav="again">🔄 다시하기</button><button type="button" class="btn" data-nav="lobby">🚪 나가기</button></div></div>`;
     h += `<div id="game">${g.view(S, -1, ui, P)}</div>`;
   } else {
     const t = g.turns(S, P), mine = t.includes(me);
