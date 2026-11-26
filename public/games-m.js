@@ -13,8 +13,16 @@ const JK = [104, 105], RMH = {};
 const isJ = id => id >= 104;
 const colOf = id => Math.floor(id / 26), numOf = id => id % 13 + 1;
 const CN = ['빨강', '파랑', '주황', '검정'];
+/* 놓인 순서 그대로 이어지는 런인지(조커 자리 유지) */
+function runAsGiven(set) {
+  const n = set.length, fi = set.findIndex(id => !isJ(id)); if (fi < 0 || n > 13) return null;
+  const c = colOf(set[fi]), start = numOf(set[fi]) - fi; if (start < 1 || start + n - 1 > 13) return null;
+  let pts = 0; for (let i = 0; i < n; i++) { const id = set[i]; if (isJ(id)) continue; if (colOf(id) !== c || numOf(id) !== start + i) return null; pts += start + i; }
+  return {kind: 'r', pts, order: set.slice()};
+}
 function check(set) {
   const n = set.length; if (n < 3) return null;
+  if (set.some(isJ)) { const g = runAsGiven(set); if (g) return g; }
   const nj = set.filter(isJ), rs = set.filter(id => !isJ(id));
   if (!rs.length) return null;
   // 그룹
@@ -62,7 +70,7 @@ function compat(set) {
   if (n <= 13 && rs.every(id => colOf(id) === c)) { const ns = rs.map(numOf); if (new Set(ns).size !== ns.length) return false; const span = Math.max(...ns) - Math.min(...ns) + 1; return span - rs.length <= J; }
   return false;
 }
-const partOrder = s => { const rs = s.filter(id => !isJ(id)), js = s.filter(isJ); const g = rs.length > 1 && rs.every(id => numOf(id) === numOf(rs[0])); return rs.slice().sort(g ? (a, b) => colOf(a) - colOf(b) : (a, b) => numOf(a) - numOf(b) || colOf(a) - colOf(b)).concat(js); };
+const partOrder = s => { if (s.some(isJ) && runAsGiven(s)) return s.slice(); const rs = s.filter(id => !isJ(id)), js = s.filter(isJ); const g = rs.length > 1 && rs.every(id => numOf(id) === numOf(rs[0])); return rs.slice().sort(g ? (a, b) => colOf(a) - colOf(b) : (a, b) => numOf(a) - numOf(b) || colOf(a) - colOf(b)).concat(js); };
 const handSum = h => h.reduce((s, id) => s + tval(id), 0);
 G.rummikub = {
   name: '루미큐브', tag: '숫자 타일로 세트를 만들어 먼저 다 내기', min: 2, max: 4, mark: '🀄', hue: '#E8873A',
@@ -151,7 +159,11 @@ G.rummikub = {
         clean(); ui.rsnap = moved; ui.rmsg = ''; return;
       }
       d.sel = ids; const tgt = v.to === 'set' ? d.table[+v.i] : null; const moved = pull();
-      if (tgt) { const at = v.before != null ? tgt.indexOf(+v.before) : -1; if (at >= 0) tgt.splice(at, 0, ...moved); else tgt.push(...moved); }
+      if (tgt) {
+        const seq = (v.seq || []).map(Number);
+        if (v.at != null && seq.length === tgt.length && seq.every(id => tgt.includes(id))) { const at = Math.max(0, Math.min(seq.length, +v.at)); tgt.splice(0, tgt.length, ...seq.slice(0, at), ...moved, ...seq.slice(at)); }
+        else tgt.push(...moved);
+      }
       else if (v.to === 'hand') d.hand.push(...moved);
       else { d.table.push(moved); d.pos.push(v.x != null ? [+v.x, +v.y] : null); }
       clean(); if (tgt) ui.rsnap = moved; else if (v.rep != null) ui.rrep = {ids: moved, dir: +v.dir || 1}; else ui.rsnap = moved; return;
@@ -235,10 +247,10 @@ function bindDrag() {
       const rest = cand.dataset.ids.split(',').map(Number).filter(id => !ids.includes(id));
       if (!rest.length) return {g: 'rmove', v: {i: +cand.dataset.si, x: col, y: row}};
       const c = +cand.dataset.c, n = +cand.dataset.n, mid = c + n / 2, dir = (col + k / 2) < mid ? -1 : 1;
-      if (compat(rest.concat(ids))) return {g: 'rdrop', v: {ids, to: 'set', i: +cand.dataset.si}, el: cand};
-      // 세트 사이에 끼워 둘로 쪼개기 (예: 7~13 런의 10과 11 사이에 11 → 7~11 + 11~13)
       const ord = [...cand.querySelectorAll('[data-tid]')].map(t => [+t.dataset.tid, t.getBoundingClientRect()]).filter(([id]) => !ids.includes(id));
       const at = ord.filter(([, r]) => x > r.left + r.width / 2).length, seq = ord.map(([id]) => id);
+      if (compat(rest.concat(ids))) return {g: 'rdrop', v: {ids, to: 'set', i: +cand.dataset.si, at, seq}, el: cand};
+      // 세트 사이에 끼워 둘로 쪼개기 (예: 7~13 런의 10과 11 사이에 11 → 7~11 + 11~13)
       if (at > 0 && at < seq.length) {
         const opts = [['L', seq.slice(0, at).concat(ids), seq.slice(at)], ['R', seq.slice(0, at), ids.concat(seq.slice(at))]].filter(([, a, b]) => compat(a) && compat(b));
         opts.sort((p1, p2) => (!!check(p2[1]) + !!check(p2[2])) - (!!check(p1[1]) + !!check(p1[2])));
