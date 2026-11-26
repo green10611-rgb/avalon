@@ -2862,3 +2862,15 @@ body.g-rummikub .wrap{padding-block:6px 12px;gap:8px}
 
 .rm-msg .om-tl{display:inline-flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:13px;padding:3px 6px 3px 10px;border-radius:999px;background:rgba(255,255,255,.28);color:inherit}
 .rm-msg .om-tl .btn{min-height:0;height:auto;padding:3px 10px;font-size:13px}
+/* 루미큐브: 칸 격자에 '착' 붙는 바닥 */
+.rmw .rm-felt{padding:6px}
+.rm-grid{position:absolute;left:50%;top:50%;width:calc(22 * var(--rmCW,38px));height:calc(var(--rows,4) * var(--rmRH,64px));transform:translate(-50%,-50%);border-radius:10px;
+  background-image:radial-gradient(circle,rgba(255,255,255,.2) 1.3px,transparent 2px);background-size:var(--rmCW,38px) var(--rmRH,64px);background-position:calc(var(--rmCW,38px) / -2) calc(var(--rmRH,64px) / -2)}
+.rmw .rm-set{left:calc(var(--c) * var(--rmCW,38px));top:calc(var(--r) * var(--rmRH,64px) + 3px);height:calc(var(--rmRH,64px) - 6px);padding:0;gap:0;align-items:center;border-radius:10px;animation:none}
+.rmw .rm-set .rt-b,.rmw .rm-set .rt-s{width:var(--rmCW,38px);flex:none;display:flex;justify-content:center}
+.rmw .rm-felt .rt{--tw:calc(var(--rmCW,38px) - 4px)}
+.rmw .rm-set.magnet{box-shadow:inset 0 0 0 3px #7CF0B0,0 0 24px rgba(124,240,176,.95)!important;transform:scale(1.05);z-index:2}
+.rmw .rm-set.repel{box-shadow:inset 0 0 0 3px #FF6B6B,0 0 24px rgba(255,90,90,.95)!important;animation:rmRepel .3s ease-in-out infinite;z-index:2}
+@keyframes rmRepel{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.rm-zap{position:fixed;z-index:150;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;pointer-events:none;background:radial-gradient(circle,#fff 0 10%,#FFB3B3 26%,rgba(255,80,80,.5) 46%,transparent 70%);animation:rmZap .55s ease-out forwards}
+@keyframes rmZap{from{transform:scale(.3);opacity:1}to{transform:scale(2.3);opacity:0}}

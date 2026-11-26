@@ -37,20 +37,32 @@ function check(set) {
   return null;
 }
 const tval = id => isJ(id) ? 30 : numOf(id);
-/* 바닥 세트 자리(%) — x,y는 바닥 판의 왼쪽 위 기준 백분율 */
-const SW = n => n * 5.2 + 2.4, SH = 22;
+/* 바닥은 칸 격자: 가로 COLS칸 × 세로 ROWS줄. 세트 자리 = [칸, 줄] */
+const COLS = 22, ROWS = 4, MAXR = 8;
 function autoPlace(pos, table) {
-  const out = table.map((s, i) => { const q = pos && pos[i]; return q && isFinite(q[0]) && isFinite(q[1]) ? [Math.max(0, Math.min(96, +q[0])), Math.max(0, Math.min(92, +q[1]))] : null; });
-  const box = i => ({x: out[i][0], y: out[i][1], w: SW(table[i].length), h: SH});
+  const occ = [], out = table.map(() => null);
+  const free = (c, r, n) => { if (c < 0 || c + n > COLS || r < 0 || r >= MAXR) return false; const row = occ[r] || []; for (let k = c - 1; k <= c + n; k++) if (row[k]) return false; return true; };
+  const take = (c, r, n) => { const row = occ[r] = occ[r] || []; for (let k = c; k < c + n; k++) row[k] = 1; };
+  const wish = i => { const q = pos && pos[i]; if (!q || !isFinite(q[0]) || !isFinite(q[1])) return null; const n = Math.min(COLS, table[i].length); return [Math.max(0, Math.min(COLS - n, Math.round(+q[0]))), Math.max(0, Math.min(MAXR - 1, Math.round(+q[1]))), Number.isInteger(+q[0]) && Number.isInteger(+q[1]) && +q[1] < MAXR]; };
+  table.forEach((s, i) => { const w = wish(i), n = Math.min(COLS, s.length); if (w && w[2] && free(w[0], w[1], n)) { out[i] = [w[0], w[1]]; take(w[0], w[1], n); } });
   table.forEach((s, i) => {
-    if (out[i]) return; const w = SW(s.length);
-    for (let y = 2; y <= 100 - SH && !out[i]; y += 4) for (let x = 1.5; x <= 99 - w && !out[i]; x += 2.5) {
-      if (!out.some((q, j) => q && j !== i && (() => { const b = box(j); return x < b.x + b.w + 1.5 && x + w + 1.5 > b.x && y < b.y + b.h + 1 && y + SH + 1 > b.y; })())) out[i] = [x, y];
-    }
-    if (!out[i]) out[i] = [2 + Math.random() * 30, 2 + Math.random() * 60];
+    if (out[i]) return; const w = wish(i), n = Math.min(COLS, s.length); let best = null, bs = 1e9;
+    for (let r = 0; r < MAXR; r++) for (let c = 0; c + n <= COLS; c++) { if (!free(c, r, n)) continue; const sc = (r >= ROWS ? 500 : 0) + (w ? Math.abs(r - w[1]) * 4 + Math.abs(c - w[0]) : r * 40 + c); if (sc < bs) { bs = sc; best = [c, r]; } }
+    out[i] = best || [0, MAXR - 1]; take(out[i][0], out[i][1], n);
   });
   return out;
 }
+/* 붙을 수 있는 조합인지(아직 3장이 안 돼도 이어질 수 있으면 OK) */
+function compat(set) {
+  const rs = set.filter(id => !isJ(id)), J = set.length - rs.length, n = set.length;
+  if (!rs.length) return n <= 13;
+  const num = numOf(rs[0]);
+  if (n <= 4 && rs.every(id => numOf(id) === num) && new Set(rs.map(colOf)).size === rs.length) return true;
+  const c = colOf(rs[0]);
+  if (n <= 13 && rs.every(id => colOf(id) === c)) { const ns = rs.map(numOf); if (new Set(ns).size !== ns.length) return false; const span = Math.max(...ns) - Math.min(...ns) + 1; return span - rs.length <= J; }
+  return false;
+}
+const partOrder = s => { const rs = s.filter(id => !isJ(id)), js = s.filter(isJ); const g = rs.length > 1 && rs.every(id => numOf(id) === numOf(rs[0])); return rs.slice().sort(g ? (a, b) => colOf(a) - colOf(b) : (a, b) => numOf(a) - numOf(b) || colOf(a) - colOf(b)).concat(js); };
 const handSum = h => h.reduce((s, id) => s + tval(id), 0);
 G.rummikub = {
   name: '루미큐브', tag: '숫자 타일로 세트를 만들어 먼저 다 내기', min: 2, max: 4, mark: '🀄', hue: '#E8873A',
@@ -103,7 +115,7 @@ G.rummikub = {
     next(S, P);
   },
   view(S, me, ui, P) {
-    if (isDOM) setTimeout(() => mFx(S, me, P), 0);
+    if (isDOM) setTimeout(() => { mFx(S, me, P); rmSnapFx(ui); }, 0);
     return `<div class="rkbox2"><div class="rmw">${mBody(S, me, ui, P)}</div></div>`;
   },
   uiAct(ui, S, me, name, val) {
@@ -128,11 +140,13 @@ G.rummikub = {
       if (tgt) { const at = v.before != null ? tgt.indexOf(+v.before) : -1; if (at >= 0) tgt.splice(at, 0, ...moved); else tgt.push(...moved); }
       else if (v.to === 'hand') d.hand.push(...moved);
       else { d.table.push(moved); d.pos.push(v.x != null ? [+v.x, +v.y] : null); }
-      clean(); return;
+      clean(); if (tgt) ui.rsnap = moved; else if (v.rep != null) ui.rrep = {ids: moved, dir: +v.dir || 1}; else ui.rsnap = moved; return;
     }
     if (name === 'rmove') {
       const v = val || {}, i = +v.i; if (!d.table[i]) return;
-      d.pos[i] = [Math.max(0, Math.min(96, +v.x)), Math.max(0, Math.min(92, +v.y))]; return;
+      const others = d.pos.map((q, j) => j === i ? null : q); others[i] = [+v.x, +v.y];
+      const order = [i, ...d.table.map((_, j) => j).filter(j => j !== i)], placed = autoPlace(order.map(j => others[j]), order.map(j => d.table[j]));
+      order.forEach((j, k) => { d.pos[j] = placed[k]; }); ui.rsnap = d.table[i].slice(); return;
     }
   },
   splash: true
@@ -167,9 +181,10 @@ function mBody(S, me, ui, P) {
   const tools = S.n === 0 && !S.winner && me >= 0 ? `<span class="om-tl"><b>⏱ 한 차례 제한시간</b>${[0, 15, 30, 60].map(s => U.btn(s ? (s < 60 ? `${s}초` : '1분') : '없음', 'tl', {s}, 'sm' + (S.tl === s ? ' primary' : ''))).join('')}</span>` : '';
   h += `<div class="rm-msg${my ? ' me' : ''}${S.winner ? ' end' : ''}"><span>${msg}</span>${tm}${tools}</div>`;
   // 바닥
-  const sets = table.map((s, i) => { const c = check(s), ord = c ? c.order : s; const fresh = my && !S.melded[me] && s.every(id => !oldSet.has(id)); return `<div class="rm-set ${s.length && !c ? 'bad' : 'ok'}${fresh ? ' fresh' : ''}" data-si="${i}" style="--k:${i};left:${pos[i][0]}%;top:${pos[i][1]}%">${ord.map(id => my ? `<button type="button" class="rt-b" data-g="rsel" data-val="${id}" data-tid="${id}">${tile(id, (sel.has(id) ? 'sel ' : '') + (!oldSet.has(id) ? 'new ' : '') + (lastSet.has(id) && !my ? 'last' : ''))}</button>` : tile(id, lastSet.has(id) ? 'last' : '')).join('')}${my && sel.size ? `<button type="button" class="rm-add" data-g="rto" data-val="${i}">+여기에</button>` : ''}${c && fresh ? `<em class="rm-pts">${c.pts}점</em>` : ''}</div>`; }).join('');
+  const rows = Math.max(ROWS, ...pos.map(q => q[1] + 1));
+  const sets = table.map((s, i) => { const c = check(s), ord = c ? c.order : partOrder(s); const fresh = my && !S.melded[me] && s.every(id => !oldSet.has(id)); return `<div class="rm-set ${s.length && !c ? 'bad' : 'ok'}${fresh ? ' fresh' : ''}" data-si="${i}" data-ids="${s.join(',')}" data-n="${s.length}" data-c="${pos[i][0]}" data-r="${pos[i][1]}" style="--c:${pos[i][0]};--r:${pos[i][1]}">${ord.map(id => my ? `<button type="button" class="rt-b" data-g="rsel" data-val="${id}" data-tid="${id}">${tile(id, (sel.has(id) ? 'sel ' : '') + (!oldSet.has(id) ? 'new ' : ''))}</button>` : `<span class="rt-s">${tile(id, lastSet.has(id) ? 'last' : '')}</span>`).join('')}${c && fresh ? `<em class="rm-pts">${c.pts}점</em>` : ''}</div>`; }).join('');
   const freshPts = my && !S.melded[me] ? table.filter(s => s.every(id => !oldSet.has(id))).reduce((sum, s) => { const c = check(s); return sum + (c ? c.pts : 0); }, 0) : 0;
-  h += `<section class="rm-table"><div class="rm-felt${my ? ' mine' : ''}">${sets || '<p class="rm-empty">아직 바닥이 비었어요. 첫 세트를 내 보세요!</p>'}${my && sel.size ? `<button type="button" class="rm-newset" data-g="rnew">＋ 새 세트 만들기</button>` : ''}</div></section>`;
+  h += `<section class="rm-table"><div class="rm-felt${my ? ' mine' : ''}" data-rows="${rows}" style="--rows:${rows}">${sets ? '' : '<p class="rm-empty">아직 바닥이 비었어요. 첫 세트를 내 보세요!</p>'}<div class="rm-grid">${sets}</div>${my && sel.size ? `<button type="button" class="rm-newset" data-g="rnew">＋ 새 세트 만들기</button>` : ''}</div></section>`;
   // 손패와 버튼
   if (me >= 0 && d) {
     const hand = sortHand(my ? d.hand : S.hand[me], ui.rsort || 'num');
@@ -178,27 +193,38 @@ function mBody(S, me, ui, P) {
     const allOk = my && d.table.every(s => check(s));
     h += `<section class="rm-hand"><header><b>🀄 내 타일 ${hand.length}장</b><span class="rm-sort">${U.ub('123 순', 'rsort', 'num', 'sm' + ((ui.rsort || 'num') === 'num' ? ' primary' : ''))}${U.ub('색깔 순', 'rsort', 'col', 'sm' + (ui.rsort === 'col' ? ' primary' : ''))}</span>${meldable.size ? '<span class="rm-hint">✨ 황금빛 타일로 첫 등록(조커 빼고 합 30↑) 가능!</span>' : ''}${!S.melded[me] && my ? `<span class="rm-meld${freshPts >= 30 ? ' ok' : ''}">첫 등록 ${freshPts}/30</span>` : ''}</header>
 <div class="rm-rack" data-drop="hand">${hand.map((id, k) => my ? `<button type="button" class="rt-b" style="--k:${k}" data-g="rsel" data-val="${id}" data-tid="${id}">${tile(id, (sel.has(id) ? 'sel ' : '') + (meldable.has(id) ? 'meld' : ''))}</button>` : `<span class="rt-b" style="--k:${k}">${tile(id, meldable.has(id) ? 'meld' : '')}</span>`).join('')}</div>
-${my ? `<div class="rm-acts">${sel.size ? `<button type="button" class="btn sm" data-g="rclr">선택 풀기 (${sel.size})</button><button type="button" class="btn sm" data-g="rback">↩ 손으로 되돌리기</button>` : ''}${changed || d.table.length !== S.table.length ? `<button type="button" class="btn sm ghost" data-g="rreset">↺ 처음부터</button>` : ''}${U.btn(changed ? (allOk ? '✅ 이대로 내기' : '세트를 올바르게 맞춰 주세요') : '낼 타일을 고르세요', 'play', {t: d.table}, 'primary big rm-go', !changed || !allOk)}${U.btn(S.pool.length ? '🎴 한 장 가져가기' : '넘기기', 'draw', {p: d.table.length === S.table.length ? d.pos : null}, 'big rm-draw')}</div>${ui.rmsg ? `<p class="rm-warn">${U.esc(ui.rmsg)}</p>` : ''}` : ''}</section>`;
+${my ? `<div class="rm-acts">${sel.size ? `<button type="button" class="btn sm" data-g="rclr">선택 풀기 (${sel.size})</button><button type="button" class="btn sm" data-g="rback">↩ 손으로 되돌리기</button>` : ''}${changed || d.table.length !== S.table.length ? `<button type="button" class="btn sm ghost" data-g="rreset">↺ 처음부터</button>` : ''}${U.btn(changed ? (allOk ? '✅ 이대로 내기' : '세트를 올바르게 맞춰 주세요') : '낼 타일을 고르세요', 'play', {t: d.table, p: d.pos}, 'primary big rm-go', !changed || !allOk)}${U.btn(S.pool.length ? '🎴 한 장 가져가기' : '넘기기', 'draw', {p: d.table.length === S.table.length ? d.pos : null}, 'big rm-draw')}</div>${ui.rmsg ? `<p class="rm-warn">${U.esc(ui.rmsg)}</p>` : ''}` : ''}</section>`;
   }
   return h;
 }
 function rmTick() { const W = window; if (W.__rmTick) return; W.__rmTick = setInterval(() => document.querySelectorAll('.rmw .om-clock[data-seen]').forEach(e => { const l = Math.max(0, +e.dataset.len - (Date.now() - +e.dataset.seen) / 1000); const sp = e.querySelector('span'); if (sp) sp.textContent = Math.ceil(l); e.classList.toggle('hurry', l <= Math.min(10, +e.dataset.len / 3)); }), 250); }
 
 /* ---------- 끌어서 놓기 ---------- */
+const gridInfo = () => { const g = document.querySelector('.rmw .rm-grid'); if (!g) return null; const r = g.getBoundingClientRect(), cs = getComputedStyle(document.documentElement); return {r, cw: parseFloat(cs.getPropertyValue('--rmCW')) || r.width / COLS, rh: parseFloat(cs.getPropertyValue('--rmRH')) || 70, rows: +(document.querySelector('.rmw .rm-felt') || {}).dataset.rows || ROWS}; };
 function bindDrag() {
   const box = document.querySelector('.rmw'); if (!box || box.__drag) return; box.__drag = 1;
   let dr = null;
-  const feltXY = (f, x, y, w, h) => { const r = f.getBoundingClientRect(); const px = Math.max(0, Math.min(r.width - w, x - r.left)), py = Math.max(0, Math.min(r.height - h, y - r.top)); return {x: +(px / r.width * 100).toFixed(2), y: +(py / r.height * 100).toFixed(2)}; };
-  const target = (x, y, ids) => {
+  const target = (x, y) => {
     const el = document.elementFromPoint(x, y); if (!el) return null;
-    const st = el.closest('.rm-set[data-si]');
-    if (st && dr && dr.set == null) {
-      let before = null; for (const t of st.querySelectorAll('[data-tid]')) { const id = +t.dataset.tid; if (ids.includes(id)) continue; const r = t.getBoundingClientRect(); if (x < r.left + r.width / 2) { before = id; break; } }
-      return {to: 'set', i: +st.dataset.si, el: st, before};
-    }
     const rk = el.closest('.rm-rack'); if (rk) return dr && dr.set != null ? null : {to: 'hand', el: rk};
-    const f = el.closest('.rm-felt') || (st && st.closest('.rm-felt')); if (f) return {to: 'new', el: f};
+    const f = el.closest('.rm-felt'); if (f) return {to: 'felt', el: f, st: el.closest('.rm-set[data-si]')};
     return null;
+  };
+  // 바닥에 놓을 때: 칸에 맞추고, 옆 세트와 붙을지(자석) 밀어낼지 결정
+  const plan = (x, y, ids, stEl) => {
+    const G2 = gridInfo(); if (!G2) return null; const k = ids.length;
+    const row = Math.max(0, Math.min(G2.rows - 1, Math.floor((y - G2.r.top) / G2.rh)));
+    const col = Math.max(0, Math.min(COLS - k, Math.round((x - G2.r.left) / G2.cw - k / 2)));
+    let cand = stEl;
+    if (!cand) for (const st of box.querySelectorAll('.rm-set[data-si]')) { const c = +st.dataset.c, n = +st.dataset.n; if (+st.dataset.r !== row) continue; if (col <= c + n && col + k - 1 >= c - 1) { cand = st; break; } }
+    if (cand) {
+      const rest = cand.dataset.ids.split(',').map(Number).filter(id => !ids.includes(id));
+      if (!rest.length) return {g: 'rmove', v: {i: +cand.dataset.si, x: col, y: row}};
+      const c = +cand.dataset.c, n = +cand.dataset.n, mid = c + n / 2, dir = (col + k / 2) < mid ? -1 : 1;
+      if (compat(rest.concat(ids))) return {g: 'rdrop', v: {ids, to: 'set', i: +cand.dataset.si}, el: cand};
+      return {g: 'rdrop', v: {ids, to: 'new', x: dir < 0 ? c - k - 1 : c + n + 1, y: row, rep: +cand.dataset.si, dir}, el: cand, bad: 1};
+    }
+    return {g: 'rdrop', v: {ids, to: 'new', x: col, y: row}};
   };
   box.addEventListener('pointerdown', e => {
     if (e.button > 0) return;
@@ -207,6 +233,7 @@ function bindDrag() {
     const st = e.target.closest('.rm-felt.mine .rm-set[data-si]');
     if (st && !e.target.closest('button')) { const r = st.getBoundingClientRect(); dr = {set: +st.dataset.si, el: st, ids: [], ox: e.clientX - r.left, oy: e.clientY - r.top, x0: e.clientX, y0: e.clientY, on: false, pid: e.pointerId}; }
   });
+  const clearHi = () => box.querySelectorAll('.drop,.magnet,.repel').forEach(x => x.classList.remove('drop', 'magnet', 'repel'));
   box.addEventListener('pointermove', e => {
     if (!dr) return;
     if (!dr.on) {
@@ -224,36 +251,60 @@ function bindDrag() {
     }
     if (dr.set != null) { dr.g.style.left = (e.clientX - dr.ox) + 'px'; dr.g.style.top = (e.clientY - dr.oy) + 'px'; }
     else { dr.g.style.left = e.clientX + 'px'; dr.g.style.top = e.clientY + 'px'; }
-    const t = target(e.clientX, e.clientY, dr.ids);
-    box.querySelectorAll('.drop,.ins-l').forEach(x => x.classList.remove('drop', 'ins-l'));
-    if (t) { t.el.classList.add('drop'); if (t.to === 'set' && t.before != null) { const bb = t.el.querySelector(`[data-tid="${t.before}"]`); if (bb) bb.classList.add('ins-l'); } }
+    const t = target(e.clientX, e.clientY); clearHi();
+    if (!t) return;
+    if (t.to === 'hand') { t.el.classList.add('drop'); return; }
+    if (dr.set != null) return;
+    const pl = plan(e.clientX, e.clientY, dr.ids, t.st);
+    if (pl && pl.el) pl.el.classList.add(pl.bad ? 'repel' : 'magnet');
   });
   const end = e => {
     if (!dr) return; const d = dr; dr = null;
     if (!d.on) return;
     const gr = d.g.getBoundingClientRect(); d.g.remove();
-    box.querySelectorAll('.drop,.lifted,.ins-l').forEach(x => x.classList.remove('drop', 'lifted', 'ins-l'));
+    clearHi(); box.querySelectorAll('.lifted').forEach(x => x.classList.remove('lifted'));
     const swallow = ev => { ev.stopPropagation(); ev.preventDefault(); };
     window.addEventListener('click', swallow, true); setTimeout(() => window.removeEventListener('click', swallow, true), 40);
     if (e.type !== 'pointerup') return;
-    dr = d; const t = target(e.clientX, e.clientY, d.ids); dr = null; if (!t) return;
+    const t = target(e.clientX, e.clientY); if (!t) return;
     let val;
-    if (d.set != null) { if (t.to !== 'new') return; const r = d.el.getBoundingClientRect(); val = {g: 'rmove', v: {i: d.set, ...feltXY(t.el, e.clientX - d.ox, e.clientY - d.oy, r.width, r.height)}}; }
-    else if (t.to === 'new') { const tw = gr.width / Math.max(1, d.ids.length); val = {g: 'rdrop', v: {ids: d.ids, to: 'new', ...feltXY(t.el, e.clientX - tw * .5 - 8, e.clientY - gr.height * .45, d.ids.length * tw + 20, gr.height + 14)}}; }
-    else val = {g: 'rdrop', v: {ids: d.ids, to: t.to, i: t.i, before: t.before}};
+    if (d.set != null) { if (t.to !== 'felt') return; const G2 = gridInfo(); if (!G2) return; val = {g: 'rmove', v: {i: d.set, x: Math.max(0, Math.round((gr.left - G2.r.left) / G2.cw)), y: Math.max(0, Math.min(G2.rows - 1, Math.round((gr.top - G2.r.top) / G2.rh)))}}; }
+    else if (t.to === 'hand') val = {g: 'rdrop', v: {ids: d.ids, to: 'hand'}};
+    else { val = plan(e.clientX, e.clientY, d.ids, t.st); if (!val) return; }
     const btn = document.createElement('button'); btn.type = 'button'; btn.hidden = true; btn.dataset.g = val.g;
     btn.dataset.val = JSON.stringify(val.v);
-    box.appendChild(btn); setTimeout(() => { btn.click(); if (window.SFX) window.SFX.play('clack', .9); }, 60);
+    box.appendChild(btn); setTimeout(() => btn.click(), 70);
   };
   box.addEventListener('pointerup', end); box.addEventListener('pointercancel', end);
 }
-/* 한 화면에 맞추기 + 바닥 밖으로 삐져나간 세트 안으로 */
+/* 붙는 '착' / 밀려나는 '팅' 움직임 */
+function rmSnapFx(ui) {
+  if (!ui || (!ui.rsnap && !ui.rrep)) return;
+  const W = window, f = document.querySelector('.rmw .rm-felt'); if (!f) return;
+  if (ui.rsnap) {
+    const ids = ui.rsnap; ui.rsnap = null;
+    ids.forEach((id, k) => { const t = f.querySelector(`[data-tid="${id}"] .rt`); if (t && t.animate) t.animate([{transform: 'translateY(-10px) scale(1.18)', filter: 'brightness(1.25)'}, {transform: 'translateY(1px) scale(.96)', offset: .55}, {transform: 'none', filter: 'none'}], {duration: 260, delay: k * 25, easing: 'cubic-bezier(.3,1.5,.5,1)'}); });
+    const st = ids.length && f.querySelector(`[data-tid="${ids[0]}"]`); const set = st && st.closest('.rm-set'); if (set && set.animate) set.animate([{boxShadow: 'inset 0 0 0 3px #FFE07A,0 0 22px rgba(255,224,122,.9)'}, {boxShadow: 'inset 0 0 0 2px rgba(255,255,255,.12),0 0 0 rgba(0,0,0,0)'}], {duration: 520, easing: 'ease-out'});
+    if (W.SFX) W.SFX.play('clack', 1);
+  }
+  if (ui.rrep) {
+    const {ids, dir} = ui.rrep; ui.rrep = null; const G2 = gridInfo(), cw = G2 ? G2.cw : 40;
+    const t = ids.length && f.querySelector(`[data-tid="${ids[0]}"]`), set = t && t.closest('.rm-set');
+    if (set && set.animate) set.animate([{transform: `translateX(${-dir * cw * 1.1}px) scale(1.05)`}, {transform: `translateX(${dir * cw * .35}px) rotate(${dir * 4}deg)`, offset: .45}, {transform: `translateX(${-dir * 4}px)`, offset: .75}, {transform: 'none'}], {duration: 520, easing: 'cubic-bezier(.2,.9,.3,1)'});
+    const fx = document.createElement('i'); fx.className = 'rm-zap'; if (set) { const r = set.getBoundingClientRect(); fx.style.left = (dir > 0 ? r.left : r.right) + 'px'; fx.style.top = (r.top + r.height / 2) + 'px'; document.body.appendChild(fx); setTimeout(() => fx.remove(), 600); }
+    if (W.SFX) { W.SFX.play('no'); W.SFX.play('swish'); }
+  }
+}
+/* 한 화면에 맞추기 + 칸 크기 정하기 */
 function rmFit() {
   const w = document.querySelector('.rmw'); if (!w) return;
   const D = document.documentElement, f0 = w.querySelector('.rm-felt');
-  if (f0) { const h0 = f0.offsetHeight, room = window.innerHeight - D.scrollHeight; const nh = Math.max(220, Math.round(h0 + room - 2)); if (room < -1 || room > 3) D.style.setProperty('--rmF', nh + 'px'); }
-  const f = w.querySelector('.rm-felt'); if (!f) return; const fr = f.getBoundingClientRect();
-  f.querySelectorAll('.rm-set').forEach(st => { const r = st.getBoundingClientRect(); if (r.right > fr.right - 4) st.style.left = Math.max(0, (r.left - fr.left - (r.right - fr.right + 6)) / fr.width * 100) + '%'; if (r.bottom > fr.bottom - 2) st.style.top = Math.max(0, (r.top - fr.top - (r.bottom - fr.bottom + 4)) / fr.height * 100) + '%'; });
+  if (!f0) return;
+  { const h0 = f0.offsetHeight, room = window.innerHeight - D.scrollHeight; const nh = Math.max(220, Math.round(h0 + room - 2)); if (room < -1 || room > 3) D.style.setProperty('--rmF', nh + 'px'); }
+  const fw = f0.clientWidth - 12, fh = f0.clientHeight - 12, rows = +f0.dataset.rows || ROWS;
+  let cw = Math.min(fw / COLS, ((fh / rows) - 12) / 1.36 + 4, 52); cw = Math.max(18, Math.floor(cw * 10) / 10);
+  const rh = Math.floor(((cw - 4) * 1.36 + 12) * 10) / 10;
+  if (Math.abs((parseFloat(D.style.getPropertyValue('--rmCW')) || 0) - cw) > .2) { D.style.setProperty('--rmCW', cw + 'px'); D.style.setProperty('--rmRH', rh + 'px'); }
   if (!window.__rmFitR) { window.__rmFitR = 1; window.addEventListener('resize', () => { document.documentElement.style.removeProperty('--rmF'); rmFit(); }); }
 }
 
@@ -322,5 +373,5 @@ function mBot(S, P) {
 G.rummikub.botStep = mBot;
 G.rummikub.botDelay = () => 1200;
 G.rummikub.BOTNAMES = ['타일왕', '조커', '숫자박사', '런런'];
-G.rummikub.check = check;
+G.rummikub.check = check; G.rummikub.compat = compat;
 })();
