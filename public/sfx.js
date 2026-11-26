@@ -64,15 +64,17 @@
     swish: () => noise(.18, {f: 2500, to: 600, q: 1.2, vol: .1}),
     flip: () => { noise(.06, {f: 3000, q: 2, vol: .12}); tone(800, .05, {vol: .05, at: .02}); },
     alarm: () => [0, .18, .36].forEach(a => tone(880, .12, {type: 'square', vol: .06, at: a})),
+    // 바둑알 '딱': 짧고 맑은 클릭 + 높은 울림(돌·유리 느낌)
+    clack: (v = 1) => { const p = .9 + Math.random() * .25; noise(.035, {ftype: 'highpass', f: 2600 * p, q: .8, vol: .32 * v, att: .001}); tone(3150 * p, .07, {type: 'sine', vol: .16 * v, att: .001}); tone(5200 * p, .04, {type: 'sine', vol: .06 * v, att: .001}); tone(1650 * p, .05, {type: 'triangle', vol: .05 * v, att: .001}); },
     thud: () => { tone(110, .25, {to: 55, vol: .35}); noise(.15, {ftype: 'lowpass', f: 400, vol: .18}); }
   };
-  const GAP = {sparkle: 280, pop: 90, whoosh: 160, coin: 70, tick: 40, flip: 70, swish: 120};
-  function play(name) {
+  const GAP = {clack: 25, sparkle: 280, pop: 90, whoosh: 160, coin: 70, tick: 40, flip: 70, swish: 120};
+  function play(name, arg) {
     if (!on || !SOUNDS[name]) return;
     const t = Date.now(), g = GAP[name] == null ? 200 : GAP[name];
     if (last[name] && t - last[name] < g) return; last[name] = t;
     if (!ac()) return;
-    try { SOUNDS[name](); } catch (e) {}
+    try { SOUNDS[name](arg); } catch (e) {}
   }
   function setOn(v) { on = !!v; try { localStorage.setItem(KEY, on ? '1' : '0'); } catch (e) {} paint(); if (on) { ac(); play('pop'); } }
   W.SFX = {play, setOn, get on() { return on; }};

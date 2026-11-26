@@ -98,7 +98,7 @@ function oFx(S, me, P) {
       const r = st.getBoundingClientRect(), rp = document.createElement('i'); rp.className = 'omfx-ripple'; rp.style.cssText = `left:${r.left + r.width / 2}px;top:${r.top + r.height / 2}px;width:${r.width}px;height:${r.width}px`;
       document.body.appendChild(rp); rp.animate([{transform: 'translate(-50%,-50%) scale(.6)', opacity: .9}, {transform: 'translate(-50%,-50%) scale(2.6)', opacity: 0}], {duration: 600, delay: 220, easing: 'ease-out', fill: 'both'}).onfinish = () => rp.remove();
     }
-    if (W.SFX) setTimeout(() => W.SFX.play('thud'), 230);
+    if (W.SFX) setTimeout(() => W.SFX.play('clack', 1.1), 230);
     if (!S.winner && S.turn === me) { const b = $('.om-msg'); if (b && b.animate) b.animate([{transform: 'scale(.94)'}, {transform: 'scale(1.03)'}, {transform: 'none'}], {duration: 420}); }
   }
   if (cur.end && !rec.end) {
