@@ -20,7 +20,7 @@ function check(set) {
   // 그룹
   const num = numOf(rs[0]);
   if (n <= 4 && rs.every(id => numOf(id) === num) && new Set(rs.map(colOf)).size === rs.length) {
-    return {kind: 'g', pts: num * n, order: rs.slice().sort((a, b) => colOf(a) - colOf(b)).concat(nj)};
+    return {kind: 'g', pts: num * rs.length, order: rs.slice().sort((a, b) => colOf(a) - colOf(b)).concat(nj)};
   }
   // 런
   const c = colOf(rs[0]);
@@ -31,7 +31,7 @@ function check(set) {
     let start = ns[0], end = start + n - 1; if (end > 13) { start = 13 - n + 1; end = 13; }
     if (start > ns[0]) return null;
     const by = {}; rs.forEach(id => by[numOf(id)] = id); const js = nj.slice(), order = [];
-    let pts = 0; for (let v = start; v <= end; v++) { order.push(by[v] != null ? by[v] : js.shift()); pts += v; }
+    let pts = 0; for (let v = start; v <= end; v++) { if (by[v] != null) { order.push(by[v]); pts += v; } else order.push(js.shift()); }
     return {kind: 'r', pts, order};
   }
   return null;
@@ -54,7 +54,7 @@ function autoPlace(pos, table) {
 const handSum = h => h.reduce((s, id) => s + tval(id), 0);
 G.rummikub = {
   name: '루미큐브', tag: '숫자 타일로 세트를 만들어 먼저 다 내기', min: 2, max: 4, mark: '🀄', hue: '#E8873A',
-  rules: ['타일은 1~13 숫자 × 4가지 색 × 2벌, 그리고 조커 2장(106장). 각자 14장으로 시작해요.', '세트는 두 종류: ① 같은 숫자, 서로 다른 색 3~4장(그룹) ② 같은 색, 연속된 숫자 3장 이상(런). 조커는 어떤 타일 대신으로도 쓸 수 있어요.', '첫 등록: 내 타일로만 만든 세트들의 숫자 합이 30 이상이어야 내려놓을 수 있어요. 등록 전에는 바닥 세트를 건드릴 수 없어요.', '등록한 뒤에는 바닥 세트를 자유롭게 쪼개고 합쳐서 내 타일을 붙여요. 단, 차례가 끝날 때 바닥의 모든 세트가 올바라야 해요.', '낼 게 없으면 더미에서 한 장 가져가고 차례가 넘어가요.', '손패를 가장 먼저 다 내면 승리! 더미가 바닥나고 모두 한 바퀴 넘기면 손패 숫자 합이 가장 적은 사람이 승리(조커는 30점).', '조작: 타일을 마우스로 집어서 바닥의 원하는 자리에 놓으면 그 자리에 새 세트가 생겨요. 세트의 타일 사이에 놓으면 그 사이에 끼워져요. 세트 테두리를 잡고 끌면 세트를 옮길 수 있어요. "내기"를 누르면 확정!'],
+  rules: ['타일은 1~13 숫자 × 4가지 색 × 2벌, 그리고 조커 2장(106장). 각자 14장으로 시작해요.', '세트는 두 종류: ① 같은 숫자, 서로 다른 색 3~4장(그룹) ② 같은 색, 연속된 숫자 3장 이상(런). 조커는 어떤 타일 대신으로도 쓸 수 있어요.', '첫 등록: 내 타일로만 만든 세트들의 숫자 합이 30 이상이어야 내려놓을 수 있어요(조커는 합에 넣지 않아요). 등록 전에는 바닥 세트를 건드릴 수 없어요.', '등록한 뒤에는 바닥 세트를 자유롭게 쪼개고 합쳐서 내 타일을 붙여요. 단, 차례가 끝날 때 바닥의 모든 세트가 올바라야 해요.', '낼 게 없으면 더미에서 한 장 가져가고 차례가 넘어가요.', '손패를 가장 먼저 다 내면 승리! 더미가 바닥나고 모두 한 바퀴 넘기면 손패 숫자 합이 가장 적은 사람이 승리(조커는 30점).', '조작: 타일을 마우스로 집어서 바닥의 원하는 자리에 놓으면 그 자리에 새 세트가 생겨요. 세트의 타일 사이에 놓으면 그 사이에 끼워져요. 세트 테두리를 잡고 끌면 세트를 옮길 수 있어요. "내기"를 누르면 확정!'],
   setup(P) {
     const pool = U.shuffle(Array.from({length: 106}, (_, i) => i));
     const hand = P.map(() => pool.splice(0, 14));
@@ -163,7 +163,7 @@ function mBody(S, me, ui, P) {
   // 상단: 사람들
   let h = `<header class="rm-top">${P.map((p, i) => `<div class="rm-p${i === S.turn && !S.winner ? ' on' : ''}${S.winner && S.wp === i ? ' win' : ''}" style="--pc:${U.pc(i)}"><span class="rm-av">${U.esc(Array.from(String(p.name || '?').replace(/^🤖/u, ''))[0] || '?')}</span><div><b>${U.nm(P, i)}${i === me ? ' <small>(나)</small>' : ''}</b><small>${S.melded[i] ? '✅ 등록함' : '첫 등록 전'}</small></div><span class="rm-cnt"><i></i>${S.hand[i].length}</span>${i === S.turn && !S.winner ? '<span class="om-turn">차례</span>' : ''}</div>`).join('')}<div class="rm-pool"><span class="rm-pile">${Array.from({length: Math.min(5, Math.ceil(S.pool.length / 15))}, () => '<i></i>').join('')}</span><b>${S.pool.length}</b><small>더미</small></div></header>`;
   const tm = S.tl && !S.winner ? (() => { if (!isDOM) return ''; const W = window; W.__rmT = W.__rmT || {}; const k = S._g + ':' + S.ts; const seen = W.__rmT[k] = W.__rmT[k] || Date.now(); rmTick(); const left = Math.max(0, S.tl - (Date.now() - seen) / 1000); return `<b class="om-clock${left <= Math.min(10, S.tl / 3) ? ' hurry' : ''}" data-seen="${seen}" data-len="${S.tl}">⏳ <span>${Math.ceil(left)}</span>초</b>`; })() : '';
-  const msg = S.winner ? `🏆 ${U.esc(S.winner)}` : my ? (S.melded[me] ? '👉 내 차례! 타일을 끌어다 세트에 붙이거나 빈 곳에 놓아 새 세트를 만들어요' : '👉 내 차례! 내 타일로 합 30 이상을 첫 등록해요') : `${U.nm(P, S.turn)}님 차례…`;
+  const msg = S.winner ? `🏆 ${U.esc(S.winner)}` : my ? (S.melded[me] ? '👉 내 차례! 타일을 끌어다 세트에 붙이거나 빈 곳에 놓아 새 세트를 만들어요' : '👉 내 차례! 내 타일로 합 30 이상을 첫 등록해요 (조커는 0점)') : `${U.nm(P, S.turn)}님 차례…`;
   const tools = S.n === 0 && !S.winner && me >= 0 ? `<span class="om-tl"><b>⏱ 한 차례 제한시간</b>${[0, 15, 30, 60].map(s => U.btn(s ? (s < 60 ? `${s}초` : '1분') : '없음', 'tl', {s}, 'sm' + (S.tl === s ? ' primary' : ''))).join('')}</span>` : '';
   h += `<div class="rm-msg${my ? ' me' : ''}${S.winner ? ' end' : ''}"><span>${msg}</span>${tm}${tools}</div>`;
   // 바닥
@@ -176,7 +176,7 @@ function mBody(S, me, ui, P) {
     const changed = my && (d.hand.length !== S.hand[me].length);
     const meldable = new Set(); if (!S.melded[me]) { const sets = findSets(hand); if (sets.reduce((t, x) => t + check(x).pts, 0) >= 30) sets.flat().forEach(id => meldable.add(id)); }
     const allOk = my && d.table.every(s => check(s));
-    h += `<section class="rm-hand"><header><b>🀄 내 타일 ${hand.length}장</b><span class="rm-sort">${U.ub('123 순', 'rsort', 'num', 'sm' + ((ui.rsort || 'num') === 'num' ? ' primary' : ''))}${U.ub('색깔 순', 'rsort', 'col', 'sm' + (ui.rsort === 'col' ? ' primary' : ''))}</span>${meldable.size ? '<span class="rm-hint">✨ 황금빛 타일로 첫 등록(합 30↑) 가능!</span>' : ''}${!S.melded[me] && my ? `<span class="rm-meld${freshPts >= 30 ? ' ok' : ''}">첫 등록 ${freshPts}/30</span>` : ''}</header>
+    h += `<section class="rm-hand"><header><b>🀄 내 타일 ${hand.length}장</b><span class="rm-sort">${U.ub('123 순', 'rsort', 'num', 'sm' + ((ui.rsort || 'num') === 'num' ? ' primary' : ''))}${U.ub('색깔 순', 'rsort', 'col', 'sm' + (ui.rsort === 'col' ? ' primary' : ''))}</span>${meldable.size ? '<span class="rm-hint">✨ 황금빛 타일로 첫 등록(조커 빼고 합 30↑) 가능!</span>' : ''}${!S.melded[me] && my ? `<span class="rm-meld${freshPts >= 30 ? ' ok' : ''}">첫 등록 ${freshPts}/30</span>` : ''}</header>
 <div class="rm-rack" data-drop="hand">${hand.map((id, k) => my ? `<button type="button" class="rt-b" style="--k:${k}" data-g="rsel" data-val="${id}" data-tid="${id}">${tile(id, (sel.has(id) ? 'sel ' : '') + (meldable.has(id) ? 'meld' : ''))}</button>` : `<span class="rt-b" style="--k:${k}">${tile(id, meldable.has(id) ? 'meld' : '')}</span>`).join('')}</div>
 ${my ? `<div class="rm-acts">${sel.size ? `<button type="button" class="btn sm" data-g="rclr">선택 풀기 (${sel.size})</button><button type="button" class="btn sm" data-g="rback">↩ 손으로 되돌리기</button>` : ''}${changed || d.table.length !== S.table.length ? `<button type="button" class="btn sm ghost" data-g="rreset">↺ 처음부터</button>` : ''}${U.btn(changed ? (allOk ? '✅ 이대로 내기' : '세트를 올바르게 맞춰 주세요') : '낼 타일을 고르세요', 'play', {t: d.table}, 'primary big rm-go', !changed || !allOk)}${U.btn(S.pool.length ? '🎴 한 장 가져가기' : '넘기기', 'draw', {p: d.table.length === S.table.length ? d.pos : null}, 'big rm-draw')}</div>${ui.rmsg ? `<p class="rm-warn">${U.esc(ui.rmsg)}</p>` : ''}` : ''}</section>`;
   }
