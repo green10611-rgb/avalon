@@ -167,7 +167,7 @@ function lFx(S, me, P) {
   if (rec && S.shot && S.shot.n === S.n && rec.n !== S.n && !reduce) {
     const r = sim(S.shot.pre, S.shot.k, S.shot.vx, S.shot.vy, true);
     A = W.__lanim = {g: S._g, n: S.n, t0: performance.now(), r, hitDone: new Set(), fallDone: new Set()};
-    if (W.SFX) W.SFX.play('clack', .55);
+    if (W.SFX) W.SFX.play('alhit', .55);
   }
   if (!A || A.g !== S._g || A.n !== S.n || A.done) { go(); return; }
   // 화면이 다시 그려져도 이어서 재생해요
@@ -188,7 +188,7 @@ function lFx(S, me, P) {
     }
     for (const h of r.hits) if (h[0] <= i0 && !A.hitDone.has(h[0])) {
       A.hitDone.add(h[0]); if (h[3] < .06) continue;
-      if (W.SFX) W.SFX.play('clack', Math.min(1.3, .45 + h[3] / 2.2));
+      if (W.SFX) W.SFX.play('alhit', Math.min(1.3, .45 + h[3] / 2.2));
       const sp = document.createElement('i'); sp.className = 'akfx-hit'; const hx = fl ? BR - h[1] : h[1], hy = fl ? BR - h[2] : h[2];
       sp.style.left = hx + '%'; sp.style.top = hy + '%'; sp.style.setProperty('--hs', Math.min(1.6, .5 + h[3] / 3).toFixed(2)); board.appendChild(sp); setTimeout(() => sp.remove(), 450);
     }
