@@ -2180,6 +2180,37 @@ body.g-alkkagi .wrap{max-width:min(860px,100%)}
 .ak-go{animation:wwGo 1.3s ease-in-out infinite;margin-left:6px}
 .ak-rd.ok{font-weight:900;padding:5px 12px;border-radius:999px;background:#7CF0B0;color:#0F3A24;margin-left:6px}
 .ak-forms.done{border-style:solid;border-color:rgba(124,240,176,.6)}
+/* 알까기 새 단장 */
+.akw{background:radial-gradient(90% 60% at 50% 45%,#5A3A22 0,#2A170B 60%,#140A04 100%)!important;padding:16px!important;gap:12px!important}
+.akw::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(60% 45% at 50% 50%,rgba(255,220,160,.22),transparent 70%)}
+.ak-p{min-width:min(100%,380px)!important;padding:10px 16px!important;border-radius:20px!important;background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04))!important;backdrop-filter:blur(4px);box-shadow:0 8px 20px rgba(0,0,0,.35)}
+.ak-p b{font-size:17px!important}
+.ak-ps{width:46px!important;height:46px!important}
+.ak-left{display:flex!important;flex-wrap:wrap;align-items:center;gap:3px!important;max-width:none!important;margin-top:4px}
+.ak-left em{font-style:normal;font-weight:900;font-size:15px;margin-right:6px;color:#FFD28A}
+.ak-left i{width:11px!important;height:11px!important;border-radius:50%;background:rgba(255,255,255,.12)!important;box-shadow:none!important}
+.ak-left i.on.c0{background:radial-gradient(circle at 35% 30%,#777,#0c0c0c)!important;box-shadow:0 0 0 1px rgba(255,255,255,.45)!important}
+.ak-left i.on.c1{background:radial-gradient(circle at 35% 30%,#fff,#cfc8bc)!important}
+.ak-msg{border-radius:999px!important;padding:10px 20px!important;font-size:clamp(15px,2.4cqw,19px)!important;background:rgba(0,0,0,.35)!important;border:1px solid rgba(255,255,255,.12)}
+.ak-msg.me{background:linear-gradient(90deg,#FFB547,#F0612B)!important;border:none}
+.ak-table{position:relative;box-sizing:border-box;width:min(100%,calc(54dvh + 40px),640px);padding:clamp(10px,2.4cqw,20px);border-radius:16px;background:linear-gradient(180deg,#C98A4B,#A8682E);box-shadow:0 0 0 2px #6A3E18,inset 0 2px 0 rgba(255,255,255,.35),0 clamp(10px,2cqw,18px) 0 #6A3E18,0 clamp(10px,2cqw,18px) 0 2px #4A2A10,0 40px 60px rgba(0,0,0,.6)}
+.ak-table::before,.ak-table::after{content:'';position:absolute;bottom:calc(-1 * clamp(26px,5cqw,40px));width:14%;height:clamp(16px,3cqw,24px);background:linear-gradient(180deg,#5A3415,#3A1E08);border-radius:0 0 8px 8px;z-index:-1}
+.ak-table::before{left:8%}.ak-table::after{right:8%}
+.ak-board{width:100%!important;border-radius:4px!important;background:radial-gradient(ellipse at 35% 25%,rgba(255,245,215,.55),transparent 60%),repeating-linear-gradient(88deg,rgba(140,80,20,.10) 0 2px,transparent 2px 9px),repeating-linear-gradient(92deg,rgba(110,60,10,.07) 0 1px,transparent 1px 6px),linear-gradient(135deg,#F2C98A,#E2AD68 50%,#D29A54)!important;box-shadow:inset 0 0 0 1px rgba(90,50,10,.4),inset 0 0 30px rgba(120,70,20,.25)!important}
+.ak-board::after{display:none}
+.ak-grid line{stroke:#2A1606!important;stroke-width:.18!important;opacity:.75!important}
+.ak-grid circle{fill:#2A1606}
+.ak-s .om-st{filter:drop-shadow(0 .45cqw .35cqw rgba(40,20,0,.55)) drop-shadow(0 .1cqw .1cqw rgba(0,0,0,.4))!important}
+.ak-s.mine::before{border-color:rgba(255,230,140,.95)!important}
+.ak-s.falling{animation:akDrop .28s ease-in forwards!important}
+@keyframes akDrop{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.75)}}
+.ak-board.anim .ak-s.falling{animation:akDrop2 .28s ease-in forwards!important}
+@keyframes akDrop2{to{opacity:0}}
+.ak-aim .shot{stroke:#FFE07A!important;stroke-width:1.1!important;stroke-dasharray:2.2 1.4;filter:drop-shadow(0 0 1.2px rgba(255,200,80,.9))!important}
+.ak-aim .pull{stroke:rgba(255,255,255,.85)!important;stroke-width:.5!important}
+.ak-pow{left:15%!important;right:15%!important;bottom:-34px!important;height:12px!important;border:2px solid rgba(255,255,255,.3);box-shadow:0 4px 10px rgba(0,0,0,.4)}
+.akfx-hit{background:radial-gradient(circle,rgba(255,255,255,1),rgba(255,230,160,.6) 30%,transparent 65%)!important}
+.ak-forms{background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.03))!important;border-radius:18px!important}
 /* ===== 알까기 끝 ===== */
 /* ===== 루미큐브 ===== */
 .rkbox2{container:rmbox/inline-size}
